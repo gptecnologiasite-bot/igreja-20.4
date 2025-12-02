@@ -1,0 +1,505 @@
+.retiro-page {
+  min-height: 100vh;
+  background-color: var(--bg-color);
+}
+
+/* Hero Section */
+.retiro-hero {
+  background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+  padding: 5rem 2rem;
+  text-align: center;
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+}
+
+.retiro-hero::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><path d="M20,80 L50,20 L80,80 Z" fill="rgba(255,255,255,0.05)"/></svg>');
+  opacity: 0.5;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 1;
+}
+
+.hero-icon {
+  margin-bottom: 1.5rem;
+  animation: mountain 3s ease-in-out infinite;
+  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+}
+
+@keyframes mountain {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.retiro-hero h1 {
+  font-size: 3.5rem;
+  margin-bottom: 1rem;
+  font-weight: bold;
+  text-shadow: 2px 2px 8px rgba(0,0,0,0.3);
+}
+
+.retiro-hero .hero-subtitle {
+  font-size: 1.4rem;
+  margin-bottom: 2rem;
+  opacity: 0.95;
+}
+
+.hero-verse {
+  max-width: 600px;
+  margin: 2rem auto 0;
+  padding: 1.5rem;
+  background: rgba(255,255,255,0.15);
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.2);
+}
+
+.hero-verse p {
+  font-size: 1.2rem;
+  font-style: italic;
+  margin-bottom: 0.5rem;
+  line-height: 1.6;
+}
+
+.hero-verse span {
+  font-size: 0.9rem;
+  opacity: 0.9;
+  font-weight: 600;
+}
+
+/* Mission Section */
+.mission-section {
+  padding: 4rem 1rem;
+  background: #1a1a1a;
+}
+
+.mission-section h2 {
+  text-align: center;
+  font-size: 2.5rem;
+  color: var(--primary-color);
+  margin-bottom: 3rem;
+}
+
+.benefits-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.benefit-card {
+  background: #2a2a2a;
+  padding: 2rem;
+  border-radius: 12px;
+  text-align: center;
+  border-top: 3px solid #16a34a;
+  transition: transform 0.3s;
+}
+
+.benefit-card:hover {
+  transform: translateY(-10px);
+}
+
+.benefit-card svg {
+  color: #16a34a;
+  margin-bottom: 1rem;
+}
+
+.benefit-card h3 {
+  color: var(--text-color);
+  margin-bottom: 0.75rem;
+  font-size: 1.3rem;
+}
+
+.benefit-card p {
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+/* Retreats Section */
+.retreats-section {
+  padding: 4rem 1rem;
+  background: var(--bg-color);
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.section-header svg {
+  color: var(--primary-color);
+}
+
+.section-header h2 {
+  font-size: 2.5rem;
+  color: var(--primary-color);
+}
+
+.section-subtitle {
+  text-align: center;
+  color: var(--text-muted);
+  margin-bottom: 3rem;
+  font-size: 1.1rem;
+}
+
+.retreats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.retreat-card {
+  background: #2a2a2a;
+  padding: 2rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  transition: transform 0.3s, box-shadow 0.3s;
+  border-left: 4px solid #16a34a;
+}
+
+.retreat-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 8px 16px rgba(22, 163, 74, 0.3);
+}
+
+.retreat-icon {
+  background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+  color: #fff;
+  width: 60px;
+  height: 60px;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 1.5rem;
+}
+
+.retreat-card h3 {
+  color: var(--text-color);
+  font-size: 1.4rem;
+  margin-bottom: 0.5rem;
+}
+
+.retreat-theme {
+  color: #16a34a;
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+  font-size: 1.1rem;
+}
+
+.retreat-description {
+  color: var(--text-muted);
+  margin-bottom: 1.5rem;
+  line-height: 1.6;
+}
+
+.retreat-details {
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-top: 1rem;
+  margin-bottom: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.detail-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.detail-item svg {
+  color: #16a34a;
+}
+
+.detail-item.price {
+  margin-top: 0.5rem;
+}
+
+.detail-item.price strong {
+  color: #16a34a;
+  font-size: 1.2rem;
+}
+
+.register-btn {
+  width: 100%;
+  padding: 0.75rem;
+  background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  transition: transform 0.3s;
+}
+
+.register-btn:hover {
+  transform: scale(1.02);
+}
+
+/* Team Section */
+.team-section {
+  padding: 4rem 1rem;
+  background: #1a1a1a;
+}
+
+.team-section h2 {
+  text-align: center;
+  font-size: 2.5rem;
+  color: var(--primary-color);
+  margin-bottom: 0.5rem;
+}
+
+.team-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.team-card {
+  background: #2a2a2a;
+  padding: 2rem;
+  border-radius: 12px;
+  text-align: center;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  transition: transform 0.3s;
+  border-top: 3px solid #16a34a;
+}
+
+.team-card:hover {
+  transform: translateY(-10px);
+}
+
+.team-photo {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  border: 3px solid #16a34a;
+  margin-bottom: 1rem;
+}
+
+.team-card h3 {
+  color: var(--text-color);
+  margin-bottom: 0.5rem;
+  font-size: 1rem;
+}
+
+.team-card p {
+  color: #16a34a;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+/* Gallery Section */
+.gallery-section {
+  padding: 4rem 1rem;
+  background: var(--bg-color);
+}
+
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.gallery-item {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  aspect-ratio: 4/3;
+  cursor: pointer;
+}
+
+.gallery-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s;
+}
+
+.gallery-item:hover img {
+  transform: scale(1.1);
+}
+
+.gallery-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+  padding: 1rem;
+  color: #fff;
+  font-weight: 600;
+  transform: translateY(100%);
+  transition: transform 0.3s;
+}
+
+.gallery-item:hover .gallery-overlay {
+  transform: translateY(0);
+}
+
+/* Registration Form Section */
+.registration-form-section {
+  padding: 4rem 1rem;
+  background: #1a1a1a;
+}
+
+.form-wrapper {
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.registration-form {
+  background: #2a2a2a;
+  padding: 2.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.5rem;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  color: var(--text-color);
+  font-weight: 500;
+}
+
+.form-group input,
+.form-group select {
+  width: 100%;
+  padding: 12px;
+  background-color: var(--bg-color);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  color: var(--text-color);
+  font-family: inherit;
+  transition: border-color 0.3s;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #16a34a;
+}
+
+.submit-btn {
+  width: 100%;
+  padding: 1rem;
+  background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-weight: bold;
+  font-size: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  cursor: pointer;
+  transition: transform 0.3s;
+}
+
+.submit-btn:hover {
+  transform: scale(1.02);
+}
+
+/* CTA Section */
+.retiro-cta {
+  padding: 4rem 2rem;
+  background: linear-gradient(135deg, #16a34a 0%, #15803d 100%);
+  text-align: center;
+  color: #fff;
+}
+
+.cta-icon {
+  margin-bottom: 1rem;
+  animation: pulse 2s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+.retiro-cta h2 {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.retiro-cta p {
+  font-size: 1.2rem;
+  margin-bottom: 2rem;
+  opacity: 0.95;
+  max-width: 700px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.cta-button {
+  background: #fff;
+  color: #16a34a;
+  padding: 1rem 2.5rem;
+  border-radius: 50px;
+  font-weight: bold;
+  font-size: 1.1rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.75rem;
+  transition: transform 0.3s, box-shadow 0.3s;
+  border: none;
+  cursor: pointer;
+}
+
+.cta-button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 16px rgba(0,0,0,0.3);
+}
+
+@media (max-width: 768px) {
+  .retiro-hero h1 {
+    font-size: 2.5rem;
+  }
+  
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .registration-form {
+    padding: 1.5rem;
+  }
+}

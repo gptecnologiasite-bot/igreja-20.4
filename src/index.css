@@ -1,0 +1,100 @@
+:root {
+  /* Default Dark Theme */
+  --primary-color: #d4af37; /* Gold/Yellow accent */
+  --primary-hover: #b5952f;
+  --bg-color: #1a1a1a;
+  --card-bg: #ffffff;
+  --text-color: #ffffff;
+  --text-dark: #333333;
+  --text-muted: #888888;
+  --nav-bg: #111111;
+  --font-main: "Inter", system-ui, Avenir, Helvetica, Arial, sans-serif;
+}
+
+[data-theme="light"] {
+  --bg-color: #f5f5f5;
+  --text-color: #333333;
+  --nav-bg: #ffffff;
+  --card-bg: #ffffff;
+  --text-muted: #666666;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: var(--font-main);
+  background-color: var(--bg-color);
+  color: var(--text-color);
+  line-height: 1.5;
+  font-weight: 400;
+}
+
+a {
+  text-decoration: none;
+  color: inherit;
+  transition: color 0.3s;
+}
+
+ul {
+  list-style: none;
+}
+
+button {
+  cursor: pointer;
+  border: none;
+  font-family: inherit;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 20px;
+}
+
+/* Utility classes */
+.text-primary {
+  color: var(--primary-color);
+}
+.bg-primary {
+  background-color: var(--primary-color);
+}
+.flex {
+  display: flex;
+}
+.items-center {
+  align-items: center;
+}
+.justify-between {
+  justify-content: space-between;
+}
+.grid {
+  display: grid;
+}
+.gap-4 {
+  gap: 1rem;
+}
+.p-4 {
+  padding: 1rem;
+}
+.rounded {
+  border-radius: 8px;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-color);
+}
+::-webkit-scrollbar-thumb {
+  background: #444;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}

@@ -1,0 +1,226 @@
+.activities-carousel-container {
+  position: relative;
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 2rem 3rem;
+}
+
+.activities-carousel-wrapper {
+  overflow: hidden;
+  border-radius: 16px;
+}
+
+.activities-carousel-track {
+  display: flex;
+  will-change: transform;
+}
+
+.activity-carousel-card {
+  flex-shrink: 0;
+  padding: 0 0.75rem;
+  box-sizing: border-box;
+}
+
+.activity-carousel-image-wrapper {
+  position: relative;
+  width: 100%;
+  height: 280px;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.activity-carousel-card:hover .activity-carousel-image-wrapper {
+  transform: scale(1.02);
+  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+}
+
+.activity-carousel-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.activity-carousel-card:hover .activity-carousel-image {
+  transform: scale(1.1);
+}
+
+.activity-carousel-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(
+    to bottom,
+    transparent 0%,
+    transparent 50%,
+    rgba(0, 0, 0, 0.7) 100%
+  );
+  pointer-events: none;
+}
+
+.activity-carousel-badge {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  background: linear-gradient(
+    135deg,
+    var(--primary-color),
+    var(--secondary-color)
+  );
+  color: #000;
+  padding: 0.5rem 1rem;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 0.875rem;
+  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.4);
+  z-index: 2;
+}
+
+.activity-carousel-content {
+  padding: 1.5rem 0.75rem 0;
+}
+
+.activity-carousel-content h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin-bottom: 0.5rem;
+  transition: color 0.3s ease;
+}
+
+.activity-carousel-card:hover .activity-carousel-content h3 {
+  color: var(--primary-color);
+}
+
+.activity-carousel-content p {
+  font-size: 0.95rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+/* Navigation Buttons */
+.carousel-nav-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.95);
+  border: none;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  z-index: 10;
+  color: #000;
+}
+
+.carousel-nav-btn:hover {
+  background: var(--primary-color);
+  transform: translateY(-50%) scale(1.1);
+  box-shadow: 0 6px 20px rgba(212, 175, 55, 0.4);
+}
+
+.carousel-nav-prev {
+  left: -0.5rem;
+}
+
+.carousel-nav-next {
+  right: -0.5rem;
+}
+
+/* Dots */
+.carousel-dots {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 2rem;
+}
+
+.carousel-dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  border: 2px solid var(--border-color);
+  background: transparent;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  padding: 0;
+}
+
+.carousel-dot:hover {
+  border-color: var(--primary-color);
+  transform: scale(1.2);
+}
+
+.carousel-dot.active {
+  background: var(--primary-color);
+  border-color: var(--primary-color);
+  width: 32px;
+  border-radius: 6px;
+}
+
+/* Empty State */
+.activities-carousel-empty {
+  text-align: center;
+  padding: 4rem 2rem;
+  color: var(--text-secondary);
+  font-size: 1.1rem;
+}
+
+/* Dark Theme Adjustments */
+[data-theme="dark"] .carousel-nav-btn {
+  background: rgba(30, 41, 59, 0.95);
+  color: #fff;
+}
+
+[data-theme="dark"] .carousel-nav-btn:hover {
+  background: var(--primary-color);
+  color: #000;
+}
+
+/* Responsive */
+@media (max-width: 1024px) {
+  .activities-carousel-container {
+    padding: 2rem 2.5rem;
+  }
+
+  .carousel-nav-prev {
+    left: 0;
+  }
+
+  .carousel-nav-next {
+    right: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  .activities-carousel-container {
+    padding: 1.5rem 2rem;
+  }
+
+  .activity-carousel-image-wrapper {
+    height: 220px;
+  }
+
+  .carousel-nav-btn {
+    width: 40px;
+    height: 40px;
+  }
+
+  .activity-carousel-content h3 {
+    font-size: 1.1rem;
+  }
+
+  .activity-carousel-content p {
+    font-size: 0.875rem;
+  }
+}

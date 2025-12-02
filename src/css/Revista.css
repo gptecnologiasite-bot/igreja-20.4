@@ -1,0 +1,463 @@
+/* Revista.css */
+.revista-container {
+  min-height: 100vh;
+  background-color: var(--bg-color);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  font-family: var(--font-main);
+}
+
+.revista-wrapper {
+  width: 100%;
+  max-width: 1024px;
+  height: 85vh;
+  background-color: #fff; /* Pages are white/light for readability, or we can make them dark */
+  background: linear-gradient(135deg, #1e1e1e 0%, #111 100%);
+  border-radius: 20px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+}
+
+/* Header */
+.revista-header {
+  padding: 1rem 2rem;
+  background: rgba(0, 0, 0, 0.4);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid rgba(212, 175, 55, 0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  z-index: 10;
+}
+
+.revista-brand {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.revista-logo {
+  width: 40px;
+  height: 40px;
+  background: linear-gradient(135deg, var(--primary-color), #b5952f);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #000;
+  font-weight: 900;
+  font-size: 1.2rem;
+  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+}
+
+.revista-info h1 {
+  font-size: 1.1rem;
+  color: var(--text-color);
+  margin: 0;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+}
+
+.revista-info p {
+  font-size: 0.8rem;
+  color: var(--primary-color);
+  margin: 0;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+/* Controls */
+.revista-controls {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.btn-nav {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-color);
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  transition: all 0.3s ease;
+}
+
+.btn-nav:hover {
+  background: rgba(212, 175, 55, 0.1);
+  border-color: var(--primary-color);
+  color: var(--primary-color);
+}
+
+/* Content Area */
+.revista-content {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+
+.page-container {
+  width: 100%;
+  height: 100%;
+  padding: 3rem;
+  overflow-y: auto;
+  color: #fff;
+}
+
+/* Page Types */
+/* Cover */
+.page-cover {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  background-size: cover;
+  background-position: center;
+  position: relative;
+  padding: 4rem;
+}
+
+.page-cover::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to top, #000 0%, transparent 60%);
+}
+
+.cover-content {
+  position: relative;
+  z-index: 2;
+}
+
+.cover-badge {
+  background: var(--primary-color);
+  color: #000;
+  padding: 0.5rem 1.5rem;
+  border-radius: 50px;
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.9rem;
+  display: inline-block;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);
+}
+
+.cover-title {
+  font-size: 5rem;
+  line-height: 0.9;
+  font-weight: 900;
+  margin-bottom: 1rem;
+  background: linear-gradient(to right, #fff, #ccc);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.cover-subtitle {
+  font-size: 1.5rem;
+  color: rgba(255, 255, 255, 0.8);
+  max-width: 600px;
+}
+
+/* Index */
+.page-index {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.index-title {
+  font-size: 3rem;
+  color: var(--primary-color);
+  margin-bottom: 3rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.index-list {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 2rem;
+}
+
+.index-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.index-item:hover {
+  background: rgba(212, 175, 55, 0.05);
+  border-color: var(--primary-color);
+  transform: translateX(10px);
+}
+
+.index-label {
+  font-size: 1.2rem;
+  font-weight: 600;
+}
+
+.index-page-num {
+  color: var(--primary-color);
+  font-family: monospace;
+  font-size: 1.1rem;
+}
+
+/* Article */
+.article-header {
+  margin-bottom: 2rem;
+}
+
+.article-category {
+  color: var(--primary-color);
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.article-title {
+  font-size: 3rem;
+  font-weight: 800;
+  line-height: 1.1;
+  margin-bottom: 1.5rem;
+}
+
+.article-image {
+  width: 100%;
+  height: 300px;
+  object-fit: cover;
+  border-radius: 12px;
+  margin-bottom: 2rem;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.article-body {
+  font-size: 1.1rem;
+  line-height: 1.8;
+  color: rgba(255, 255, 255, 0.8);
+  columns: 2;
+  column-gap: 3rem;
+}
+
+.article-body p {
+  margin-bottom: 1.5rem;
+}
+
+/* Footer */
+.revista-footer {
+  padding: 1rem 2rem;
+  background: rgba(0, 0, 0, 0.4);
+  border-top: 1px solid rgba(212, 175, 55, 0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.progress-bar {
+  width: 200px;
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  background: var(--primary-color);
+  transition: width 0.3s ease;
+}
+
+
+/* Advanced Layouts */
+.layout-sidebar {
+  display: grid;
+  grid-template-columns: 250px 1fr;
+  gap: 3rem;
+  height: 100%;
+}
+
+.layout-3col {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+  height: 100%;
+}
+
+/* Columnist Sidebar */
+.author-sidebar {
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  padding-right: 2rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.author-image {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid var(--primary-color);
+  margin-bottom: 1.5rem;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.3);
+}
+
+.author-name {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  margin-bottom: 0.5rem;
+}
+
+.author-role {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.6);
+  font-style: italic;
+  margin-bottom: 2rem;
+}
+
+.author-bio {
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.8);
+}
+
+/* Typography Enhancements */
+.drop-cap {
+  float: left;
+  font-size: 4rem;
+  line-height: 0.8;
+  font-weight: 900;
+  color: var(--primary-color);
+  margin-right: 0.5rem;
+  margin-bottom: -0.5rem;
+}
+
+.quote-box {
+  margin: 2rem 0;
+  padding: 2rem;
+  background: rgba(212, 175, 55, 0.05);
+  border-left: 4px solid var(--primary-color);
+  font-size: 1.2rem;
+  font-style: italic;
+  color: #fff;
+  position: relative;
+}
+
+.quote-box::before {
+  content: '"';
+  position: absolute;
+  top: 0;
+  left: 10px;
+  font-size: 4rem;
+  color: rgba(212, 175, 55, 0.2);
+  font-family: serif;
+  line-height: 1;
+}
+
+/* Devotional Cards */
+.devotional-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  padding: 1.5rem;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  transition: transform 0.3s ease;
+}
+
+.devotional-card:hover {
+  transform: translateY(-5px);
+  background: rgba(255, 255, 255, 0.05);
+  border-color: var(--primary-color);
+}
+
+.devotional-date {
+  font-size: 0.8rem;
+  color: var(--primary-color);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  margin-bottom: 1rem;
+}
+
+.devotional-title {
+  font-size: 1.3rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
+  line-height: 1.3;
+}
+
+.devotional-text {
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: rgba(255, 255, 255, 0.7);
+  flex: 1;
+}
+
+/* Responsive Updates */
+@media (max-width: 768px) {
+  .revista-container {
+    padding: 0;
+  }
+  
+  .revista-wrapper {
+    height: 100vh;
+    border-radius: 0;
+    border: none;
+  }
+
+  .cover-title {
+    font-size: 3rem;
+  }
+
+  .index-list {
+    grid-template-columns: 1fr;
+  }
+
+  .article-body {
+    columns: 1;
+  }
+  
+  .page-container {
+    padding: 1.5rem;
+  }
+
+  .layout-sidebar, .layout-3col {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+
+  .author-sidebar {
+    border-right: none;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-right: 0;
+    padding-bottom: 2rem;
+    flex-direction: row;
+    text-align: left;
+    gap: 1.5rem;
+  }
+
+  .author-image {
+    width: 80px;
+    height: 80px;
+    margin-bottom: 0;
+  }
+}
+
