@@ -6,17 +6,29 @@ import DatabaseService from '../services/DatabaseService';
 const PageEditor = () => {
   const { id } = useParams();
   const navigate = useNavigate();
-  const [page, setPage] = useState(() => DatabaseService.getPageById(id));
+  const [page, setPage] = useState(null);
 
   useEffect(() => {
-    if (!page) {
-      alert('Página não encontrada!');
+    let isMounted = true;
+    DatabaseService.getPages().then((pages) => {
+      if (!isMounted) return;
+      const found = pages.find((p) => p.id === id);
+      if (!found) {
+        alert('Página não encontrada!');
+        navigate('/painel/paginas');
+      } else {
+        setPage(found);
+      }
+    }).catch(() => {
+      alert('Erro ao carregar página.');
       navigate('/painel/paginas');
-    }
-  }, [page, navigate]);
+    });
+    return () => { isMounted = false; };
+  }, [id, navigate]);
 
-  const handleSave = () => {
-    if (DatabaseService.updatePage(id, page)) {
+  const handleSave = async () => {
+    const success = await DatabaseService.updatePage(id, page);
+    if (success) {
       alert('Página salva com sucesso!');
       navigate('/painel/paginas');
     } else {

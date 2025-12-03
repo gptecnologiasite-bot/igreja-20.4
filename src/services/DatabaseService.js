@@ -16,46 +16,50 @@ const DB_KEYS = {
 };
 
 const DatabaseService = {
-  // --- Generic Helpers ---
-  
-  // Fetch data from Supabase
+  isSupabaseOnline: async () => {
+    try {
+      const { error } = await supabase
+        .from('app_content')
+        .select('key')
+        .limit(1);
+      return !error;
+    } catch (e) { void e; }
+    return false;
+  },
   fetchItem: async (key, defaultValue) => {
+    let v;
     try {
       const { data, error } = await supabase
         .from('app_content')
         .select('*')
         .eq('key', key)
         .maybeSingle();
-
-      if (error) {
-         console.warn(`Error fetching ${key} from Supabase:`, error.message);
-         return defaultValue;
-      }
-      return data ? data.value : defaultValue;
-    } catch (error) {
-      console.error(`Unexpected error fetching ${key}:`, error);
-      return defaultValue;
-    }
+      if (!error && data) v = data.value;
+    } catch (e) { void e; }
+    if (v !== undefined) return v;
+    try {
+      const raw = localStorage.getItem(key);
+      if (raw) return JSON.parse(raw);
+    } catch (e) { void e; }
+    return defaultValue;
   },
 
-  // Save data to Supabase
   saveItem: async (key, value) => {
+    let ok = false;
     try {
       const { error } = await supabase
         .from('app_content')
         .upsert({ key, value }, { onConflict: 'key' });
-
-      if (error) {
-        console.error(`Error saving ${key} to Supabase:`, error);
-        return false;
-      }
-      // Dispatch event for real-time updates (if needed locally, though Supabase has subscriptions)
-      window.dispatchEvent(new Event('storage')); 
-      return true;
-    } catch (error) {
-      console.error(`Unexpected error saving ${key}:`, error);
-      return false;
+      ok = !error;
+    } catch (e) { void e; }
+    if (!ok) {
+      try {
+        localStorage.setItem(key, JSON.stringify(value));
+        ok = true;
+      } catch (e) { void e; }
     }
+    if (ok) window.dispatchEvent(new Event('storage'));
+    return ok;
   },
 
   // --- Home Data ---

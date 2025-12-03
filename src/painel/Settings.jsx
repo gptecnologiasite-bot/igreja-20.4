@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Save } from 'lucide-react';
+import DatabaseService from '../services/DatabaseService';
 
 const Settings = () => {
   const [user, setUser] = useState(() => {
@@ -17,6 +18,13 @@ const Settings = () => {
     document.documentElement.setAttribute('data-theme', theme);
     alert('Configurações salvas com sucesso!');
   };
+
+  const [dbStatus, setDbStatus] = useState('verificando...');
+  useEffect(() => {
+    DatabaseService.isSupabaseOnline()
+      .then((online) => setDbStatus(online ? 'Supabase (online)' : 'localStorage (offline)'))
+      .catch(() => setDbStatus('localStorage (offline)'));
+  }, []);
 
   return (
     <div className="settings-page">
@@ -65,7 +73,7 @@ const Settings = () => {
         <div className="settings-section">
           <h3>Sistema</h3>
           <p>Versão: 1.0.0</p>
-          <p>Banco de Dados: localStorage</p>
+          <p>Banco de Dados: {dbStatus}</p>
         </div>
       </div>
     </div>

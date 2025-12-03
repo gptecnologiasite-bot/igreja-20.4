@@ -16,7 +16,7 @@ const Login = () => {
 
   const handleLogin = (e) => {
     e.preventDefault();
-    
+
     const users = JSON.parse(localStorage.getItem('admac_users') || '[]');
     const user = users.find(u => u.email === email && u.password === password);
 
@@ -35,7 +35,7 @@ const Login = () => {
     if (name && email && password) {
       const newUser = { name, email, password };
       const users = JSON.parse(localStorage.getItem('admac_users') || '[]');
-      
+
       if (users.find(u => u.email === email)) {
         alert('Este email já está cadastrado.');
         return;
@@ -72,24 +72,24 @@ const Login = () => {
               <p style={{ fontSize: '0.9rem', color: '#888', marginBottom: '0.5rem' }}>Selecionar usuário:</p>
               <div style={{ display: 'flex', gap: '1rem', overflowX: 'auto', paddingBottom: '0.5rem' }}>
                 {savedUsers.map((user, index) => (
-                  <div 
-                    key={index} 
+                  <div
+                    key={index}
                     onClick={() => selectUser(user)}
-                    style={{ 
-                      display: 'flex', 
-                      flexDirection: 'column', 
-                      alignItems: 'center', 
+                    style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      alignItems: 'center',
                       cursor: 'pointer',
                       minWidth: '60px'
                     }}
                   >
-                    <div style={{ 
-                      width: '50px', 
-                      height: '50px', 
-                      borderRadius: '50%', 
-                      backgroundColor: 'var(--primary-color)', 
-                      display: 'flex', 
-                      alignItems: 'center', 
+                    <div style={{
+                      width: '50px',
+                      height: '50px',
+                      borderRadius: '50%',
+                      backgroundColor: 'var(--primary-color)',
+                      display: 'flex',
+                      alignItems: 'center',
                       justifyContent: 'center',
                       marginBottom: '0.5rem',
                       color: '#000',
@@ -147,7 +147,7 @@ const Login = () => {
           </form>
 
           <div className="login-footer" style={{ marginTop: '1.5rem', textAlign: 'center' }}>
-            <button 
+            <button
               onClick={() => setIsRegistering(!isRegistering)}
               style={{ background: 'none', border: 'none', color: 'var(--primary-color)', cursor: 'pointer', textDecoration: 'underline' }}
             >

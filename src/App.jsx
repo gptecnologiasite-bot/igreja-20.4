@@ -20,6 +20,7 @@ import Login from "./pages/Login";
 import Painel from "./painel";
 import DynamicPage from "./pages/DynamicPage";
 import "./css/App.css";
+import DatabaseService from "./services/DatabaseService";
 
 function App() {
   const [theme, setTheme] = React.useState("dark");
@@ -32,14 +33,29 @@ function App() {
     document.documentElement.setAttribute("data-theme", theme);
   }, [theme]);
 
+  const [pages, setPages] = React.useState([]);
   const [dynamicPages, setDynamicPages] = React.useState([]);
 
   React.useEffect(() => {
-    const savedPages = localStorage.getItem("admac_pages");
-    if (savedPages) {
-      setDynamicPages(JSON.parse(savedPages));
-    }
+    const loadPages = () => {
+      DatabaseService.getPages().then((ps) => {
+        setPages(ps || []);
+        const dynamicOnline = (ps || [])
+          .filter((p) => p.type === "dynamic" && p.status === "online");
+        setDynamicPages(dynamicOnline);
+      });
+    };
+    loadPages();
+    const handleStorage = () => loadPages();
+    window.addEventListener("storage", handleStorage);
+    return () => window.removeEventListener("storage", handleStorage);
   }, []);
+
+  const isOnline = (id) => {
+    const p = pages.find((x) => x.id === id);
+    if (!p) return true;
+    return p.status === "online";
+  };
 
   return (
     <Router>
@@ -48,7 +64,7 @@ function App() {
         <main>
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/revista" element={<Revista />} />
+            <Route path="/revista" element={isOnline('revista') ? <Revista /> : <Home />} />
             <Route path="/login" element={<Login />} />
             <Route path="/painel/*" element={
               <ProtectedRoute>
@@ -65,9 +81,9 @@ function App() {
               />
             ))}
 
-            <Route path="/mulheres" element={<Mulheres />} />
+            <Route path="/mulheres" element={isOnline('mulheres') ? <Mulheres /> : <Home />} />
 
-            <Route path="/jovens" element={<Jovens />} />
+            <Route path="/jovens" element={isOnline('jovens') ? <Jovens /> : <Home />} />
 
             <Route
               path="/intercessao"
@@ -81,19 +97,19 @@ function App() {
               }
             />
 
-            <Route path="/kids" element={<Kids />} />
+            <Route path="/kids" element={isOnline('kids') ? <Kids /> : <Home />} />
 
-            <Route path="/lares" element={<Lares />} />
+            <Route path="/lares" element={isOnline('lares') ? <Lares /> : <Home />} />
 
-            <Route path="/louvor" element={<Louvor />} />
+            <Route path="/louvor" element={isOnline('louvor') ? <Louvor /> : <Home />} />
 
-            <Route path="/retiro" element={<Retiro />} />
+            <Route path="/retiro" element={isOnline('retiro') ? <Retiro /> : <Home />} />
 
-            <Route path="/midia" element={<Midia />} />
+            <Route path="/midia" element={isOnline('midia') ? <Midia /> : <Home />} />
 
-            <Route path="/edb" element={<EDB />} />
+            <Route path="/edb" element={isOnline('ebd') ? <EDB /> : <Home />} />
 
-            <Route path="/social" element={<Social />} />
+            <Route path="/social" element={isOnline('social') ? <Social /> : <Home />} />
 
             <Route path="/contato" element={<Contact />} />
             {/* Fallback for other routes */}
