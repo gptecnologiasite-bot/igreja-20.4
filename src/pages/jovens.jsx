@@ -62,13 +62,13 @@ const Jovens = () => {
             <h2>Programação</h2>
           </div>
           <p className="section-subtitle">Participe das nossas atividades</p>
-          
+
           <div className="schedule-grid">
             {data.schedule.map((item, index) => {
               // Default icon logic
               const IconComponent = item.activity.includes('EBD') ? Users :
-                                    item.activity.includes('Célula') ? Heart :
-                                    item.activity.includes('Recreativa') ? Gamepad2 : Music;
+                item.activity.includes('Célula') ? Heart :
+                  item.activity.includes('Recreativa') ? Gamepad2 : Music;
               return (
                 <div key={index} className="schedule-card">
                   <div className="schedule-icon">
@@ -103,7 +103,7 @@ const Jovens = () => {
         <div className="container">
           <h2>Nossa Equipe</h2>
           <p className="section-subtitle">Conheça os líderes do ministério de jovens</p>
-          
+
           <div className="team-grid">
             {data.team.map((member, index) => (
               <div key={index} className="team-card">
@@ -124,7 +124,7 @@ const Jovens = () => {
             <h2>Galeria de Fotos</h2>
           </div>
           <p className="section-subtitle">Momentos especiais do ministério</p>
-          
+
           <div className="gallery-grid">
             {data.gallery.map((photo, index) => (
               <div key={index} className="gallery-item">
@@ -143,7 +143,7 @@ const Jovens = () => {
         <div className="container">
           <h2>Testemunhos</h2>
           <p className="section-subtitle">Veja o que os jovens dizem</p>
-          
+
           <div className="testimonials-grid">
             {data.testimonials.map((testimonial, index) => (
               <div key={index} className="testimonial-card">
@@ -174,7 +174,7 @@ const Jovens = () => {
             <h2>Deixe Seu Testemunho</h2>
           </div>
           <p className="section-subtitle">Compartilhe como Deus tem trabalhado em sua vida</p>
-          
+
           <div className="form-wrapper">
             <form onSubmit={handleSubmit} className="testimonial-form">
               <div className="form-row">
@@ -184,7 +184,7 @@ const Jovens = () => {
                     type="text"
                     id="name"
                     value={testimonial.name}
-                    onChange={(e) => setTestimonial({...testimonial, name: e.target.value})}
+                    onChange={(e) => setTestimonial({ ...testimonial, name: e.target.value })}
                     placeholder="Seu nome"
                     required
                   />
@@ -196,7 +196,7 @@ const Jovens = () => {
                     type="number"
                     id="age"
                     value={testimonial.age}
-                    onChange={(e) => setTestimonial({...testimonial, age: e.target.value})}
+                    onChange={(e) => setTestimonial({ ...testimonial, age: e.target.value })}
                     placeholder="Sua idade"
                     required
                   />
@@ -209,7 +209,7 @@ const Jovens = () => {
                   type="email"
                   id="email"
                   value={testimonial.email}
-                  onChange={(e) => setTestimonial({...testimonial, email: e.target.value})}
+                  onChange={(e) => setTestimonial({ ...testimonial, email: e.target.value })}
                   placeholder="seu@email.com"
                 />
               </div>
@@ -219,7 +219,7 @@ const Jovens = () => {
                 <textarea
                   id="message"
                   value={testimonial.message}
-                  onChange={(e) => setTestimonial({...testimonial, message: e.target.value})}
+                  onChange={(e) => setTestimonial({ ...testimonial, message: e.target.value })}
                   placeholder="Compartilhe sua história..."
                   rows="6"
                   required
