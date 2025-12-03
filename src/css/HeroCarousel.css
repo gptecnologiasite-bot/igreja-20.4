@@ -129,3 +129,15 @@
     right: 1rem;
   }
 }
+
+@media (max-width: 480px) {
+  .hero-carousel {
+    height: 300px;
+  }
+  .carousel-content h1 {
+    font-size: 1.6rem;
+  }
+  .carousel-content p {
+    font-size: 1rem;
+  }
+}

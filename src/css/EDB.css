@@ -399,3 +399,16 @@
     grid-template-columns: 1fr;
   }
 }
+@media (max-width: 480px) {
+  .edb-hero h1 {
+    font-size: 1.8rem;
+  }
+  .info-grid {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+  }
+  .classes-grid {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+  }
+}

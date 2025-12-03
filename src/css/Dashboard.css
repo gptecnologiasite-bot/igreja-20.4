@@ -811,7 +811,13 @@
   align-items: center;
   justify-content: center;
   z-index: 9999;
+  -webkit-backdrop-filter: blur(4px);
   backdrop-filter: blur(4px);
+}
+@supports not ((-webkit-backdrop-filter: blur(4px)) or (backdrop-filter: blur(4px))) {
+  .loading-overlay {
+    background: rgba(0, 0, 0, 0.75);
+  }
 }
 
 .spinner {

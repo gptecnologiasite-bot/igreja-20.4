@@ -126,6 +126,28 @@ export const INITIAL_MINISTRIES_DATA = {
       { name: 'Maria', text: 'Me sinto muito acolhida neste ministério.', photo: 'https://ui-avatars.com/api/?name=Maria&background=random' }
     ]
   },
+  homens: {
+    hero: { title: 'Ministério de Homens', subtitle: 'Firmes na fé, liderando em amor', verse: '"Sede firmes, inabaláveis..." - 1 Coríntios 15:58', videoUrl: '' },
+    mission: { title: 'Nossa Missão', text: 'Fortalecer homens na Palavra e no caráter de Cristo para liderarem suas famílias e servirem à igreja.' },
+    schedule: [
+      { activity: 'Encontro de Homens', day: '1º Sábado do Mês', time: '8h00', location: 'Salão Social', description: 'Comunhão, estudo e oração.' },
+      { activity: 'Estudo Bíblico', day: 'Quarta-feira', time: '20h00', location: 'Sala 3', description: 'Formação de caráter cristão.' }
+    ],
+    team: [
+      { name: 'Pr. Roberto', role: 'Líder Geral', photo: 'https://ui-avatars.com/api/?name=Pr+Roberto&background=random' },
+      { name: 'Eduardo', role: 'Coordenador', photo: 'https://ui-avatars.com/api/?name=Eduardo&background=random' }
+    ],
+    gallery: [
+      { url: 'https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=400&h=300&fit=crop', caption: 'Café dos Homens' },
+      { url: 'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=400&h=300&fit=crop', caption: 'Estudo e Comunhão' },
+      { url: 'https://images.unsplash.com/photo-1529070538774-1843cb3265df?w=400&h=300&fit=crop', caption: 'Confraternização' },
+      { url: 'https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=400&h=300&fit=crop', caption: 'Louvor e Oração' },
+      { url: 'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=400&h=300&fit=crop', caption: 'Retiro de Homens' }
+    ],
+    testimonials: [
+      { name: 'André', text: 'Encontrei direção e irmãos que caminham comigo.', photo: 'https://ui-avatars.com/api/?name=Andre&background=random' }
+    ]
+  },
   lares: {
     hero: { title: 'Ministério de Lares', subtitle: 'Comunhão nos lares', verse: '"...partindo o pão em casa" - Atos 2:46' },
     mission: { title: 'Nossa Missão', text: 'Levar a igreja para dentro das casas, promovendo comunhão, discipulado e fortalecimento de vínculos.' },
@@ -328,6 +350,7 @@ export const INITIAL_PAGES_DATA = [
   { id: 'louvor', name: 'Min. Louvor', path: '/louvor', status: 'online', type: 'system' },
   { id: 'jovens', name: 'Min. Jovens', path: '/jovens', status: 'online', type: 'system' },
   { id: 'mulheres', name: 'Min. Mulheres', path: '/mulheres', status: 'online', type: 'system' },
+  { id: 'homens', name: 'Min. Homens', path: '/homens', status: 'online', type: 'system' },
   { id: 'lares', name: 'Min. Lares', path: '/lares', status: 'online', type: 'system' },
   { id: 'retiro', name: 'Retiros', path: '/retiro', status: 'online', type: 'system' },
   { id: 'social', name: 'Ação Social', path: '/social', status: 'online', type: 'system' },

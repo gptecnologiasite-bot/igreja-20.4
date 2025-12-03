@@ -63,12 +63,18 @@
   background: rgba(255,255,255,0.2);
   padding: 1.5rem 2rem;
   border-radius: 12px;
+  -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 0.5rem;
   min-width: 150px;
+}
+@supports not ((-webkit-backdrop-filter: blur(10px)) or (backdrop-filter: blur(10px))) {
+  .stat-card {
+    background: rgba(255,255,255,0.3);
+  }
 }
 
 .stat-card svg {
@@ -173,6 +179,7 @@
   color: #fff;
   padding: 1rem;
   border-radius: 50%;
+  -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
 }
 
@@ -425,5 +432,28 @@
   
   .testimonial-form {
     padding: 1.5rem;
+  }
+}
+@media (max-width: 480px) {
+  .social-hero h1 {
+    font-size: 1.75rem;
+  }
+  .events-grid {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+  }
+  .gallery-grid {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+  }
+  .social-cta h2 {
+    font-size: 2rem;
+  }
+  .social-cta p {
+    font-size: 1rem;
+  }
+  .cta-button {
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
   }
 }

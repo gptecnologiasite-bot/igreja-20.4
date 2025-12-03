@@ -59,8 +59,14 @@
   padding: 1.5rem;
   background: rgba(255,255,255,0.15);
   border-radius: 12px;
+  -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255,255,255,0.2);
+}
+@supports not ((-webkit-backdrop-filter: blur(10px)) or (backdrop-filter: blur(10px))) {
+  .hero-verse {
+    background: rgba(255,255,255,0.25);
+  }
 }
 
 .hero-verse p {
@@ -518,4 +524,18 @@
   border-top: 1px solid rgba(255,255,255,0.1);
   color: #6c757d; /* Muted text */
   font-size: 0.875rem;
+}
+@media (max-width: 480px) {
+  .lares-hero h1 {
+    font-size: 2rem;
+  }
+  .team-section h2,
+  .section-header h2 {
+    font-size: 2rem;
+  }
+  .testimonials-grid,
+  .gallery-cards {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+  }
 }

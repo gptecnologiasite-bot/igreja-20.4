@@ -59,8 +59,14 @@
   padding: 1.5rem;
   background: rgba(255,255,255,0.15);
   border-radius: 12px;
+  -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255,255,255,0.2);
+}
+@supports not ((-webkit-backdrop-filter: blur(10px)) or (backdrop-filter: blur(10px))) {
+  .hero-verse {
+    background: rgba(255,255,255,0.25);
+  }
 }
 
 .hero-verse p {
@@ -102,6 +108,25 @@
 .schedule-section {
   padding: 4rem 1rem;
   background-color: var(--bg-color);
+}
+
+/* Video Section */
+.video-section {
+  padding: 4rem 1rem;
+  background-color: var(--bg-color);
+}
+
+.video-wrapper {
+  max-width: 900px;
+  margin: 0 auto;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+}
+
+.video-wrapper iframe {
+  display: block;
+  aspect-ratio: 16/9;
 }
 
 .section-header {
@@ -465,6 +490,66 @@
   }
   
   .testimonial-form {
+    padding: 1.5rem;
+  }
+}
+@media (max-width: 480px) {
+  .homens-hero h1 {
+    font-size: 2rem;
+  }
+  .section-header h2 {
+    font-size: 2rem;
+  }
+  .schedule-grid {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+  }
+  .team-grid {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+  }
+  .gallery-grid {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+  }
+  .homens-cta h2 {
+    font-size: 2rem;
+  }
+  .homens-cta p {
+    font-size: 1rem;
+  }
+  .cta-button {
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+  }
+  .mission-section,
+  .schedule-section,
+  .team-section,
+  .gallery-section,
+  .testimonial-form-section,
+  .homens-cta,
+  .video-section {
+    padding: 2rem 1rem;
+  }
+  .homens-hero .hero-subtitle {
+    font-size: 1rem;
+  }
+  .section-subtitle {
+    font-size: 1rem;
+    margin-bottom: 2rem;
+  }
+  .testimonial-form {
+    padding: 1.25rem;
+  }
+  .schedule-card {
+    padding: 1rem;
+    gap: 1rem;
+  }
+  .schedule-icon {
+    width: 50px;
+    height: 50px;
+  }
+  .team-card {
     padding: 1.5rem;
   }
 }

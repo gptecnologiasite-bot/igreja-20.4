@@ -466,3 +466,18 @@
     padding: 1.5rem;
   }
 }
+@media (max-width: 480px) {
+  .midia-hero h1 {
+    font-size: 2rem;
+  }
+  .team-section h2,
+  .gallery-section h2 {
+    font-size: 2rem;
+  }
+  .videos-grid,
+  .areas-grid,
+  .gallery-grid {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+  }
+}

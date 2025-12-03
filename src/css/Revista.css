@@ -28,12 +28,18 @@
 .revista-header {
   padding: 1rem 2rem;
   background: rgba(0, 0, 0, 0.4);
+  -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
   border-bottom: 1px solid rgba(212, 175, 55, 0.1);
   display: flex;
   justify-content: space-between;
   align-items: center;
   z-index: 10;
+}
+@supports not ((-webkit-backdrop-filter: blur(10px)) or (backdrop-filter: blur(10px))) {
+  .revista-header {
+    background: rgba(0, 0, 0, 0.55);
+  }
 }
 
 .revista-brand {

@@ -59,8 +59,14 @@
   padding: 1.5rem;
   background: rgba(255,255,255,0.15);
   border-radius: 12px;
+  -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255,255,255,0.2);
+}
+@supports not ((-webkit-backdrop-filter: blur(10px)) or (backdrop-filter: blur(10px))) {
+  .hero-verse {
+    background: rgba(255,255,255,0.25);
+  }
 }
 
 .hero-verse p {
@@ -415,5 +421,31 @@
   
   .testimonial-form {
     padding: 1.5rem;
+  }
+}
+@media (max-width: 480px) {
+  .louvor-hero h1 {
+    font-size: 2rem;
+  }
+  .schedule-grid {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+  }
+  .team-grid {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+  }
+  .section-header h2 {
+    font-size: 2rem;
+  }
+  .louvor-cta h2 {
+    font-size: 2rem;
+  }
+  .louvor-cta p {
+    font-size: 1rem;
+  }
+  .cta-button {
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
   }
 }

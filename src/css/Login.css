@@ -45,10 +45,16 @@
   max-width: 400px;
   padding: 2.5rem;
   background-color: rgba(30, 30, 30, 0.8);
+  -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+}
+@supports not ((-webkit-backdrop-filter: blur(10px)) or (backdrop-filter: blur(10px))) {
+  .login-card {
+    background-color: rgba(30, 30, 30, 0.9);
+  }
 }
 
 .login-header {

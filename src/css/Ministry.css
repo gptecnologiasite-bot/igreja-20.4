@@ -97,3 +97,13 @@
   color: #666;
   font-size: 0.9rem;
 }
+@media (max-width: 480px) {
+  .ministry-hero h1 {
+    font-size: 2rem;
+  }
+  .info-grid,
+  .activities-grid {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
+  }
+}

@@ -52,6 +52,7 @@ const Header = ({ theme, toggleTheme }) => {
     { name: 'Jovens', path: '/jovens' },
     { name: 'Louvor', path: '/louvor' },
     { name: 'Mulheres', path: '/mulheres' },
+    { name: 'Homens', path: '/homens' },
     { name: 'Lares', path: '/lares' },
     { name: 'Retiros', path: '/retiro' },
     { name: 'Ação Social', path: '/social' },

@@ -64,6 +64,7 @@ const DashboardLayout = ({ children }) => {
     { icon: Music, label: 'Min. Louvor', path: '/louvor' },
     { icon: Zap, label: 'Min. Jovens', path: '/jovens' },
     { icon: Heart, label: 'Min. Mulheres', path: '/mulheres' },
+    { icon: User, label: 'Min. Homens', path: '/homens' },
     { icon: HomeIcon, label: 'Min. Lares', path: '/lares' },
     { icon: Mountain, label: 'Retiros', path: '/retiro' },
     { icon: Heart, label: 'Ação Social', path: '/social' },

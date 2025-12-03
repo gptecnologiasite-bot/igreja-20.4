@@ -84,6 +84,17 @@ button {
   border-radius: 8px;
 }
 
+.glass {
+  background: rgba(255, 255, 255, 0.08);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+}
+
+@supports not ((-webkit-backdrop-filter: blur(10px)) or (backdrop-filter: blur(10px))) {
+  .glass { background: rgba(255, 255, 255, 0.12); }
+}
+
 /* Scrollbar */
 ::-webkit-scrollbar {
   width: 8px;
@@ -97,4 +108,12 @@ button {
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #555;
+}
+@media (max-width: 480px) {
+  .container {
+    padding: 0 12px;
+  }
+  body {
+    font-size: 0.95rem;
+  }
 }

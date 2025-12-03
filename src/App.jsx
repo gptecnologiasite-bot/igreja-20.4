@@ -14,6 +14,7 @@ import Louvor from "./pages/Louvor";
 import Lares from "./pages/Lares";
 import Jovens from "./pages/JovensPage";
 import Mulheres from "./pages/Mulheres";
+import Homens from "./pages/Homens";
 import Retiro from "./pages/Retiro";
 import Midia from "./pages/midia";
 import Login from "./pages/Login";
@@ -82,6 +83,8 @@ function App() {
             ))}
 
             <Route path="/mulheres" element={isOnline('mulheres') ? <Mulheres /> : <Home />} />
+
+            <Route path="/homens" element={isOnline('homens') ? <Homens /> : <Home />} />
 
             <Route path="/jovens" element={isOnline('jovens') ? <Jovens /> : <Home />} />
 
