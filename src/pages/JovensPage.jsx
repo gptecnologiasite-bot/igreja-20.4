@@ -1,5 +1,5 @@
 import { Zap, Calendar, Clock, Users, Camera, MessageSquare, Send, Heart, MapPin, Star, Music, Gamepad2 } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect,  } from 'react';
 import '../css/Jovens.css';
 import DatabaseService from '../services/DatabaseService';
 
