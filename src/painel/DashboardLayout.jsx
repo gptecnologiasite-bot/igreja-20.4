@@ -57,18 +57,18 @@ const DashboardLayout = ({ children }) => {
   const navItems = [
     { icon: LayoutDashboard, label: 'Visão Geral', path: '/painel' },
     { icon: FileText, label: 'Gerenciar Páginas', path: '/painel/paginas' },
-    { icon: Home, label: 'Gerenciar Home', path: '/painel/home' },
+    { icon: Home, label: 'Gerenciar Home', path: '/' },
     { icon: Layout, label: 'Gerenciar Rodapé', path: '/painel/footer' },
     
-    { icon: Users, label: 'Min. Kids', path: '/painel/kids' },
-    { icon: Music, label: 'Min. Louvor', path: '/painel/louvor' },
-    { icon: Zap, label: 'Min. Jovens', path: '/painel/jovens' },
-    { icon: Heart, label: 'Min. Mulheres', path: '/painel/mulheres' },
-    { icon: HomeIcon, label: 'Min. Lares', path: '/painel/lares' },
-    { icon: Mountain, label: 'Retiros', path: '/painel/retiro' },
-    { icon: Heart, label: 'Ação Social', path: '/painel/social' },
-    { icon: Monitor, label: 'Mídia', path: '/painel/midia' },
-    { icon: FileText, label: 'Revista', path: '/painel/revista' },
+    { icon: Users, label: 'Min. Kids', path: '/kids' },
+    { icon: Music, label: 'Min. Louvor', path: '/louvor' },
+    { icon: Zap, label: 'Min. Jovens', path: '/jovens' },
+    { icon: Heart, label: 'Min. Mulheres', path: '/mulheres' },
+    { icon: HomeIcon, label: 'Min. Lares', path: '/lares' },
+    { icon: Mountain, label: 'Retiros', path: '/retiro' },
+    { icon: Heart, label: 'Ação Social', path: '/social' },
+    { icon: Monitor, label: 'Mídia', path: '/midia' },
+    { icon: FileText, label: 'Revista', path: '/revista' },
 
     { icon: Settings, label: 'Configurações', path: '/painel/configuracoes' },
   ];
