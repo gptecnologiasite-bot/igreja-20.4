@@ -8,8 +8,3 @@ createRoot(document.getElementById('root')).render(
     <App />
   </StrictMode>,
 )
-
-Array.from(document.querySelectorAll('link[rel*="icon"]')).forEach(l => {
-  l.href = '/admac.png?v=2'
-  if (!l.type) l.type = 'image/png'
-})
