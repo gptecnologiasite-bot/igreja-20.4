@@ -136,7 +136,16 @@ const Header = ({ theme, toggleTheme }) => {
             <a href="#"><Facebook size={18} /></a>
             <a href="#"><Phone size={18} /></a>
             <a href="#"><Music size={18} /></a>
-            <Link to="/login" title="Área Administrativa"><Lock size={18} /></Link>
+            {(() => {
+              const isAuth = localStorage.getItem('isAuthenticated') === 'true';
+              const adminPath = isAuth ? '/painel' : '/login';
+              const adminTitle = isAuth ? 'Abrir Painel' : 'Área Administrativa';
+              return (
+                <Link to={adminPath} title={adminTitle} aria-label={adminTitle}>
+                  <Lock size={18} />
+                </Link>
+              );
+            })()}
           </div>
           <button className="theme-toggle" onClick={toggleTheme} aria-label="Toggle theme">
             {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
