@@ -164,7 +164,7 @@ const Login = () => {
            zIndex: -1
         }}></div>
         
-        {process.env.NODE_ENV !== 'test' && (
+        {import.meta.env.MODE !== 'test' && (
           <iframe
             width="100%"
             height="100%"
