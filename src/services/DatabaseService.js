@@ -29,18 +29,30 @@ const DatabaseService = {
   fetchItem: async (key, defaultValue) => {
     let v;
     try {
-      const { data, error } = await supabase
-        .from('app_content')
-        .select('*')
-        .eq('key', key)
-        .maybeSingle();
-      if (!error && data) v = data.value;
+      // Tenta Supabase primeiro se houver conexão
+      if (navigator.onLine) {
+        const { data, error } = await supabase
+          .from('app_content')
+          .select('*')
+          .eq('key', key)
+          .maybeSingle();
+        if (!error && data) v = data.value;
+      }
     } catch (e) { void e; }
+    
     if (v !== undefined) return v;
+    
     try {
       const raw = localStorage.getItem(key);
       if (raw) return JSON.parse(raw);
     } catch (e) { void e; }
+    
+    // Garante que o valor default seja retornado se nada mais funcionar
+    // e salva no localStorage para próxima vez
+    try {
+        localStorage.setItem(key, JSON.stringify(defaultValue));
+    } catch (e) { void e; }
+
     return defaultValue;
   },
 

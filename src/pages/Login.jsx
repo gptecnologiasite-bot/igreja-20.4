@@ -157,14 +157,25 @@ const Login = () => {
         </div>
       </div>
       <div className="login-video-section">
-        <iframe
-          width="100%"
-          height="100%"
-          src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1&mute=1&loop=1&playlist=dQw4w9WgXcQ&controls=0&showinfo=0&modestbranding=1"
-          title="ADMAC Background Video"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowFullScreen
-        ></iframe>
+        {/* Placeholder para testes ou erro de carregamento */}
+        <div className="video-fallback" style={{
+           position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
+           background: 'linear-gradient(45deg, #1a1a1a, #2a2a2a)',
+           zIndex: -1
+        }}></div>
+        
+        {process.env.NODE_ENV !== 'test' && (
+          <iframe
+            width="100%"
+            height="100%"
+            src="https://www.youtube.com/embed/dQw4w9WgXcQ?autoplay=1&mute=1&loop=1&playlist=dQw4w9WgXcQ&controls=0&showinfo=0&modestbranding=1"
+            title="ADMAC Background Video"
+            allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+            allowFullScreen
+            style={{ opacity: 0.6 }}
+            onError={(e) => e.target.style.display = 'none'}
+          ></iframe>
+        )}
         <div className="video-overlay"></div>
       </div>
     </div>
