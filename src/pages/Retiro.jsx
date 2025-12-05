@@ -1,4 +1,4 @@
-import { Mountain, Calendar, MapPin, Users, Camera, Send, Heart, Clock, Tent, Coffee, Book, Music } from 'lucide-react';
+import { Mountain, Calendar, MapPin, Users, Camera, Send, Heart, Clock, Tent, Book, Music } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import '../css/Retiro.css';
 import DatabaseService from '../services/DatabaseService';
@@ -11,13 +11,34 @@ const Retiro = () => {
     retreat: ''
   });
 
-  const [data, setData] = useState(DatabaseService.getMinistryDefault('retiro'));
+  const [data, setData] = useState(() => ({
+    ...DatabaseService.getMinistryDefault('retiro'),
+    schedule: [],
+    team: [],
+    gallery: []
+  }));
 
   useEffect(() => {
-    DatabaseService.getMinistry('retiro').then(setData);
+    DatabaseService.getMinistry('retiro').then((d) => {
+      setData({
+        hero: d.hero || { title: 'Retiros Espirituais', subtitle: '', verse: '' },
+        mission: d.mission || { title: 'Por Que Participar?', text: '' },
+        schedule: Array.isArray(d.schedule) ? d.schedule : [],
+        team: Array.isArray(d.team) ? d.team : [],
+        gallery: Array.isArray(d.gallery) ? d.gallery : []
+      });
+    });
 
     const handleStorageChange = () => {
-      DatabaseService.getMinistry('retiro').then(setData);
+      DatabaseService.getMinistry('retiro').then((d) => {
+        setData({
+          hero: d.hero || { title: 'Retiros Espirituais', subtitle: '', verse: '' },
+          mission: d.mission || { title: 'Por Que Participar?', text: '' },
+          schedule: Array.isArray(d.schedule) ? d.schedule : [],
+          team: Array.isArray(d.team) ? d.team : [],
+          gallery: Array.isArray(d.gallery) ? d.gallery : []
+        });
+      });
     };
     window.addEventListener('storage', handleStorageChange);
     return () => window.removeEventListener('storage', handleStorageChange);
@@ -36,19 +57,21 @@ const Retiro = () => {
         <div className="hero-overlay"></div>
         <div className="hero-content">
           <Mountain size={80} className="hero-icon" />
-          <h1>{data.hero.title}</h1>
-          <p className="hero-subtitle">{data.hero.subtitle}</p>
-          <div className="hero-verse">
-            <p>{data.hero.verse}</p>
-          </div>
+          <h1>{data.hero?.title || 'Retiros Espirituais'}</h1>
+          <p className="hero-subtitle">{data.hero?.subtitle || ''}</p>
+          {data.hero?.verse && (
+            <div className="hero-verse">
+              <p>{data.hero.verse}</p>
+            </div>
+          )}
         </div>
       </div>
 
       {/* Mission Section */}
       <section className="mission-section">
         <div className="container">
-          <h2>{data.mission.title}</h2>
-          <p className="mission-text">{data.mission.text}</p>
+          <h2>{data.mission?.title || 'Por Que Participar?'}</h2>
+          <p className="mission-text">{data.mission?.text || ''}</p>
           <div className="benefits-grid">
             <div className="benefit-card">
               <Tent size={40} />
@@ -84,36 +107,47 @@ const Retiro = () => {
           <p className="section-subtitle">Escolha o retiro ideal para você</p>
           
           <div className="retreats-grid">
-            {data.schedule.map((retreat, index) => {
-              // Default icon logic
-              const IconComponent = retreat.title.includes('Jovens') ? Music :
-                                    retreat.title.includes('Casais') ? Heart :
-                                    retreat.title.includes('Obreiros') ? Book : Mountain;
-              return (
-                <div key={index} className="retreat-card">
-                  <div className="retreat-icon">
-                    <IconComponent size={32} />
-                  </div>
-                  <h3>{retreat.title}</h3>
-                  <p className="retreat-description">{retreat.description}</p>
-                  
-                  <div className="retreat-details">
-                    <div className="detail-item">
-                      <Calendar size={16} />
-                      <span>{retreat.date}</span>
+            {data.schedule && data.schedule.length > 0 ? (
+              data.schedule.map((retreat, index) => {
+                const retreatTitle = retreat.title || retreat.activity || 'Retiro';
+                // Default icon logic
+                const IconComponent = retreatTitle.includes('Jovens') ? Music :
+                                      retreatTitle.includes('Casais') ? Heart :
+                                      retreatTitle.includes('Obreiros') ? Book : Mountain;
+                return (
+                  <div key={index} className="retreat-card">
+                    <div className="retreat-icon">
+                      <IconComponent size={32} />
                     </div>
-                    <div className="detail-item">
-                      <MapPin size={16} />
-                      <span>{retreat.location}</span>
+                    <h3>{retreatTitle}</h3>
+                    <p className="retreat-description">{retreat.description || ''}</p>
+                    
+                    <div className="retreat-details">
+                      {(retreat.date || retreat.day) && (
+                        <div className="detail-item">
+                          <Calendar size={16} />
+                          <span>{retreat.date || retreat.day}</span>
+                        </div>
+                      )}
+                      {retreat.location && (
+                        <div className="detail-item">
+                          <MapPin size={16} />
+                          <span>{retreat.location}</span>
+                        </div>
+                      )}
                     </div>
+                    
+                    <button className="register-btn">
+                      <Send size={16} /> Inscrever-se
+                    </button>
                   </div>
-                  
-                  <button className="register-btn">
-                    <Send size={16} /> Inscrever-se
-                  </button>
-                </div>
-              );
-            })}
+                );
+              })
+            ) : (
+              <p style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '2rem', color: 'rgba(255, 255, 255, 0.7)' }}>
+                Nenhum retiro programado no momento. Em breve teremos novidades!
+              </p>
+            )}
           </div>
         </div>
       </section>
@@ -125,13 +159,19 @@ const Retiro = () => {
           <p className="section-subtitle">Coordenadores dedicados a servir</p>
           
           <div className="team-grid">
-            {data.team.map((member, index) => (
-              <div key={index} className="team-card">
-                <img src={member.photo} alt={member.name} className="team-photo" />
-                <h3>{member.name}</h3>
-                <p>{member.role}</p>
-              </div>
-            ))}
+            {data.team && data.team.length > 0 ? (
+              data.team.map((member, index) => (
+                <div key={index} className="team-card">
+                  <img src={member.photo || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(member.name || 'Membro')} alt={member.name || 'Membro'} className="team-photo" />
+                  <h3>{member.name || 'Membro'}</h3>
+                  <p>{member.role || ''}</p>
+                </div>
+              ))
+            ) : (
+              <p style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '2rem', color: 'rgba(255, 255, 255, 0.7)' }}>
+                Informações da equipe em breve.
+              </p>
+            )}
           </div>
         </div>
       </section>
@@ -146,14 +186,20 @@ const Retiro = () => {
           <p className="section-subtitle">Momentos especiais dos nossos retiros</p>
           
           <div className="gallery-grid">
-            {data.gallery.map((photo, index) => (
-              <div key={index} className="gallery-item">
-                <img src={photo.url} alt={photo.caption} />
-                <div className="gallery-overlay">
-                  <span>{photo.caption}</span>
+            {data.gallery && data.gallery.length > 0 ? (
+              data.gallery.map((photo, index) => (
+                <div key={index} className="gallery-item">
+                  <img src={photo.url} alt={photo.caption || 'Foto do retiro'} />
+                  <div className="gallery-overlay">
+                    <span>{photo.caption || 'Momentos especiais'}</span>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))
+            ) : (
+              <p style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '2rem', color: 'rgba(255, 255, 255, 0.7)' }}>
+                Galeria de fotos em breve.
+              </p>
+            )}
           </div>
         </div>
       </section>
@@ -216,9 +262,16 @@ const Retiro = () => {
                   required
                 >
                   <option value="">Selecione um retiro</option>
-                  {data.schedule.map((item, index) => (
-                    <option key={index} value={item.title}>{item.title}</option>
-                  ))}
+                  {data.schedule && data.schedule.length > 0 ? (
+                    data.schedule.map((item, index) => {
+                      const retreatName = item.title || item.activity || `Retiro ${index + 1}`;
+                      return (
+                        <option key={index} value={retreatName}>{retreatName}</option>
+                      );
+                    })
+                  ) : (
+                    <option value="geral">Retiro Geral</option>
+                  )}
                 </select>
               </div>
 

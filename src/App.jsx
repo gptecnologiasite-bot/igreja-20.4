@@ -2,7 +2,6 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
-import ProtectedRoute from "./components/ProtectedRoute";
 import Home from "./pages/Home";
 import Revista from "./pages/RevistaAdmac";
 import Ministry from "./pages/Ministry";
@@ -17,11 +16,11 @@ import Mulheres from "./pages/Mulheres";
 import Homens from "./pages/Homens";
 import Retiro from "./pages/Retiro";
 import Midia from "./pages/midia";
+import Missoes from "./pages/missoes";
 import Login from "./pages/Login";
-import Painel from "./painel";
-import DynamicPage from "./pages/DynamicPage";
+import PainelApp from "./painel/PainelApp";
+
 import "./css/App.css";
-import DatabaseService from "./services/DatabaseService";
 
 function App() {
   const [theme, setTheme] = React.useState("dark");
@@ -34,29 +33,7 @@ function App() {
     document.documentElement.setAttribute("data-theme", theme);
   }, [theme]);
 
-  const [pages, setPages] = React.useState([]);
-  const [dynamicPages, setDynamicPages] = React.useState([]);
 
-  React.useEffect(() => {
-    const loadPages = () => {
-      DatabaseService.getPages().then((ps) => {
-        setPages(ps || []);
-        const dynamicOnline = (ps || [])
-          .filter((p) => p.type === "dynamic" && p.status === "online");
-        setDynamicPages(dynamicOnline);
-      });
-    };
-    loadPages();
-    const handleStorage = () => loadPages();
-    window.addEventListener("storage", handleStorage);
-    return () => window.removeEventListener("storage", handleStorage);
-  }, []);
-
-  const isOnline = (id) => {
-    const p = pages.find((x) => x.id === id);
-    if (!p) return true;
-    return p.status === "online";
-  };
 
   return (
     <Router>
@@ -65,28 +42,14 @@ function App() {
         <main>
           <Routes>
             <Route path="/" element={<Home />} />
-            <Route path="/revista" element={isOnline('revista') ? <Revista /> : <Home />} />
+            <Route path="/revista" element={<Revista />} />
             <Route path="/login" element={<Login />} />
-            <Route path="/painel/*" element={
-              <ProtectedRoute>
-                <Painel />
-              </ProtectedRoute>
-            } />
 
-            {/* Dynamic Routes from CMS */}
-            {dynamicPages.map((page) => (
-              <Route
-                key={page.id}
-                path={page.path}
-                element={<DynamicPage page={page} />}
-              />
-            ))}
+            <Route path="/mulheres" element={<Mulheres />} />
 
-            <Route path="/mulheres" element={isOnline('mulheres') ? <Mulheres /> : <Home />} />
+            <Route path="/homens" element={<Homens />} />
 
-            <Route path="/homens" element={isOnline('homens') ? <Homens /> : <Home />} />
-
-            <Route path="/jovens" element={isOnline('jovens') ? <Jovens /> : <Home />} />
+            <Route path="/jovens" element={<Jovens />} />
 
             <Route
               path="/intercessao"
@@ -100,21 +63,38 @@ function App() {
               }
             />
 
-            <Route path="/kids" element={isOnline('kids') ? <Kids /> : <Home />} />
+            <Route path="/kids" element={<Kids />} />
 
-            <Route path="/lares" element={isOnline('lares') ? <Lares /> : <Home />} />
+            <Route path="/lares" element={<Lares />} />
 
-            <Route path="/louvor" element={isOnline('louvor') ? <Louvor /> : <Home />} />
+            <Route path="/louvor" element={<Louvor />} />
 
-            <Route path="/retiro" element={isOnline('retiro') ? <Retiro /> : <Home />} />
+            <Route path="/retiro" element={<Retiro />} />
+            <Route path="/retiros" element={<Retiro />} />
 
-            <Route path="/midia" element={isOnline('midia') ? <Midia /> : <Home />} />
+            <Route path="/midia" element={<Midia />} />
+            <Route path="/midia/live" element={<Midia />} />
+            <Route path="/midia/videos" element={<Midia />} />
 
-            <Route path="/edb" element={isOnline('ebd') ? <EDB /> : <Home />} />
+            <Route path="/edb" element={<EDB />} />
 
-            <Route path="/social" element={isOnline('social') ? <Social /> : <Home />} />
+            <Route path="/social" element={<Social />} />
+            <Route path="/missoes" element={<Missoes />} />
 
             <Route path="/contato" element={<Contact />} />
+            <Route
+              path="/ministerios"
+              element={
+                <Ministry
+                  title="Ministérios"
+                  subtitle="Conheça os ministérios da ADMAC"
+                  description="Explore os principais ministérios e encontre onde se envolver."
+                  schedule={["Domingo: 9h EBD", "Domingo: 18h Culto"]}
+                />
+              }
+            />
+            {/* Admin Panel Routes */}
+            <Route path="/painel/*" element={<PainelApp />} />
             {/* Fallback for other routes */}
             <Route path="*" element={<Home />} />
           </Routes>

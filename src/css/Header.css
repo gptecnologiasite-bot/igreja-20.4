@@ -91,6 +91,7 @@
   border: 1px solid rgba(212, 175, 55, 0.3);
   margin-top: 0.5rem;
   animation: fadeIn 0.2s ease-in-out;
+  pointer-events: auto;
 }
 
 @keyframes fadeIn {
@@ -106,6 +107,16 @@
   font-size: 0.9rem;
   transition: all 0.2s;
   border-left: 3px solid transparent;
+  cursor: pointer;
+  pointer-events: auto;
+  position: relative;
+  z-index: 1002;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.dropdown-item:active {
+  background-color: rgba(212, 175, 55, 0.2);
 }
 
 .dropdown-item:hover {

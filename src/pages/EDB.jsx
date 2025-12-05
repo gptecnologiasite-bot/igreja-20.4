@@ -4,13 +4,37 @@ import '../css/EDB.css';
 import DatabaseService from '../services/DatabaseService';
 
 const EDB = () => {
-  const [data, setData] = useState(DatabaseService.getMinistryDefault('ebd'));
+  const [data, setData] = useState(() => ({
+    ...DatabaseService.getMinistryDefault('ebd'),
+    schedule: [],
+    team: [],
+    gallery: [],
+    info: { time: 'Domingos, 9h', location: 'ADMAC', audience: 'Todas as idades' }
+  }));
 
   useEffect(() => {
-    DatabaseService.getMinistry('ebd').then(setData);
+    DatabaseService.getMinistry('ebd').then((d) => {
+      setData({
+        hero: d.hero || { title: 'Escola Bíblica Dominical', subtitle: 'Crescendo no conhecimento' },
+        mission: d.mission || { title: 'Nossa Missão', text: '' },
+        info: d.info || { time: 'Domingos, 9h', location: 'ADMAC', audience: 'Todas as idades' },
+        schedule: Array.isArray(d.schedule) ? d.schedule : [],
+        team: Array.isArray(d.team) ? d.team : [],
+        gallery: Array.isArray(d.gallery) ? d.gallery : []
+      });
+    });
 
     const handleStorageChange = () => {
-      DatabaseService.getMinistry('ebd').then(setData);
+      DatabaseService.getMinistry('ebd').then((d) => {
+        setData({
+          hero: d.hero || { title: 'Escola Bíblica Dominical', subtitle: 'Crescendo no conhecimento' },
+          mission: d.mission || { title: 'Nossa Missão', text: '' },
+          info: d.info || { time: 'Domingos, 9h', location: 'ADMAC', audience: 'Todas as idades' },
+          schedule: Array.isArray(d.schedule) ? d.schedule : [],
+          team: Array.isArray(d.team) ? d.team : [],
+          gallery: Array.isArray(d.gallery) ? d.gallery : []
+        });
+      });
     };
     window.addEventListener('storage', handleStorageChange);
     return () => window.removeEventListener('storage', handleStorageChange);
@@ -21,8 +45,8 @@ const EDB = () => {
       {/* Hero Section */}
       <div className="edb-hero">
         <GraduationCap size={64} className="hero-icon" />
-        <h1>{data.hero.title}</h1>
-        <p className="hero-subtitle">{data.hero.subtitle}</p>
+        <h1>{data.hero?.title || 'Escola Bíblica Dominical'}</h1>
+        <p className="hero-subtitle">{data.hero?.subtitle || 'Crescendo no conhecimento'}</p>
       </div>
 
       {/* Info Section */}
@@ -32,21 +56,21 @@ const EDB = () => {
             <Clock className="icon" />
             <div>
               <strong>Horário</strong>
-              <p>{data.info.time}</p>
+              <p>{data.info?.time || 'Domingos, 9h'}</p>
             </div>
           </div>
           <div className="info-item">
             <MapPin className="icon" />
             <div>
               <strong>Local</strong>
-              <p>{data.info.location}</p>
+              <p>{data.info?.location || 'ADMAC'}</p>
             </div>
           </div>
           <div className="info-item">
             <Users className="icon" />
             <div>
               <strong>Para Todos</strong>
-              <p>{data.info.audience}</p>
+              <p>{data.info?.audience || 'Todas as idades'}</p>
             </div>
           </div>
         </div>
@@ -58,49 +82,64 @@ const EDB = () => {
         <p className="section-subtitle">Encontre a classe ideal para você ou sua família</p>
         
         <div className="classes-grid">
-          {data.schedule.map((classItem, index) => {
-            // Default icon logic
-            const IconComponent = classItem.title.includes('Juniores') ? Users :
-                                  classItem.title.includes('Adolescentes') ? UserCheck :
-                                  classItem.title.includes('Jovens') ? UserCheck : GraduationCap;
-            return (
-              <div key={index} className="class-card">
-                <div className="class-header">
-                  <IconComponent className="class-icon" size={32} />
-                  <div>
-                    <h3>{classItem.title}</h3>
-                    <span className="age-badge">{classItem.date}</span> {/* Age Range */}
+          {data.schedule && data.schedule.length > 0 ? (
+            data.schedule.map((classItem, index) => {
+              const className = classItem.title || classItem.class || `Classe ${index + 1}`;
+              // Default icon logic
+              const IconComponent = className.includes('Juniores') ? Users :
+                                    className.includes('Adolescentes') ? UserCheck :
+                                    className.includes('Jovens') ? UserCheck : GraduationCap;
+              return (
+                <div key={index} className="class-card">
+                  <div className="class-header">
+                    <IconComponent className="class-icon" size={32} />
+                    <div>
+                      <h3>{className}</h3>
+                      {(classItem.date || classItem.age) && (
+                        <span className="age-badge">{classItem.date || classItem.age}</span>
+                      )}
+                    </div>
                   </div>
-                </div>
-                <p className="class-description">{classItem.description}</p>
-                
-                {/* Teacher Section */}
-                <div className="teacher-section">
-                  <img 
-                    src={classItem.image} 
-                    alt={classItem.time}
-                    className="teacher-photo"
-                  />
-                  <div className="teacher-info">
-                    <strong>Professor(a)</strong>
-                    <p>{classItem.time}</p> {/* Teacher Name */}
-                  </div>
-                </div>
+                  {classItem.description && (
+                    <p className="class-description">{classItem.description}</p>
+                  )}
+                  
+                  {/* Teacher Section */}
+                  {(classItem.image || classItem.teacher || classItem.time) && (
+                    <div className="teacher-section">
+                      <img 
+                        src={classItem.image || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(classItem.teacher || classItem.time || 'Professor')} 
+                        alt={classItem.teacher || classItem.time || 'Professor'}
+                        className="teacher-photo"
+                      />
+                      <div className="teacher-info">
+                        <strong>Professor(a)</strong>
+                        <p>{classItem.teacher || classItem.time || 'A definir'}</p>
+                      </div>
+                    </div>
+                  )}
 
-                <div className="class-details">
-                  <div className="detail-item">
-                    <strong>Sala:</strong> {classItem.location}
-                  </div>
-                </div>
+                  {(classItem.location || classItem.room) && (
+                    <div className="class-details">
+                      <div className="detail-item">
+                        <strong>Sala:</strong> {classItem.location || classItem.room}
+                      </div>
+                    </div>
+                  )}
 
-                {/* Download Button */}
-                <button className="download-btn">
-                  <Download size={18} />
-                  Baixar Material
-                </button>
-              </div>
-            );
-          })}
+                  {/* Download Button */}
+                  <button className="download-btn">
+                    <Download size={18} />
+                    Baixar Material
+                  </button>
+                </div>
+              );
+            })
+          ) : (
+            <p style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '2rem', color: 'rgba(255, 255, 255, 0.7)' }}>
+              Nenhuma classe cadastrada no momento. Em breve teremos novidades!
+            </p>
+          )}
         </div>
       </div>
 
@@ -111,13 +150,19 @@ const EDB = () => {
           <p className="section-subtitle">Líderes comprometidos com o ensino da Palavra</p>
           
           <div className="team-grid">
-            {data.team.map((member, index) => (
-              <div key={index} className="team-card">
-                <img src={member.photo} alt={member.name} className="team-photo" />
-                <h3>{member.name}</h3>
-                <p>{member.role}</p>
-              </div>
-            ))}
+            {data.team && data.team.length > 0 ? (
+              data.team.map((member, index) => (
+                <div key={index} className="team-card">
+                  <img src={member.photo || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(member.name || 'Membro')} alt={member.name || 'Membro'} className="team-photo" />
+                  <h3>{member.name || 'Membro'}</h3>
+                  <p>{member.role || ''}</p>
+                </div>
+              ))
+            ) : (
+              <p style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '2rem', color: 'rgba(255, 255, 255, 0.7)' }}>
+                Informações da equipe em breve.
+              </p>
+            )}
           </div>
         </div>
       </div>
@@ -132,14 +177,20 @@ const EDB = () => {
           <p className="section-subtitle">Momentos especiais da nossa EBD</p>
           
           <div className="gallery-grid">
-            {data.gallery.map((photo, index) => (
-              <div key={index} className="gallery-item">
-                <img src={photo.url} alt={photo.caption} />
-                <div className="gallery-overlay">
-                  <span>{photo.caption}</span>
+            {data.gallery && data.gallery.length > 0 ? (
+              data.gallery.map((photo, index) => (
+                <div key={index} className="gallery-item">
+                  <img src={photo.url} alt={photo.caption || 'Foto da EBD'} />
+                  <div className="gallery-overlay">
+                    <span>{photo.caption || 'Momentos especiais'}</span>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))
+            ) : (
+              <p style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '2rem', color: 'rgba(255, 255, 255, 0.7)' }}>
+                Galeria de fotos em breve.
+              </p>
+            )}
           </div>
         </div>
       </div>

@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { AnimatePresence } from "framer-motion";
+import { AnimatePresence, motion } from "framer-motion";
 import { ArrowLeft, ArrowRight, BookOpen, Calendar, Heart, Users, Star, PenTool, Sun, Quote } from "lucide-react";
 import "../css/Revista.css";
 
@@ -264,6 +264,8 @@ const PageFeature = ({ page }) => (
   </div>
 );
 
+const MotionDiv = motion.div;
+
 export default function RevistaAdmac() {
   const [currentPage, setCurrentPage] = useState(0);
   const totalPages = magazineData.length;
@@ -301,7 +303,7 @@ export default function RevistaAdmac() {
         {/* Conteúdo da Página com Animação */}
         <div className="revista-content">
           <AnimatePresence mode="wait">
-            <motion.div
+            <MotionDiv
               key={currentPage}
               initial={{ opacity: 0, x: 20 }}
               animate={{ opacity: 1, x: 0 }}
@@ -315,7 +317,7 @@ export default function RevistaAdmac() {
               {magazineData[currentPage].type === "columnist" && <PageColumnist page={magazineData[currentPage]} />}
               {magazineData[currentPage].type === "devotional" && <PageDevotional page={magazineData[currentPage]} />}
               {magazineData[currentPage].type === "feature" && <PageFeature page={magazineData[currentPage]} />}
-            </motion.div>
+            </MotionDiv>
           </AnimatePresence>
         </div>
 

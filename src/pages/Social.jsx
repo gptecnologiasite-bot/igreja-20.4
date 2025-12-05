@@ -10,13 +10,31 @@ const Social = () => {
     message: ''
   });
 
-  const [data, setData] = useState(DatabaseService.getMinistryDefault('social'));
+  const [data, setData] = useState(() => ({
+    ...DatabaseService.getMinistryDefault('social'),
+    schedule: [],
+    gallery: []
+  }));
 
   useEffect(() => {
-    DatabaseService.getMinistry('social').then(setData);
+    DatabaseService.getMinistry('social').then((d) => {
+      setData({
+        hero: d.hero || { title: 'Ação Social', subtitle: 'Servindo com amor' },
+        mission: d.mission || { title: 'Nossa Missão', text: '' },
+        schedule: Array.isArray(d.schedule) ? d.schedule : [],
+        gallery: Array.isArray(d.gallery) ? d.gallery : []
+      });
+    });
 
     const handleStorageChange = () => {
-      DatabaseService.getMinistry('social').then(setData);
+      DatabaseService.getMinistry('social').then((d) => {
+        setData({
+          hero: d.hero || { title: 'Ação Social', subtitle: 'Servindo com amor' },
+          mission: d.mission || { title: 'Nossa Missão', text: '' },
+          schedule: Array.isArray(d.schedule) ? d.schedule : [],
+          gallery: Array.isArray(d.gallery) ? d.gallery : []
+        });
+      });
     };
     window.addEventListener('storage', handleStorageChange);
     return () => window.removeEventListener('storage', handleStorageChange);
@@ -35,8 +53,8 @@ const Social = () => {
         <div className="hero-overlay"></div>
         <div className="hero-content">
           <Heart size={64} className="hero-icon" />
-          <h1>{data.hero.title}</h1>
-          <p className="hero-subtitle">{data.hero.subtitle}</p>
+          <h1>{data.hero?.title || 'Ação Social'}</h1>
+          <p className="hero-subtitle">{data.hero?.subtitle || 'Servindo com amor'}</p>
           <div className="hero-stats">
             <div className="stat-card">
               <Users size={32} />
@@ -60,9 +78,9 @@ const Social = () => {
       {/* Mission Section */}
       <section className="mission-section">
         <div className="container">
-          <h2>{data.mission.title}</h2>
+          <h2>{data.mission?.title || 'Nossa Missão'}</h2>
           <p className="mission-text">
-            {data.mission.text}
+            {data.mission?.text || ''}
           </p>
         </div>
       </section>
@@ -77,42 +95,55 @@ const Social = () => {
           <p className="section-subtitle">Conheça as ações que realizamos regularmente</p>
           
           <div className="events-grid">
-            {data.schedule.map((event, index) => {
-              // Default icon logic
-              const IconComponent = event.title.includes('Cestas') ? Package :
-                                    event.title.includes('Sopa') ? Utensils :
-                                    event.title.includes('Bazar') ? Shirt : Heart;
-              return (
-                <div key={index} className="event-card">
-                  <div className="event-image" style={{ backgroundImage: `url(${event.image})` }}>
-                    <div className="event-icon-badge">
-                      <IconComponent size={32} />
-                    </div>
-                  </div>
-                  <div className="event-content">
-                    <h3>{event.title}</h3>
-                    <p className="event-description">{event.description}</p>
-                    <div className="event-details">
-                      <div className="event-detail">
-                        <Calendar size={16} />
-                        <span>{event.date}</span>
-                      </div>
-                      <div className="event-detail">
-                        <Clock size={16} />
-                        <span>{event.time}</span>
-                      </div>
-                      <div className="event-detail">
-                        <MapPin size={16} />
-                        <span>{event.location}</span>
+            {data.schedule && data.schedule.length > 0 ? (
+              data.schedule.map((event, index) => {
+                const eventTitle = event.title || event.activity || 'Projeto';
+                // Default icon logic
+                const IconComponent = eventTitle.includes('Cestas') ? Package :
+                                      eventTitle.includes('Sopa') ? Utensils :
+                                      eventTitle.includes('Bazar') ? Shirt : Heart;
+                return (
+                  <div key={index} className="event-card">
+                    <div className="event-image" style={{ backgroundImage: `url(${event.image || 'https://images.unsplash.com/photo-1593113598332-cd288d649433?w=400&h=300&fit=crop'})` }}>
+                      <div className="event-icon-badge">
+                        <IconComponent size={32} />
                       </div>
                     </div>
-                    <button className="volunteer-btn">
-                      <Heart size={18} /> Quero Ser Voluntário
-                    </button>
+                    <div className="event-content">
+                      <h3>{eventTitle}</h3>
+                      <p className="event-description">{event.description || ''}</p>
+                      <div className="event-details">
+                        {(event.date || event.day) && (
+                          <div className="event-detail">
+                            <Calendar size={16} />
+                            <span>{event.date || event.day}</span>
+                          </div>
+                        )}
+                        {event.time && (
+                          <div className="event-detail">
+                            <Clock size={16} />
+                            <span>{event.time}</span>
+                          </div>
+                        )}
+                        {event.location && (
+                          <div className="event-detail">
+                            <MapPin size={16} />
+                            <span>{event.location}</span>
+                          </div>
+                        )}
+                      </div>
+                      <button className="volunteer-btn">
+                        <Heart size={18} /> Quero Ser Voluntário
+                      </button>
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })
+            ) : (
+              <p style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '2rem', color: 'rgba(255, 255, 255, 0.7)' }}>
+                Nenhum projeto cadastrado no momento. Em breve teremos novidades!
+              </p>
+            )}
           </div>
         </div>
       </section>
@@ -127,14 +158,20 @@ const Social = () => {
           <p className="section-subtitle">Momentos especiais das nossas ações</p>
           
           <div className="gallery-grid">
-            {data.gallery.map((photo, index) => (
-              <div key={index} className="gallery-item">
-                <img src={photo.url} alt={photo.caption} />
-                <div className="gallery-overlay">
-                  <span>{photo.caption}</span>
+            {data.gallery && data.gallery.length > 0 ? (
+              data.gallery.map((photo, index) => (
+                <div key={index} className="gallery-item">
+                  <img src={photo.url} alt={photo.caption || 'Foto da ação social'} />
+                  <div className="gallery-overlay">
+                    <span>{photo.caption || 'Momentos especiais'}</span>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))
+            ) : (
+              <p style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '2rem', color: 'rgba(255, 255, 255, 0.7)' }}>
+                Galeria de fotos em breve.
+              </p>
+            )}
           </div>
         </div>
       </section>

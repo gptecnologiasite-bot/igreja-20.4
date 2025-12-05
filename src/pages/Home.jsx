@@ -18,62 +18,18 @@ import DatabaseService from "../services/DatabaseService";
 
 const Home = () => {
   const [data, setData] = useState(DatabaseService.getHomeDataDefault());
+  const [ministries, setMinistries] = useState(DatabaseService.getMinistriesListDefault());
 
   useEffect(() => {
-    DatabaseService.getHomeData().then(setData);
-
-    const handleStorageChange = () => {
-      DatabaseService.getHomeData().then(setData);
+    // Load data from DatabaseService
+    const loadData = async () => {
+      const homeData = await DatabaseService.getHomeData();
+      const ministriesList = await DatabaseService.getMinistriesList();
+      setData(homeData);
+      setMinistries(ministriesList);
     };
-
-    window.addEventListener("storage", handleStorageChange);
-    return () => window.removeEventListener("storage", handleStorageChange);
+    loadData();
   }, []);
-
-  const ministries = [
-    {
-      title: "Kids",
-      description: "Ensinando a criança no caminho em que deve andar",
-      link: "/kids",
-      icon: "👶",
-      color: "#ff6b9d",
-    },
-    {
-      title: "Louvor",
-      description: "Adorando a Deus em espírito e em verdade",
-      link: "/louvor",
-      icon: "🎵",
-      color: "#9b59b6",
-    },
-    {
-      title: "EBD",
-      description: "Crescendo no conhecimento da Palavra",
-      link: "/edb",
-      icon: "📚",
-      color: "#d4af37",
-    },
-    {
-      title: "Ação Social",
-      description: "Servindo ao próximo com amor",
-      link: "/social",
-      icon: "❤️",
-      color: "#e74c3c",
-    },
-    {
-      title: "Lares",
-      description: "Comunhão e crescimento nos lares",
-      link: "/lares",
-      icon: "🏠",
-      color: "#3498db",
-    },
-    {
-      title: "Retiro",
-      description: "Momentos de renovação espiritual",
-      link: "/retiro",
-      icon: "⛰️",
-      color: "#27ae60",
-    },
-  ];
 
   return (
     <div className="home">

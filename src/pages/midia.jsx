@@ -11,13 +11,35 @@ const Midia = () => {
     message: ''
   });
 
-  const [data, setData] = useState(DatabaseService.getMinistryDefault('midia'));
+  const [data, setData] = useState(() => ({
+    ...DatabaseService.getMinistryDefault('midia'),
+    live: { title: '', time: '', videoUrl: '', youtubeChannel: '' },
+    videos: [],
+    team: [],
+    gallery: []
+  }));
 
   useEffect(() => {
-    DatabaseService.getMinistry('midia').then(setData);
+    DatabaseService.getMinistry('midia').then((d) => {
+      setData({
+        hero: d.hero || { title: 'Ministério de Mídia', subtitle: '', verse: '' },
+        live: d.live || { title: 'Culto da Família', time: 'Domingos 18h', videoUrl: '', youtubeChannel: '' },
+        videos: Array.isArray(d.videos) ? d.videos : [],
+        team: Array.isArray(d.team) ? d.team : [],
+        gallery: Array.isArray(d.gallery) ? d.gallery : []
+      });
+    });
 
     const handleStorageChange = () => {
-      DatabaseService.getMinistry('midia').then(setData);
+      DatabaseService.getMinistry('midia').then((d) => {
+        setData({
+          hero: d.hero || { title: 'Ministério de Mídia', subtitle: '', verse: '' },
+          live: d.live || { title: 'Culto da Família', time: 'Domingos 18h', videoUrl: '', youtubeChannel: '' },
+          videos: Array.isArray(d.videos) ? d.videos : [],
+          team: Array.isArray(d.team) ? d.team : [],
+          gallery: Array.isArray(d.gallery) ? d.gallery : []
+        });
+      });
     };
     window.addEventListener('storage', handleStorageChange);
     return () => window.removeEventListener('storage', handleStorageChange);
@@ -36,11 +58,13 @@ const Midia = () => {
         <div className="hero-overlay"></div>
         <div className="hero-content">
           <Monitor size={80} className="hero-icon" />
-          <h1>{data.hero.title}</h1>
-          <p className="hero-subtitle">{data.hero.subtitle}</p>
-          <div className="hero-verse">
-            <p>{data.hero.verse}</p>
-          </div>
+          <h1>{data.hero?.title || 'Ministério de Mídia'}</h1>
+          <p className="hero-subtitle">{data.hero?.subtitle || ''}</p>
+          {data.hero?.verse && (
+            <div className="hero-verse">
+              <p>{data.hero.verse}</p>
+            </div>
+          )}
         </div>
       </div>
 
@@ -55,23 +79,63 @@ const Midia = () => {
           
           <div className="video-highlight">
             <div className="video-wrapper">
-              <iframe 
-                width="100%" 
-                height="500" 
-                src={data.live.videoUrl} 
-                title="Culto Ao Vivo" 
-                frameBorder="0" 
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
-                allowFullScreen
-              ></iframe>
+              {data.live?.videoUrl ? (
+                <iframe 
+                  width="100%" 
+                  height="500" 
+                  src={data.live.videoUrl} 
+                  title="Culto Ao Vivo" 
+                  frameBorder="0" 
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                  allowFullScreen
+                ></iframe>
+              ) : (
+                <div style={{ 
+                  width: '100%', 
+                  height: '500px', 
+                  background: 'rgba(0,0,0,0.5)', 
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  justifyContent: 'center',
+                  borderRadius: '8px',
+                  color: 'rgba(255,255,255,0.7)'
+                }}>
+                  <div style={{ textAlign: 'center' }}>
+                    <Youtube size={64} style={{ marginBottom: '1rem', opacity: 0.5 }} />
+                    <p>Transmissão ao vivo em breve</p>
+                    <a 
+                      href={data.live?.youtubeChannel || 'https://www.youtube.com/@ADMAC'} 
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      style={{ 
+                        display: 'inline-block', 
+                        marginTop: '1rem', 
+                        padding: '0.75rem 1.5rem', 
+                        background: 'var(--primary-color)', 
+                        color: '#000', 
+                        borderRadius: '8px',
+                        textDecoration: 'none',
+                        fontWeight: 'bold'
+                      }}
+                    >
+                      Acessar Canal no YouTube
+                    </a>
+                  </div>
+                </div>
+              )}
             </div>
             <div className="live-info">
               <span className="live-badge">AO VIVO</span>
-              <h3>{data.live.title}</h3>
-              <p>{data.live.time}</p>
-              <button className="youtube-btn">
+              <h3>{data.live?.title || 'Culto da Família'}</h3>
+              <p>{data.live?.time || 'Domingos 18h'}</p>
+              <a 
+                href={data.live?.youtubeChannel || 'https://www.youtube.com/@ADMAC'} 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="youtube-btn"
+              >
                 <Youtube size={20} /> Inscreva-se no Canal
-              </button>
+              </a>
             </div>
           </div>
         </div>
@@ -82,23 +146,36 @@ const Midia = () => {
         <div className="container">
           <h2>Últimas Transmissões</h2>
           <div className="videos-grid">
-            {data.videos.map((video, index) => (
-              <div key={index} className="video-card">
-                <div className="video-thumbnail">
-                  <img src={video.thumbnail} alt={video.title} />
-                  <div className="play-overlay">
-                    <Play size={40} fill="white" />
+            {data.videos && data.videos.length > 0 ? (
+              data.videos.map((video, index) => (
+                <a
+                  key={index}
+                  href={video.url || video.videoUrl || '#'}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="video-card"
+                  style={{ textDecoration: 'none', color: 'inherit' }}
+                >
+                  <div className="video-thumbnail">
+                    <img src={video.thumbnail || 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=400&h=300&fit=crop'} alt={video.title || 'Vídeo'} />
+                    <div className="play-overlay">
+                      <Play size={40} fill="white" />
+                    </div>
                   </div>
-                </div>
-                <div className="video-info">
-                  <h3>{video.title}</h3>
-                  <div className="video-meta">
-                    <span>{video.date}</span>
-                    <span>{video.views} visualizações</span>
+                  <div className="video-info">
+                    <h3>{video.title || 'Vídeo'}</h3>
+                    <div className="video-meta">
+                      {video.date && <span>{video.date}</span>}
+                      {video.views && <span>{video.views} visualizações</span>}
+                    </div>
                   </div>
-                </div>
-              </div>
-            ))}
+                </a>
+              ))
+            ) : (
+              <p style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '2rem', color: 'rgba(255, 255, 255, 0.7)' }}>
+                Nenhum vídeo disponível no momento. Em breve teremos novidades!
+              </p>
+            )}
           </div>
         </div>
       </section>
@@ -138,13 +215,19 @@ const Midia = () => {
           <h2>Nossa Equipe</h2>
           <p className="section-subtitle">Voluntários dedicados à excelência</p>
           <div className="team-grid">
-            {data.team.map((member, index) => (
-              <div key={index} className="team-card">
-                <img src={member.photo} alt={member.name} className="team-photo" />
-                <h3>{member.name}</h3>
-                <p>{member.role}</p>
-              </div>
-            ))}
+            {data.team && data.team.length > 0 ? (
+              data.team.map((member, index) => (
+                <div key={index} className="team-card">
+                  <img src={member.photo || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(member.name || 'Membro')} alt={member.name || 'Membro'} className="team-photo" />
+                  <h3>{member.name || 'Membro'}</h3>
+                  <p>{member.role || ''}</p>
+                </div>
+              ))
+            ) : (
+              <p style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '2rem', color: 'rgba(255, 255, 255, 0.7)' }}>
+                Informações da equipe em breve.
+              </p>
+            )}
           </div>
         </div>
       </section>
@@ -154,14 +237,20 @@ const Midia = () => {
         <div className="container">
           <h2>Bastidores</h2>
           <div className="gallery-grid">
-            {data.gallery.map((photo, index) => (
-              <div key={index} className="gallery-item">
-                <img src={photo.url} alt={photo.caption} />
-                <div className="gallery-overlay">
-                  <span>{photo.caption}</span>
+            {data.gallery && data.gallery.length > 0 ? (
+              data.gallery.map((photo, index) => (
+                <div key={index} className="gallery-item">
+                  <img src={photo.url} alt={photo.caption || 'Foto'} />
+                  <div className="gallery-overlay">
+                    <span>{photo.caption || 'Bastidores'}</span>
+                  </div>
                 </div>
-              </div>
-            ))}
+              ))
+            ) : (
+              <p style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '2rem', color: 'rgba(255, 255, 255, 0.7)' }}>
+                Galeria de fotos em breve.
+              </p>
+            )}
           </div>
         </div>
       </section>

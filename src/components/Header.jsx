@@ -9,16 +9,29 @@ const Header = ({ theme, toggleTheme }) => {
   // Ministries dropdown state
   const [showMinistries, setShowMinistries] = useState(false);
   const [isMinistriesFixed, setIsMinistriesFixed] = useState(false);
-  // Media dropdown state
-  const [showMedia, setShowMedia] = useState(false);
-  const [isMediaFixed, setIsMediaFixed] = useState(false);
+  const [ministriesTimeout, setMinistriesTimeout] = useState(null);
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
   // Ministries handlers
-  const handleMinistriesMouseEnter = () => setShowMinistries(true);
-  const handleMinistriesMouseLeave = () => {
-    if (!isMinistriesFixed) setShowMinistries(false);
+  const handleMinistriesMouseEnter = () => {
+    if (ministriesTimeout) {
+      clearTimeout(ministriesTimeout);
+      setMinistriesTimeout(null);
+    }
+    setShowMinistries(true);
+  };
+  const handleMinistriesMouseLeave = (e) => {
+    // Don't close if moving to dropdown menu
+    if (e.relatedTarget && e.relatedTarget.closest('.dropdown-menu')) {
+      return;
+    }
+    if (!isMinistriesFixed) {
+      const timeout = setTimeout(() => {
+        setShowMinistries(false);
+      }, 300);
+      setMinistriesTimeout(timeout);
+    }
   };
   const toggleMinistries = (e) => {
     e.stopPropagation();
@@ -30,20 +43,13 @@ const Header = ({ theme, toggleTheme }) => {
       setShowMinistries(true);
     }
   };
-
-  // Media handlers
-  const handleMediaMouseEnter = () => setShowMedia(true);
-  const handleMediaMouseLeave = () => {
-    if (!isMediaFixed) setShowMedia(false);
-  };
-  const toggleMedia = (e) => {
+  const handleMinistryClick = (e) => {
     e.stopPropagation();
-    if (isMediaFixed) {
-      setIsMediaFixed(false);
-      setShowMedia(false);
-    } else {
-      setIsMediaFixed(true);
-      setShowMedia(true);
+    setIsMinistriesFixed(false);
+    setShowMinistries(false);
+    if (ministriesTimeout) {
+      clearTimeout(ministriesTimeout);
+      setMinistriesTimeout(null);
     }
   };
 
@@ -57,11 +63,6 @@ const Header = ({ theme, toggleTheme }) => {
     { name: 'Retiros', path: '/retiro' },
     { name: 'Ação Social', path: '/social' },
     { name: 'EBD', path: '/edb' },
-  ];
-
-  const mediaPages = [
-    { name: 'Live', path: '/midia/live' },
-    { name: 'Vídeos', path: '/midia/videos' },
   ];
 
   return (
@@ -90,9 +91,18 @@ const Header = ({ theme, toggleTheme }) => {
               Ministérios <ChevronDown size={16} />
             </button>
             {showMinistries && (
-              <div className="dropdown-menu">
+              <div
+                className="dropdown-menu"
+                onMouseEnter={handleMinistriesMouseEnter}
+                onMouseLeave={handleMinistriesMouseLeave}
+              >
                 {ministries.map((ministry, idx) => (
-                  <Link key={idx} to={ministry.path} className="dropdown-item">
+                  <Link
+                    key={idx}
+                    to={ministry.path}
+                    className="dropdown-item"
+                    onClick={handleMinistryClick}
+                  >
                     {ministry.name}
                   </Link>
                 ))}
@@ -100,33 +110,13 @@ const Header = ({ theme, toggleTheme }) => {
             )}
           </div>
 
-          {/* Media dropdown */}
-          <div
-            className="nav-dropdown"
-            onMouseEnter={handleMediaMouseEnter}
-            onMouseLeave={handleMediaMouseLeave}
-          >
-            <button
-              className={`dropdown-trigger ${isMediaFixed ? 'active' : ''}`}
-              onClick={toggleMedia}
-            >
-              Mídia <ChevronDown size={16} />
-            </button>
-            {showMedia && (
-              <div className="dropdown-menu">
-                {mediaPages.map((page, idx) => (
-                  <Link key={idx} to={page.path} className="dropdown-item">
-                    {page.name}
-                  </Link>
-                ))}
-              </div>
-            )}
-          </div>
+          {/* Mídia link */}
+          <Link to="/midia" className="nav-link">Mídia</Link>
 
           {/* Revista link */}
           <Link to="/revista" className="nav-link">Revista</Link>
 
-          <Link to="/contact" className="nav-link">Contato</Link>
+          <Link to="/contato" className="nav-link">Contato</Link>
         </nav>
 
         <div className="header-actions">
@@ -136,24 +126,17 @@ const Header = ({ theme, toggleTheme }) => {
             <a href="#"><Facebook size={18} /></a>
             <a href="#"><Phone size={18} /></a>
             <a href="#"><Music size={18} /></a>
-            {(() => {
-              const isAuth = localStorage.getItem('isAuthenticated') === 'true';
-              const adminPath = isAuth ? '/painel' : '/login';
-              const adminTitle = isAuth ? 'Abrir Painel' : 'Área Administrativa';
-              return (
-                <Link to={adminPath} title={adminTitle} aria-label={adminTitle}>
-                  <Lock size={18} />
-                </Link>
-              );
-            })()}
+            <Link to={'/painel'} title={'Área Administrativa'} aria-label={'Área Administrativa'}>
+              <Lock size={18} />
+            </Link>
           </div>
           <button className="theme-toggle" onClick={toggleTheme} aria-label="Toggle theme">
             {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
           </button>
-          <button className="cta-button">
-            <Phone size={16} style={{ marginRight: '8px' }} />
-            Pedido de Oração
-          </button>
+          <Link to="/painel" className="cta-button">
+            <Lock size={16} style={{ marginRight: '8px' }} />
+            Área Administrativa
+          </Link>
           <button className="mobile-menu-btn" onClick={toggleMenu}>
             {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
@@ -180,23 +163,10 @@ const Header = ({ theme, toggleTheme }) => {
             )}
           </div>
 
-          <div className="mobile-dropdown">
-            <button className="mobile-dropdown-trigger" onClick={() => setShowMedia(!showMedia)}>
-              Mídia <ChevronDown size={16} />
-            </button>
-            {showMedia && (
-              <div className="mobile-dropdown-content">
-                {mediaPages.map((page, idx) => (
-                  <Link key={idx} to={page.path} onClick={toggleMenu}>
-                    {page.name}
-                  </Link>
-                ))}
-              </div>
-            )}
-          </div>
+          <Link to="/midia" onClick={toggleMenu}>Mídia</Link>
 
           <Link to="/revista" onClick={toggleMenu}>Revista</Link>
-          <Link to="/contact" onClick={toggleMenu}>Contato</Link>
+          <Link to="/contato" onClick={toggleMenu}>Contato</Link>
         </nav>
       )}
     </header>

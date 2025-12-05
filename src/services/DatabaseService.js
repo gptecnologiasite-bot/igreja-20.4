@@ -1,4 +1,3 @@
-import { supabase } from './supabaseClient';
 import { 
   INITIAL_HOME_DATA, 
   INITIAL_MINISTRIES_DATA, 
@@ -12,66 +11,31 @@ const DB_KEYS = {
   FOOTER: 'admac_footer',
   USER: 'admac_user',
   THEME: 'admac_theme',
-  MINISTRIES: 'admac_ministry_'
+  MINISTRIES: 'admac_ministry_',
+  MINISTRIES_LIST: 'admac_ministries' // Lista de ministérios para a home
 };
 
 const DatabaseService = {
-  isSupabaseOnline: async () => {
-    try {
-      const { error } = await supabase
-        .from('app_content')
-        .select('key')
-        .limit(1);
-      return !error;
-    } catch (e) { void e; }
-    return false;
-  },
+  isSupabaseOnline: async () => false,
+  
   fetchItem: async (key, defaultValue) => {
-    let v;
     try {
-      // Tenta Supabase primeiro se houver conexão
-      if (navigator.onLine) {
-        const { data, error } = await supabase
-          .from('app_content')
-          .select('*')
-          .eq('key', key)
-          .maybeSingle();
-        if (!error && data) v = data.value;
-      }
-    } catch (e) { void e; }
-    
-    if (v !== undefined) return v;
-    
-    try {
-      const raw = localStorage.getItem(key);
-      if (raw) return JSON.parse(raw);
-    } catch (e) { void e; }
-    
-    // Garante que o valor default seja retornado se nada mais funcionar
-    // e salva no localStorage para próxima vez
-    try {
-        localStorage.setItem(key, JSON.stringify(defaultValue));
-    } catch (e) { void e; }
-
-    return defaultValue;
+      const item = localStorage.getItem(key);
+      return item ? JSON.parse(item) : defaultValue;
+    } catch (error) {
+      console.error(`Error fetching ${key}:`, error);
+      return defaultValue;
+    }
   },
 
   saveItem: async (key, value) => {
-    let ok = false;
     try {
-      const { error } = await supabase
-        .from('app_content')
-        .upsert({ key, value }, { onConflict: 'key' });
-      ok = !error;
-    } catch (e) { void e; }
-    if (!ok) {
-      try {
-        localStorage.setItem(key, JSON.stringify(value));
-        ok = true;
-      } catch (e) { void e; }
+      localStorage.setItem(key, JSON.stringify(value));
+      return true;
+    } catch (error) {
+      console.error(`Error saving ${key}:`, error);
+      return false;
     }
-    if (ok) window.dispatchEvent(new Event('storage'));
-    return ok;
   },
 
   // --- Home Data ---
@@ -83,6 +47,49 @@ const DatabaseService = {
 
   saveHomeData: async (data) => {
     return DatabaseService.saveItem(DB_KEYS.HOME, data);
+  },
+
+  // --- Ministries List (for Home page) ---
+  getMinistriesListDefault: () => [
+    { title: "Kids", description: "Ensinando a criança no caminho em que deve andar", link: "/kids", icon: "👶", color: "#ff6b9d" },
+    { title: "Louvor", description: "Adorando a Deus em espírito e em verdade", link: "/louvor", icon: "🎵", color: "#9b59b6" },
+    { title: "EBD", description: "Crescendo no conhecimento da Palavra", link: "/edb", icon: "📚", color: "#d4af37" },
+    { title: "Ação Social", description: "Servindo ao próximo com amor", link: "/social", icon: "❤️", color: "#e74c3c" },
+    { title: "Lares", description: "Comunhão e crescimento nos lares", link: "/lares", icon: "🏠", color: "#3498db" },
+    { title: "Retiro", description: "Momentos de renovação espiritual", link: "/retiro", icon: "⛰️", color: "#27ae60" }
+  ],
+
+  getMinistriesList: async () => {
+    const defaultList = DatabaseService.getMinistriesListDefault();
+    return DatabaseService.fetchItem(DB_KEYS.MINISTRIES_LIST, defaultList);
+  },
+
+  saveMinistriesList: async (ministries) => {
+    return DatabaseService.saveItem(DB_KEYS.MINISTRIES_LIST, ministries);
+  },
+
+  addMinistryToList: async (ministry) => {
+    const list = await DatabaseService.getMinistriesList();
+    list.push(ministry);
+    return DatabaseService.saveMinistriesList(list);
+  },
+
+  updateMinistryInList: async (index, ministry) => {
+    const list = await DatabaseService.getMinistriesList();
+    if (index >= 0 && index < list.length) {
+      list[index] = ministry;
+      return DatabaseService.saveMinistriesList(list);
+    }
+    return false;
+  },
+
+  deleteMinistryFromList: async (index) => {
+    const list = await DatabaseService.getMinistriesList();
+    if (index >= 0 && index < list.length) {
+      list.splice(index, 1);
+      return DatabaseService.saveMinistriesList(list);
+    }
+    return false;
   },
 
   // --- Pages Management ---
@@ -121,7 +128,7 @@ const DatabaseService = {
     return DatabaseService.savePages(updatedPages);
   },
 
-  // --- Ministry Data ---
+  // --- Ministry Data (individual ministry pages) ---
   getMinistryDefault: (id) => {
     return INITIAL_MINISTRIES_DATA[id] || { hero: { title: '', subtitle: '' }, mission: { title: '', text: '' } };
   },
