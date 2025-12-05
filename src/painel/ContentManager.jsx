@@ -9,7 +9,8 @@ import {
     FileText,
     ArrowLeft,
     ChevronRight,
-    Youtube
+    Youtube,
+    MessageCircle
 } from 'lucide-react';
 import DatabaseService from '../services/DatabaseService';
 import './ContentManager.css';
@@ -43,6 +44,14 @@ const ContentManager = () => {
             path: '/painel/content/videos',
             color: '#ff0000',
             count: JSON.parse(localStorage.getItem('admac_videos') || '[]').length
+        },
+        {
+            title: 'Links WhatsApp',
+            description: 'Configurar números de WhatsApp por página',
+            icon: MessageCircle,
+            path: '/painel/content/whatsapp',
+            color: '#25d366',
+            count: Object.keys(JSON.parse(localStorage.getItem('admac_whatsapp_links') || '{}')).filter(key => JSON.parse(localStorage.getItem('admac_whatsapp_links') || '{}')[key]?.active).length
         },
         {
             title: 'Programação',

@@ -6,6 +6,7 @@ import PainelDashboard from './PainelDashboard';
 import ContentManager from './ContentManager';
 import MinistriesManager from './managers/MinistriesManager';
 import VideosManager from './managers/VideosManager';
+import WhatsAppManager from './managers/WhatsAppManager';
 
 const PainelApp = () => {
     // Check if user is authenticated
@@ -31,6 +32,10 @@ const PainelApp = () => {
             <Route
                 path="/content/videos"
                 element={isAuthenticated ? <VideosManager /> : <Navigate to="/painel/login" />}
+            />
+            <Route
+                path="/content/whatsapp"
+                element={isAuthenticated ? <WhatsAppManager /> : <Navigate to="/painel/login" />}
             />
             {/* Redirect any unknown routes to login */}
             <Route path="*" element={<Navigate to="/painel/login" />} />

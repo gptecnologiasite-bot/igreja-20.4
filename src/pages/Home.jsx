@@ -14,6 +14,7 @@ import { Link } from "react-router-dom";
 import "../css/Home.css";
 import HeroCarousel from "../components/HeroCarousel";
 import ActivitiesCarousel from "../components/ActivitiesCarousel";
+import PastorCarousel from "../components/PastorCarousel";
 import DatabaseService from "../services/DatabaseService";
 
 const Home = () => {
@@ -36,20 +37,11 @@ const Home = () => {
       {/* Hero Carousel */}
       <HeroCarousel slides={data.carousel} />
 
-      {/* Welcome Section with Pastor */}
+      {/* Welcome Section with Pastor Carousel */}
       <section className="welcome-section">
         <div className="container">
           <div className="welcome-content">
-            <div className="pastor-card">
-              <div className="pastor-image">
-                <img src={data.pastor.image} alt={data.pastor.name} />
-              </div>
-              <div className="pastor-info">
-                <h3>{data.pastor.name}</h3>
-                <p className="pastor-title">{data.pastor.title}</p>
-                <p className="pastor-verse">{data.pastor.verse}</p>
-              </div>
-            </div>
+            <PastorCarousel pastors={data.pastors || (data.pastor ? [data.pastor] : [])} />
             <div className="welcome-text">
               <h2>{data.welcome.title}</h2>
               <p>{data.welcome.text1}</p>

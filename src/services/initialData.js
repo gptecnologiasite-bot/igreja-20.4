@@ -16,12 +16,26 @@ export const INITIAL_HOME_DATA = {
       subtitle: 'Crescendo na graça e no conhecimento'
     }
   ],
-  pastor: {
-    name: 'Pastor Roberto Silva',
-    title: 'Pastor Presidente',
-    verse: '"Porque Deus amou o mundo de tal maneira..." - João 3:16',
-    image: 'https://ui-avatars.com/api/?name=Pastor+Roberto&background=d4af37&color=000&size=200&bold=true'
-  },
+  pastors: [
+    {
+      name: 'Pastor Roberto Silva',
+      title: 'Pastor Presidente',
+      verse: '"Porque Deus amou o mundo de tal maneira..." - João 3:16',
+      image: 'https://ui-avatars.com/api/?name=Pastor+Roberto&background=d4af37&color=000&size=200&bold=true'
+    },
+    {
+      name: 'Pastora Ana Silva',
+      title: 'Pastora Auxiliar',
+      verse: '"O Senhor é o meu pastor, nada me faltará." - Salmos 23:1',
+      image: 'https://ui-avatars.com/api/?name=Pastora+Ana&background=d4af37&color=000&size=200&bold=true'
+    },
+    {
+      name: 'Pastor Carlos Mendes',
+      title: 'Pastor de Jovens',
+      verse: '"Ninguém despreze a tua mocidade..." - 1 Timóteo 4:12',
+      image: 'https://ui-avatars.com/api/?name=Pastor+Carlos&background=d4af37&color=000&size=200&bold=true'
+    }
+  ],
   welcome: {
     title: 'Bem-vindo à ADMAC',
     text1: 'Somos uma igreja que ama a Deus e as pessoas. Nossa missão é proclamar o evangelho de Jesus Cristo, fazer discípulos e transformar vidas através do amor e da palavra de Deus.',
