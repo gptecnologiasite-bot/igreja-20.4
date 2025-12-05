@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import {
     LogOut, User, Menu, Home, Settings, FileEdit,
     Users, Calendar, FileText, DollarSign, TrendingUp,
-    TrendingDown, Clipboard, Heart, BookOpen
+    TrendingDown, Clipboard, Heart, BookOpen, BarChart3
 } from 'lucide-react';
 import './PainelDashboard.css';
 
@@ -26,6 +26,7 @@ const PainelDashboard = () => {
                 { icon: Home, label: 'Dashboard', path: '/painel/dashboard' },
                 { icon: Users, label: 'Usuários', path: '/painel/users' },
                 { icon: FileEdit, label: 'Conteúdo', path: '/painel/content' },
+                { icon: BarChart3, label: 'Analytics', path: '/painel/analytics' },
                 { icon: Settings, label: 'Configurações', path: '/painel/settings' }
             ],
             widgets: [

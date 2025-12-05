@@ -7,6 +7,9 @@ import ContentManager from './ContentManager';
 import MinistriesManager from './managers/MinistriesManager';
 import VideosManager from './managers/VideosManager';
 import WhatsAppManager from './managers/WhatsAppManager';
+import UsersManager from './managers/UsersManager';
+import SettingsPage from './Settings';
+import AnalyticsDashboard from './analytics/AnalyticsDashboard';
 
 const PainelApp = () => {
     // Check if user is authenticated
@@ -14,8 +17,14 @@ const PainelApp = () => {
 
     return (
         <Routes>
-            <Route path="/" element={<PainelLogin />} />
-            <Route path="/login" element={<PainelLogin />} />
+            <Route
+                path="/"
+                element={isAuthenticated ? <Navigate to="/painel/dashboard" /> : <PainelLogin />}
+            />
+            <Route
+                path="/login"
+                element={isAuthenticated ? <Navigate to="/painel/dashboard" /> : <PainelLogin />}
+            />
             <Route path="/register" element={<PainelRegister />} />
             <Route
                 path="/dashboard"
@@ -36,6 +45,18 @@ const PainelApp = () => {
             <Route
                 path="/content/whatsapp"
                 element={isAuthenticated ? <WhatsAppManager /> : <Navigate to="/painel/login" />}
+            />
+            <Route
+                path="/users"
+                element={isAuthenticated ? <UsersManager /> : <Navigate to="/painel/login" />}
+            />
+            <Route
+                path="/settings"
+                element={isAuthenticated ? <SettingsPage /> : <Navigate to="/painel/login" />}
+            />
+            <Route
+                path="/analytics"
+                element={isAuthenticated ? <AnalyticsDashboard /> : <Navigate to="/painel/login" />}
             />
             {/* Redirect any unknown routes to login */}
             <Route path="*" element={<Navigate to="/painel/login" />} />

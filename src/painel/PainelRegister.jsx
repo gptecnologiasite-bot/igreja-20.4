@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { User, Lock, Eye, EyeOff, ArrowRight, Menu, Mail, UserPlus, List } from 'lucide-react';
+import authService from '../services/AuthService';
 import './PainelRegister.css';
 
 const PainelRegister = () => {
@@ -104,35 +105,35 @@ const PainelRegister = () => {
 
         setIsLoading(true);
 
-        // Simulate registration (save to localStorage)
-        setTimeout(() => {
-            const users = JSON.parse(localStorage.getItem('admac_users') || '[]');
+        try {
+            // Registrar usuário com AuthService (Supabase ou localStorage)
+            const result = await authService.register(
+                formData.name,
+                formData.email,
+                formData.password,
+                formData.userType
+            );
 
-            // Check if email already exists
-            const emailExists = users.some(u => u.email === formData.email);
-            if (emailExists) {
-                setErrors({ submit: 'Este e-mail já está cadastrado' });
-                setIsLoading(false);
-                return;
+            if (result.success) {
+                console.log('✅ Registro bem-sucedido:', result);
+
+                // Redirecionar para login com mensagem de sucesso
+                navigate('/painel/login', {
+                    state: {
+                        registered: true,
+                        message: result.message || 'Cadastro realizado com sucesso!'
+                    }
+                });
+            } else {
+                setErrors({ submit: 'Erro ao realizar cadastro. Tente novamente.' });
             }
 
-            // Add new user
-            const newUser = {
-                id: Date.now(),
-                name: formData.name,
-                email: formData.email,
-                password: formData.password,
-                userType: formData.userType,
-                createdAt: new Date().toISOString()
-            };
-
-            users.push(newUser);
-            localStorage.setItem('admac_users', JSON.stringify(users));
-
-            // Redirect to login with success message
+        } catch (error) {
+            console.error('Erro no registro:', error);
+            setErrors({ submit: error.message || 'Erro ao realizar cadastro. Tente novamente.' });
+        } finally {
             setIsLoading(false);
-            navigate('/painel/login', { state: { registered: true } });
-        }, 1500);
+        }
     };
 
     return (

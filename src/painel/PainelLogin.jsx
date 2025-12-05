@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
 import { User, Lock, Eye, EyeOff, ArrowRight, Menu, List } from 'lucide-react';
+import authService from '../services/AuthService';
+import activityTracker from './services/ActivityTracker';
 import './PainelLogin.css';
 
 const PainelLogin = () => {
@@ -97,27 +99,46 @@ const PainelLogin = () => {
         // Start loading
         setIsLoading(true);
 
-        // Simulate authentication (replace with actual API call)
-        setTimeout(() => {
-            const users = JSON.parse(localStorage.getItem('admac_users') || '[]');
-            const user = users.find(u => u.email === email && u.password === password);
+        try {
+            // Login com AuthService (Supabase ou localStorage)
+            const result = await authService.login(email, password);
 
-            if (user || (email === 'admin@admac.com' && password === 'REDACTED_SENHA')) {
-                const userData = user || { name: 'Admin', email: 'admin@admac.com' };
-                localStorage.setItem('isAuthenticated', 'true');
-                localStorage.setItem('user', JSON.stringify(userData));
+            if (result.success) {
+                console.log('✅ Login bem-sucedido:', result);
 
+                const userData = result.user;
+
+                // Atualizar userType se foi selecionado
+                if (userType && userType !== userData.userType) {
+                    userData.userType = userType;
+                    localStorage.setItem('user', JSON.stringify(userData));
+                }
+
+                // Salvar preferência "lembrar-me"
                 if (rememberMe) {
                     localStorage.setItem('rememberMe', 'true');
+                }
+
+                // Track login activity
+                try {
+                    const loginEvent = await activityTracker.trackLogin(userData);
+                    localStorage.setItem('currentSessionId', loginEvent.sessionId);
+                } catch (error) {
+                    console.error('Error tracking login:', error);
                 }
 
                 // Redirect to dashboard
                 navigate('/painel/dashboard');
             } else {
                 setErrors({ submit: 'E-mail ou senha incorretos' });
-                setIsLoading(false);
             }
-        }, 1500);
+
+        } catch (error) {
+            console.error('Erro no login:', error);
+            setErrors({ submit: error.message || 'E-mail ou senha incorretos' });
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (

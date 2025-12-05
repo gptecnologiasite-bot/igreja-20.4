@@ -15,6 +15,7 @@ import "../css/Home.css";
 import HeroCarousel from "../components/HeroCarousel";
 import ActivitiesCarousel from "../components/ActivitiesCarousel";
 import PastorCarousel from "../components/PastorCarousel";
+import RecentVideos from "../components/RecentVideos";
 import DatabaseService from "../services/DatabaseService";
 
 const Home = () => {
@@ -77,6 +78,9 @@ const Home = () => {
           </div>
         </div>
       </section>
+
+      {/* Recent Videos Section */}
+      <RecentVideos limit={2} />
 
       {/* Schedule Section */}
       <section className="schedule-home-section">
