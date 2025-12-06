@@ -16,17 +16,23 @@ class ActivityTracker {
     }
 
     // Initialize and check which storage to use
+    // Inicializa e verifica qual armazenamento usar (Supabase ou LocalStorage)
     async initializeStorage() {
+        // Se a conexão ainda não foi verificada
         if (!this.connectionChecked) {
+            // Testa a conexão com o Supabase
             this.useSupabase = await testSupabaseConnection();
             this.connectionChecked = true;
             
             if (this.useSupabase) {
                 console.log('✅ Using Supabase for storage');
+                console.log('✅ Usando Supabase para armazenamento');
                 // Try to sync any pending data from localStorage
+                // Tenta sincronizar quaisquer dados pendentes do localStorage
                 await this.syncPendingData();
             } else {
                 console.log('⚠️ Supabase unavailable, using localStorage');
+                console.log('⚠️ Supabase indisponível, usando localStorage');
             }
         }
         return this.useSupabase;
@@ -93,11 +99,14 @@ class ActivityTracker {
     }
 
     // Save activity log (tries Supabase first, falls back to localStorage)
+    // Salva log de atividade (tenta Supabase primeiro, usa localStorage como backup)
     async saveActivityLog(event) {
+        // Verifica qual storage está disponível
         const useSupabase = await this.initializeStorage();
 
         if (useSupabase) {
             try {
+                // Tenta inserir no Supabase
                 const { error } = await supabase.from('activity_logs').insert([{
                     id: event.id,
                     type: event.type,
@@ -118,15 +127,19 @@ class ActivityTracker {
                 if (error) throw error;
                 
                 // Also save to localStorage as cache
+                // Também salva no localStorage como cache para performance
                 this.saveToLocalStorage(event);
                 return true;
             } catch (error) {
                 console.error('Error saving to Supabase, falling back to localStorage:', error);
+                // Em caso de erro, muda para modo offline e salva no localStorage
                 this.useSupabase = false;
                 this.saveToLocalStorage(event);
+                // Adiciona à fila de sincronização pendente
                 this.addToPendingSync(event);
             }
         } else {
+            // Se Supabase já estava offline, salva direto no localStorage
             this.saveToLocalStorage(event);
             this.addToPendingSync(event);
         }
@@ -407,14 +420,18 @@ class ActivityTracker {
     }
 
     // Sync pending data to Supabase
+    // Sincroniza dados pendentes (salvos offline) para o Supabase
     async syncPendingData() {
+        // Busca eventos pendentes do localStorage
         const pending = JSON.parse(localStorage.getItem(this.pendingSyncKey) || '[]');
         
         if (pending.length === 0) return;
 
         console.log(`🔄 Syncing ${pending.length} pending events to Supabase...`);
+        console.log(`🔄 Sincronizando ${pending.length} eventos pendentes para o Supabase...`);
 
         try {
+            // Tenta inserir todos os eventos pendentes de uma vez
             const { error } = await supabase.from('activity_logs').insert(
                 pending.map(event => ({
                     id: event.id,
@@ -437,10 +454,13 @@ class ActivityTracker {
             if (error) throw error;
 
             // Clear pending queue
+            // Limpa a fila de pendências após sucesso
             localStorage.removeItem(this.pendingSyncKey);
             console.log('✅ Pending data synced successfully!');
+            console.log('✅ Dados pendentes sincronizados com sucesso!');
         } catch (error) {
             console.error('Error syncing pending data:', error);
+            console.error('Erro ao sincronizar dados pendentes:', error);
         }
     }
 

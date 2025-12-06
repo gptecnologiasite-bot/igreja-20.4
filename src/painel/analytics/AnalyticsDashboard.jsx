@@ -23,17 +23,21 @@ const AnalyticsDashboard = () => {
     const [lastUpdate, setLastUpdate] = useState(new Date());
 
     // Load data
+    // Carrega os dados de analytics para exibir no dashboard
     const loadData = () => {
         console.log('📊 Loading analytics data...');
 
         // Check if there's any data, if not, generate mock data
+        // Verifica se existem dados. Se não houver, gera dados de teste automaticamente
         const logs = activityTracker.getActivityLogs();
         console.log(`Found ${logs.length} activity logs`);
 
         if (logs.length === 0) {
             console.log('⚠️ No data found, generating mock data...');
+            // Gera dados iniciais para que o dashboard não fique vazio na primeira visita
             generateInitialMockData();
             // Reload data after generation
+            // Recarrega os dados após a geração
             const newLogs = activityTracker.getActivityLogs();
             console.log(`✅ Generated ${newLogs.length} new logs`);
         }
