@@ -1,6 +1,7 @@
 import { MapPin, Phone, Mail, Clock, Send } from 'lucide-react';
 import '../css/Contact.css';
 
+/**cius */
 const Contact = () => {
   return (
     <div className="contact-page">
@@ -8,9 +9,8 @@ const Contact = () => {
         <h1>Entre em Contato</h1>
         <p>Estamos aqui para ouvir você. Envie sua mensagem ou faça-nos uma visita.</p>
       </div>
-
+   
       <div className="contact-container">
-        {/* Contact Info & Map */}
         <div className="contact-info">
           <div className="info-card">
             <h3>Informações</h3>
