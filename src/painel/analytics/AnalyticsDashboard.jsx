@@ -22,54 +22,63 @@ const AnalyticsDashboard = () => {
     const [activeSessions, setActiveSessions] = useState([]);
     const [lastUpdate, setLastUpdate] = useState(new Date());
 
+    const [isLoading, setIsLoading] = useState(false);
+
     // Load data
     // Carrega os dados de analytics para exibir no dashboard
-    const loadData = () => {
+    const loadData = async () => {
+        setIsLoading(true);
         console.log('📊 Loading analytics data...');
 
-        // Check if there's any data, if not, generate mock data
-        // Verifica se existem dados. Se não houver, gera dados de teste automaticamente
-        const logs = activityTracker.getActivityLogs();
-        console.log(`Found ${logs.length} activity logs`);
+        try {
+            // Check if there's any data, if not, generate mock data
+            // Verifica se existem dados. Se não houver, gera dados de teste automaticamente
+            const logs = await activityTracker.getActivityLogs();
+            console.log(`Found ${logs.length} activity logs`);
 
-        if (logs.length === 0) {
-            console.log('⚠️ No data found, generating mock data...');
-            // Gera dados iniciais para que o dashboard não fique vazio na primeira visita
-            generateInitialMockData();
-            // Reload data after generation
-            // Recarrega os dados após a geração
-            const newLogs = activityTracker.getActivityLogs();
-            console.log(`✅ Generated ${newLogs.length} new logs`);
+            if (logs.length === 0) {
+                console.log('⚠️ No data found, generating mock data...');
+                // Gera dados iniciais para que o dashboard não fique vazio na primeira visita
+                generateInitialMockData();
+                // Reload data after generation
+                // Recarrega os dados após a geração
+                const newLogs = await activityTracker.getActivityLogs();
+                console.log(`✅ Generated ${newLogs.length} new logs`);
+            }
+
+            // Get current period stats
+            const currentStats = await activityTracker.getStats(period);
+            console.log('Current stats:', currentStats);
+            setStats(currentStats);
+
+            // Get previous period stats for comparison
+            const prevPeriod = period === 'today' ? 'yesterday' :
+                period === 'week' ? 'lastWeek' : 'lastMonth';
+            const prevStats = await activityTracker.getStats(prevPeriod);
+            setPreviousStats(prevStats);
+
+            // Get timeline data
+            const timelineData = await activityTracker.getAccessTimeline(period);
+            console.log('Timeline data:', timelineData);
+            setTimeline(timelineData);
+
+            // Get location breakdown
+            const locationData = await activityTracker.getLocationBreakdown();
+            console.log(`Found ${locationData.length} locations`);
+            setLocations(locationData);
+
+            // Get active sessions
+            const sessions = await activityTracker.getActiveSessions();
+            console.log(`Found ${sessions.length} active sessions`);
+            setActiveSessions(sessions);
+
+            setLastUpdate(new Date());
+            console.log('✅ Analytics data loaded successfully!');
+        } catch (error) {
+            console.error('❌ Error loading analytics data:', error);
+        } finally {
+            setIsLoading(false);
         }
-
-        // Get current period stats
-        const currentStats = activityTracker.getStats(period);
-        console.log('Current stats:', currentStats);
-        setStats(currentStats);
-
-        // Get previous period stats for comparison
-        const prevPeriod = period === 'today' ? 'yesterday' :
-            period === 'week' ? 'lastWeek' : 'lastMonth';
-        const prevStats = activityTracker.getStats(prevPeriod);
-        setPreviousStats(prevStats);
-
-        // Get timeline data
-        const timelineData = activityTracker.getAccessTimeline(period);
-        console.log('Timeline data:', timelineData);
-        setTimeline(timelineData);
-
-        // Get location breakdown
-        const locationData = activityTracker.getLocationBreakdown();
-        console.log(`Found ${locationData.length} locations`);
-        setLocations(locationData);
-
-        // Get active sessions
-        const sessions = activityTracker.getActiveSessions();
-        console.log(`Found ${sessions.length} active sessions`);
-        setActiveSessions(sessions);
-
-        setLastUpdate(new Date());
-        console.log('✅ Analytics data loaded successfully!');
     };
 
     // Generate initial mock data
@@ -216,11 +225,11 @@ const AnalyticsDashboard = () => {
                 </div>
 
                 <div className="header-actions">
-                    <button className="refresh-btn" onClick={loadData}>
-                        <RefreshCw size={18} />
-                        Atualizar
+                    <button className={`refresh-btn ${isLoading ? 'loading' : ''}`} onClick={loadData} disabled={isLoading}>
+                        <RefreshCw size={18} className={isLoading ? 'animate-spin' : ''} />
+                        {isLoading ? 'Atualizando...' : 'Atualizar'}
                     </button>
-                    <button className="export-btn" onClick={exportData}>
+                    <button className="export-btn" onClick={exportData} disabled={isLoading}>
                         <Download size={18} />
                         Exportar
                     </button>

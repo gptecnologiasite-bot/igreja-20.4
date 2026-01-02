@@ -10,6 +10,7 @@ class ActivityTracker {
         this.pendingSyncKey = 'admac_pending_sync';
         this.useSupabase = false;
         this.connectionChecked = false;
+        this.PREFER_LOCAL = true; // Forçar uso do localStorage por padrão
         
         // Check Supabase availability on initialization
         this.initializeStorage();
@@ -18,6 +19,13 @@ class ActivityTracker {
     // Initialize and check which storage to use
     // Inicializa e verifica qual armazenamento usar (Supabase ou LocalStorage)
     async initializeStorage() {
+        // Se preferir local, nem tenta conectar ao Supabase por enquanto
+        if (this.PREFER_LOCAL) {
+            this.useSupabase = false;
+            this.connectionChecked = true;
+            return false;
+        }
+
         // Se a conexão ainda não foi verificada
         if (!this.connectionChecked) {
             // Testa a conexão com o Supabase

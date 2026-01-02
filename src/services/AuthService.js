@@ -10,6 +10,7 @@ import { supabase, testSupabaseConnection } from './supabaseClient';
 class AuthService {
     constructor() {
         this.isOnline = false;
+        this.PREFER_LOCAL = true; // Forçar uso do localStorage por padrão
         this.checkConnection();
     }
 
@@ -159,6 +160,17 @@ class AuthService {
     // LOGIN
     // =====================================================
     async login(email, password) {
+        // Tentar primeiro localmente se preferir local ou se estiver offline
+        if (this.PREFER_LOCAL) {
+            try {
+                const result = await this.loginWithLocalStorage(email, password);
+                if (result.success) return result;
+            } catch (error) {
+                // Se falhar no local, tenta Supabase se estiver online e não for erro de senha
+                if (!this.isOnline) throw error;
+            }
+        }
+
         await this.checkConnection();
 
         if (this.isOnline) {
