@@ -3,7 +3,7 @@ import { useNavigate, useParams } from 'react-router-dom';
 import {
     ArrowLeft, Save, Plus, Trash2, FileText,
     Image, Users, AlignLeft, Calendar, Layout,
-    Globe, Shield, Play
+    Globe, Shield, Play, MessageSquare, BookOpen
 } from 'lucide-react';
 import DatabaseService from '../../services/DatabaseService';
 import ImageUploadField from '../components/ImageUploadField';
@@ -100,9 +100,13 @@ const PageEditor = () => {
         { id: 'equipe', label: 'Equipe', icon: Users },
         { id: 'programaçao', label: 'Programação', icon: Calendar },
         { id: 'galeria', label: 'Galeria', icon: Image },
+        { id: 'testemunhos', label: 'Testemunhos', icon: MessageSquare },
     ];
 
-    // If it's a dynamic page (not system), maybe we show "Conteúdo" tab
+    if (id === 'revista') {
+        tabs.push({ id: 'paginas', label: 'Páginas da Revista', icon: BookOpen });
+    }
+
     if (!isSystemPage) {
         tabs.push({ id: 'conteudo', label: 'Conteúdo', icon: FileText });
     }
@@ -351,6 +355,166 @@ const PageEditor = () => {
                                 </div>
                             ))}
                         </div>
+                    </div>
+                )}
+
+                {/* --- TAB: TESTEMUNHOS --- */}
+                {activeTab === 'testemunhos' && (
+                    <div className="pe-section">
+                        <div className="pe-section-header">
+                            <h2>Testemunhos de Membros</h2>
+                            <button className="pe-add-btn" onClick={() => addItemToArray('testimonials', { name: '', text: '', photo: '', age: '' })}>
+                                <Plus size={16} /> Adicionar Testemunho
+                            </button>
+                        </div>
+                        {(pageData?.testimonials || []).map((item, i) => (
+                            <div key={i} className="pe-card">
+                                <div className="pe-card-head">
+                                    <span className="pe-card-label">{item.name || `Testemunho ${i + 1}`}</span>
+                                    <button className="pe-remove-btn" onClick={() => removeItemFromArray('testimonials', i)}>
+                                        <Trash2 size={15} />
+                                    </button>
+                                </div>
+                                <div className="pe-fields">
+                                    <div className="pe-fields-grid3">
+                                        <div style={{ gridColumn: 'span 2' }}>
+                                            <label>Nome do Autor</label>
+                                            <input
+                                                type="text"
+                                                value={item.name}
+                                                onChange={e => updateNestedArray('testimonials', i, 'name', e.target.value)}
+                                            />
+                                        </div>
+                                        <div>
+                                            <label>Idade (opcional)</label>
+                                            <input
+                                                type="text"
+                                                value={item.age || ''}
+                                                onChange={e => updateNestedArray('testimonials', i, 'age', e.target.value)}
+                                            />
+                                        </div>
+                                    </div>
+                                    <label>Foto do Autor (URL ou Upload)</label>
+                                    <ImageUploadField
+                                        value={item.photo}
+                                        onChange={val => updateNestedArray('testimonials', i, 'photo', val)}
+                                    />
+                                    <label>Depoimento</label>
+                                    <textarea
+                                        rows={3}
+                                        value={item.text}
+                                        onChange={e => updateNestedArray('testimonials', i, 'text', e.target.value)}
+                                    />
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                )}
+
+                {/* --- TAB: PÁGINAS DA REVISTA --- */}
+                {activeTab === 'paginas' && (
+                    <div className="pe-section">
+                        <div className="pe-section-header">
+                            <h2>Editor de Páginas da Revista</h2>
+                            <button className="pe-add-btn" onClick={() => addItemToArray('pages', { type: 'article', title: 'Nova Página', body: '', category: '' })}>
+                                <Plus size={16} /> Nova Página
+                            </button>
+                        </div>
+                        <div className="pe-alert" style={{ marginBottom: '1rem', padding: '1rem', background: 'rgba(255,215,0,0.1)', borderRadius: '8px', fontSize: '0.9rem', color: '#ffd700', border: '1px solid rgba(255,215,0,0.2)' }}>
+                            <Shield size={16} style={{ marginRight: '8px', verticalAlign: 'middle' }} />
+                            Aqui você gerencia as páginas internas da revista digital.
+                        </div>
+                        {(pageData?.pages || []).map((item, i) => (
+                            <div key={i} className="pe-card">
+                                <div className="pe-card-head">
+                                    <span className="pe-card-label">Página {i + 1}: {item.type}</span>
+                                    <button className="pe-remove-btn" onClick={() => removeItemFromArray('pages', i)}>
+                                        <Trash2 size={15} />
+                                    </button>
+                                </div>
+                                <div className="pe-fields">
+                                    <div className="pe-fields-grid3">
+                                        <div>
+                                            <label>Tipo de Página</label>
+                                            <select value={item.type} onChange={e => updateNestedArray('pages', i, 'type', e.target.value)}>
+                                                <option value="cover">Capa</option>
+                                                <option value="index">Índice / Sumário</option>
+                                                <option value="article">Artigo / Matéria</option>
+                                                <option value="columnist">Colunista</option>
+                                                <option value="devotional">Devocional</option>
+                                                <option value="feature">Agenda / Destaque</option>
+                                            </select>
+                                        </div>
+                                        <div style={{ gridColumn: 'span 2' }}>
+                                            <label>Título da Página</label>
+                                            <input
+                                                type="text"
+                                                value={item.title || ''}
+                                                onChange={e => updateNestedArray('pages', i, 'title', e.target.value)}
+                                            />
+                                        </div>
+                                    </div>
+
+                                    {item.type === 'cover' && (
+                                        <>
+                                            <label>Edição / Badge</label>
+                                            <input type="text" value={item.edition || ''} onChange={e => updateNestedArray('pages', i, 'edition', e.target.value)} />
+                                            <label>Subtítulo Capa</label>
+                                            <input type="text" value={item.subtitle || ''} onChange={e => updateNestedArray('pages', i, 'subtitle', e.target.value)} />
+                                        </>
+                                    )}
+
+                                    {(item.type === 'article' || item.type === 'columnist' || item.type === 'devotional' || item.type === 'feature') && (
+                                        <>
+                                            <label>Categoria</label>
+                                            <input type="text" value={item.category || ''} onChange={e => updateNestedArray('pages', i, 'category', e.target.value)} />
+                                        </>
+                                    )}
+
+                                    {(item.type === 'article' || item.type === 'cover') && (
+                                        <>
+                                            <label>Imagem Principal</label>
+                                            <ImageUploadField value={item.image} onChange={val => updateNestedArray('pages', i, 'image', val)} />
+                                        </>
+                                    )}
+
+                                    {(item.type === 'article' || item.type === 'columnist') && (
+                                        <>
+                                            <label>Corpo do Texto</label>
+                                            <textarea rows={6} value={item.body} onChange={e => updateNestedArray('pages', i, 'body', e.target.value)} />
+                                        </>
+                                    )}
+
+                                    {item.type === 'columnist' && item.author && (
+                                        <div style={{ marginTop: '1rem', padding: '1rem', background: 'rgba(255,255,255,0.02)', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                            <label style={{ color: '#ffd700' }}>Dados do Colunista</label>
+                                            <div className="pe-fields" style={{ marginTop: '0.5rem' }}>
+                                                <label>Nome</label>
+                                                <input type="text" value={item.author.name} onChange={e => {
+                                                    const newAuthor = { ...item.author, name: e.target.value };
+                                                    updateNestedArray('pages', i, 'author', newAuthor);
+                                                }} />
+                                                <label>Cargo</label>
+                                                <input type="text" value={item.author.role} onChange={e => {
+                                                    const newAuthor = { ...item.author, role: e.target.value };
+                                                    updateNestedArray('pages', i, 'author', newAuthor);
+                                                }} />
+                                                <label>Foto do Autor</label>
+                                                <ImageUploadField value={item.author.image} onChange={val => {
+                                                    const newAuthor = { ...item.author, image: val };
+                                                    updateNestedArray('pages', i, 'author', newAuthor);
+                                                }} />
+                                                <label>Bio Curta</label>
+                                                <textarea rows={3} value={item.author.bio} onChange={e => {
+                                                    const newAuthor = { ...item.author, bio: e.target.value };
+                                                    updateNestedArray('pages', i, 'author', newAuthor);
+                                                }} />
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+                            </div>
+                        ))}
                     </div>
                 )}
 
