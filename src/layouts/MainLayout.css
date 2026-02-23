@@ -1,0 +1,70 @@
+.main-layout {
+  display: flex;
+  min-height: 100vh;
+  background-color: #121212;
+  color: #ffffff;
+}
+
+.layout-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-width: 0; /* Webkit fix for flex overflow */
+}
+
+/* On desktop, add margin for fixed sidebar */
+@media (min-width: 1025px) {
+  .layout-content {
+    margin-left: var(--sidebar-width);
+  }
+}
+
+.page-container {
+  flex: 1;
+  padding: 0; /* Pages handle their own internal padding/hero sections */
+  width: 100%;
+}
+
+.layout-footer {
+  padding: 2rem;
+  text-align: center;
+  color: #555;
+  font-size: 0.85rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.mobile-toggle {
+  display: none;
+  position: fixed;
+  top: 1rem;
+  left: 1rem;
+  z-index: 1001;
+  background: var(--sidebar-accent);
+  border: none;
+  width: 45px;
+  height: 45px;
+  border-radius: 12px;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  box-shadow: 0 4px 15px rgba(212, 175, 55, 0.4);
+}
+
+@media (max-width: 1024px) {
+  .mobile-toggle {
+    display: flex;
+  }
+}
+
+.hamburger, .hamburger::before, .hamburger::after {
+  content: '';
+  display: block;
+  background: white;
+  height: 2px;
+  width: 24px;
+  border-radius: 2px;
+  transition: all 0.3s ease;
+}
+
+.hamburger::before { transform: translateY(-7px); }
+.hamburger::after { transform: translateY(5px); }

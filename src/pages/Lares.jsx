@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Home, Users, Calendar, Camera, MessageSquare, Send, Heart, MapPin, Clock, Star, Play } from 'lucide-react';
 import { useMinistryData } from '../hooks/useMinistryData';
+import '../css/Lares.css';
 
 const Lares = () => {
   const [registration, setRegistration] = useState({

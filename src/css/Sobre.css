@@ -1,0 +1,336 @@
+.sobre-page {
+  min-height: 100vh;
+  background-color: var(--bg-color);
+}
+
+/* Hero Section */
+.sobre-page .sobre-hero {
+  background: linear-gradient(135deg, #1a1a2e 0%, #1a1a1a 100%);
+  padding: 8rem 2rem;
+  text-align: center;
+  color: #fff;
+  position: relative;
+  overflow: hidden;
+  border-bottom: 2px solid var(--primary-color);
+}
+
+.sobre-page .sobre-hero::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background:
+    radial-gradient(circle at 20% 50%, rgba(212, 175, 55, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 80% 50%, rgba(212, 175, 55, 0.05) 0%, transparent 50%);
+}
+
+.sobre-page .hero-content {
+  position: relative;
+  z-index: 1;
+}
+
+.sobre-page .hero-icon {
+  margin-bottom: 1.5rem;
+  color: var(--primary-color);
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+.sobre-page .sobre-hero h1 {
+  font-size: 3.5rem;
+  margin-bottom: 1rem;
+  font-weight: 800;
+  background: linear-gradient(to bottom, #ffffff, var(--primary-color));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.sobre-page .hero-subtitle {
+  font-size: 1.4rem;
+  margin-bottom: 2rem;
+  opacity: 0.95;
+}
+
+.sobre-page .hero-verse {
+  max-width: 600px;
+  margin: 2rem auto 0;
+  padding: 1.5rem;
+  background: rgba(255,255,255,0.05);
+  border-radius: 12px;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+}
+
+.sobre-page .hero-verse p {
+  font-size: 1.2rem;
+  font-style: italic;
+  color: var(--primary-color);
+}
+
+/* Mission Section */
+.sobre-page .mission-section {
+  padding: 5rem 1rem;
+  background: #1a1a1a;
+}
+
+.sobre-page .mission-section h2 {
+  text-align: center;
+  font-size: 2.5rem;
+  color: var(--primary-color);
+  margin-bottom: 2rem;
+}
+
+.sobre-page .mission-text {
+  max-width: 800px;
+  margin: 0 auto;
+  text-align: center;
+  color: var(--text-muted);
+  font-size: 1.15rem;
+  line-height: 1.8;
+}
+
+/* Values Section */
+.sobre-page .values-section {
+  padding: 5rem 1rem;
+  background: var(--bg-color);
+}
+
+.sobre-page .values-section h2 {
+  text-align: center;
+  font-size: 2.5rem;
+  color: var(--primary-color);
+  margin-bottom: 3rem;
+}
+
+.sobre-page .values-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.sobre-page .value-card {
+  background: #2a2a2a;
+  padding: 2.5rem 2rem;
+  border-radius: 16px;
+  text-align: center;
+  border-top: 3px solid var(--primary-color);
+  transition: transform 0.3s, box-shadow 0.3s;
+}
+
+.sobre-page .value-card:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 12px 24px rgba(212, 175, 55, 0.15);
+}
+
+.sobre-page .value-card svg {
+  color: var(--primary-color);
+  margin-bottom: 1rem;
+}
+
+.sobre-page .value-card h3 {
+  color: var(--text-color);
+  margin-bottom: 0.75rem;
+  font-size: 1.3rem;
+}
+
+.sobre-page .value-card p {
+  color: var(--text-muted);
+  line-height: 1.6;
+}
+
+/* Team Section */
+.sobre-page .team-section {
+  padding: 5rem 1rem;
+  background: #1a1a1a;
+}
+
+.sobre-page .team-section h2 {
+  text-align: center;
+  font-size: 2.5rem;
+  color: var(--primary-color);
+  margin-bottom: 0.5rem;
+}
+
+.sobre-page .section-subtitle {
+  text-align: center;
+  color: var(--text-muted);
+  margin-bottom: 3rem;
+  font-size: 1.1rem;
+}
+
+.sobre-page .team-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.sobre-page .team-card {
+  background: #2a2a2a;
+  padding: 2rem;
+  border-radius: 16px;
+  text-align: center;
+  transition: transform 0.3s;
+  border-top: 3px solid var(--primary-color);
+}
+
+.sobre-page .team-card:hover {
+  transform: translateY(-8px);
+}
+
+.sobre-page .team-photo {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  border: 3px solid var(--primary-color);
+  margin-bottom: 1rem;
+  object-fit: cover;
+}
+
+.sobre-page .team-card h3 {
+  color: var(--text-color);
+  margin-bottom: 0.5rem;
+  font-size: 1.1rem;
+}
+
+.sobre-page .team-card p {
+  color: var(--primary-color);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+/* Gallery Section */
+.sobre-page .gallery-section {
+  padding: 5rem 1rem;
+  background: var(--bg-color);
+}
+
+.sobre-page .gallery-section h2 {
+  text-align: center;
+  font-size: 2.5rem;
+  color: var(--primary-color);
+  margin-bottom: 2rem;
+}
+
+.sobre-page .gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.sobre-page .gallery-item {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  aspect-ratio: 16/9;
+  cursor: pointer;
+}
+
+.sobre-page .gallery-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.3s;
+}
+
+.sobre-page .gallery-item:hover img {
+  transform: scale(1.1);
+}
+
+.sobre-page .gallery-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+  padding: 1rem;
+  color: #fff;
+  font-weight: 600;
+  transform: translateY(100%);
+  transition: transform 0.3s;
+}
+
+.sobre-page .gallery-item:hover .gallery-overlay {
+  transform: translateY(0);
+}
+
+/* Info Section */
+.sobre-page .info-section {
+  padding: 5rem 1rem;
+  background: #1a1a1a;
+}
+
+.sobre-page .info-section h2 {
+  text-align: center;
+  font-size: 2.5rem;
+  color: var(--primary-color);
+  margin-bottom: 3rem;
+}
+
+.sobre-page .info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.sobre-page .info-card {
+  background: #2a2a2a;
+  padding: 2rem;
+  border-radius: 12px;
+  text-align: center;
+  border: 1px solid rgba(212, 175, 55, 0.1);
+  transition: border-color 0.3s;
+}
+
+.sobre-page .info-card:hover {
+  border-color: var(--primary-color);
+}
+
+.sobre-page .info-card svg {
+  color: var(--primary-color);
+  margin-bottom: 1rem;
+}
+
+.sobre-page .info-card h3 {
+  color: var(--text-color);
+  margin-bottom: 0.75rem;
+  font-size: 1.1rem;
+}
+
+.sobre-page .info-card p {
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  line-height: 1.6;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .sobre-page .sobre-hero h1 {
+    font-size: 2.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .sobre-page .sobre-hero h1 {
+    font-size: 2rem;
+  }
+  .sobre-page .values-grid,
+  .sobre-page .info-grid {
+    grid-template-columns: 1fr;
+  }
+}

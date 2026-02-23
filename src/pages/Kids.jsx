@@ -1,34 +1,58 @@
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { Calendar, Clock, MapPin, Heart, Star, Camera, Users, BookOpen } from 'lucide-react';
 import '../css/Kids.css';
 import { useMinistryData } from '../hooks/useMinistryData';
 
 const Kids = () => {
   const [data] = useMinistryData('kids');
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  useEffect(() => {
+    if (data.gallery && data.gallery.length > 0) {
+      const timer = setInterval(() => {
+        setCurrentSlide((prev) => (prev + 1) % data.gallery.length);
+      }, 5000);
+      return () => clearInterval(timer);
+    }
+  }, [data.gallery]);
 
   return (
     <div className="kids-page">
       {/* Hero Section */}
       <div className="kids-hero">
+        <div className="hero-slideshow">
+          {(data.gallery && data.gallery.length > 0 ? data.gallery : [
+            { url: 'https://images.unsplash.com/photo-1472162072942-cd5147eb3902?w=1600&h=900&fit=crop' },
+            { url: 'https://images.unsplash.com/photo-1489710437720-ebb67ec84dd2?w=1600&h=900&fit=crop' },
+            { url: 'https://images.unsplash.com/photo-1502086223501-7ea6ecd79368?w=1600&h=900&fit=crop' }
+          ]).map((photo, index) => (
+            <div
+              key={index}
+              className={`hero-slide ${index === currentSlide ? 'active' : ''}`}
+              style={{ backgroundImage: `url(${photo.url})` }}
+            ></div>
+          ))}
+        </div>
+        <div className="hero-overlay"></div>
         <div className="hero-content">
           <h1>{data.hero.title}</h1>
           <p className="hero-subtitle">{data.hero.subtitle}</p>
           <div className="hero-stats">
-            <div className="stat-item">
+            <div className="stat-card">
               <Users size={32} />
               <div>
                 <strong>150+</strong>
                 <span>Crianças</span>
               </div>
             </div>
-            <div className="stat-item">
+            <div className="stat-card">
               <BookOpen size={32} />
               <div>
                 <strong>20+</strong>
                 <span>Professores</span>
               </div>
             </div>
-            <div className="stat-item">
+            <div className="stat-card">
               <Heart size={32} />
               <div>
                 <strong>100%</strong>

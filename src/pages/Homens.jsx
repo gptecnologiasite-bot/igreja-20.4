@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Shield, Calendar, Clock, Users, Camera, MessageSquare, Send, Heart, MapPin, Star, Play } from 'lucide-react';
 import { useMinistryData } from '../hooks/useMinistryData';
+import '../css/Homens.css';
 
 const Homens = () => {
   const [testimonial, setTestimonial] = useState({
@@ -13,10 +14,34 @@ const Homens = () => {
   });
 
   const [data] = useMinistryData('homens');
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  useEffect(() => {
+    if (data.gallery && data.gallery.length > 0) {
+      const timer = setInterval(() => {
+        setCurrentSlide((prev) => (prev + 1) % data.gallery.length);
+      }, 5000);
+      return () => clearInterval(timer);
+    }
+  }, [data.gallery]);
 
   return (
     <div className="homens-page">
       <div className="homens-hero">
+        <div className="hero-slideshow">
+          {(data.gallery && data.gallery.length > 0 ? data.gallery : [
+            { url: 'https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=1600&h=900&fit=crop' },
+            { url: 'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=1600&h=900&fit=crop' },
+            { url: 'https://images.unsplash.com/photo-1529070538774-1843cb3265df?w=1600&h=900&fit=crop' }
+          ]).map((photo, index) => (
+            <div
+              key={index}
+              className={`hero-slide ${index === currentSlide ? 'active' : ''}`}
+              style={{ backgroundImage: `url(${photo.url})` }}
+            ></div>
+          ))}
+        </div>
+        <div className="hero-overlay"></div>
         <div className="hero-content">
           <Shield size={80} className="hero-icon" />
           <h1>{data.hero?.title || 'Ministério de Homens'}</h1>

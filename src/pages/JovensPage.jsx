@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Zap, Calendar, Clock, Users, Camera, MessageSquare, Send, Heart, MapPin, Star, Music, Gamepad2 } from 'lucide-react';
 import { useMinistryData } from '../hooks/useMinistryData';
+import '../css/Jovens.css';
 
 const Jovens = () => {
   const [testimonial, setTestimonial] = useState({
@@ -11,6 +12,16 @@ const Jovens = () => {
   });
 
   const [data] = useMinistryData('jovens');
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  useEffect(() => {
+    if (data.gallery && data.gallery.length > 0) {
+      const timer = setInterval(() => {
+        setCurrentSlide((prev) => (prev + 1) % data.gallery.length);
+      }, 5000);
+      return () => clearInterval(timer);
+    }
+  }, [data.gallery]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -22,6 +33,15 @@ const Jovens = () => {
     <div className="jovens-page">
       {/* Hero Section */}
       <div className="jovens-hero">
+        <div className="hero-slideshow">
+          {data.gallery && data.gallery.map((photo, index) => (
+            <div
+              key={index}
+              className={`hero-slide ${index === currentSlide ? 'active' : ''}`}
+              style={{ backgroundImage: `url(${photo.url})` }}
+            ></div>
+          ))}
+        </div>
         <div className="hero-overlay"></div>
         <div className="hero-content">
           <Zap size={80} className="hero-icon" />

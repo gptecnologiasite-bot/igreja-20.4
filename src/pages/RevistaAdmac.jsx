@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { BookOpen, PenTool, Sun, Calendar, Heart, Star, Users, ArrowLeft, ArrowRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useMinistryData } from '../hooks/useMinistryData';
+import '../css/Revista.css';
 
 // Componentes de Página
 const PageCover = ({ page }) => (
@@ -26,15 +27,15 @@ const PageIndex = ({ page, onNavigate }) => {
   };
 
   return (
-    <div className="page-index p-12">
+    <div className="page-index" style={{ padding: '3rem' }}>
       <h2 className="index-title">{page.title}</h2>
       <div className="index-list">
         {page.items.map((item, idx) => {
           const Icon = iconMap[item.icon] || BookOpen;
           return (
             <div key={idx} className="index-item" onClick={() => onNavigate(item.page - 1)}>
-              <div className="flex items-center gap-4">
-                <div className="p-3 bg-white/10 rounded-lg text-primary">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                <div style={{ padding: '0.75rem', background: 'rgba(255,255,255,0.1)', borderRadius: '8px' }}>
                   <Icon size={24} color="var(--primary-color)" />
                 </div>
                 <span className="index-label">{item.label}</span>
@@ -101,7 +102,7 @@ const PageColumnist = ({ page }) => (
 
 const PageDevotional = ({ page }) => (
   <div className="page-container">
-    <div className="article-header text-center mb-12">
+    <div className="article-header" style={{ textAlign: 'center', marginBottom: '3rem' }}>
       <span className="article-category">{page.category}</span>
       <h2 className="article-title">{page.title}</h2>
     </div>
@@ -112,8 +113,8 @@ const PageDevotional = ({ page }) => (
           <div className="devotional-date">{item.date}</div>
           <h3 className="devotional-title">{item.title}</h3>
           <p className="devotional-text">{item.text}</p>
-          <div className="mt-4 pt-4 border-t border-white/10 flex justify-end">
-            <Heart size={16} className="text-primary" />
+          <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.1)', display: 'flex', justifyContent: 'flex-end' }}>
+            <Heart size={16} color="var(--primary-color)" />
           </div>
         </div>
       ))}
@@ -122,39 +123,39 @@ const PageDevotional = ({ page }) => (
 );
 
 const PageFeature = ({ page }) => (
-  <div className="page-container h-full flex flex-col justify-center">
-    <div className="grid md:grid-cols-2 gap-12 items-center h-full">
+  <div className="page-container" style={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '3rem', alignItems: 'center', height: '100%' }}>
       {/* Left Column: Title & Header */}
-      <div className="flex flex-col justify-center text-left">
-        <span className="article-category mb-4 block">{page.category}</span>
+      <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', textAlign: 'left' }}>
+        <span className="article-category" style={{ marginBottom: '1rem', display: 'block' }}>{page.category}</span>
         <h2 className="article-title" style={{ fontSize: 'clamp(3rem, 5vw, 5rem)', lineHeight: 0.9 }}>
           {page.title}
         </h2>
         {page.highlight && (
-          <div className="mt-8 p-6 bg-[var(--primary-color)] text-black rounded-xl font-semibold text-lg shadow-lg border-l-4 border-white">
+          <div style={{ marginTop: '2rem', padding: '1.5rem', background: 'var(--primary-color)', color: '#000', borderRadius: '12px', fontWeight: 600, fontSize: '1.1rem', boxShadow: '0 4px 12px rgba(0,0,0,0.3)', borderLeft: '4px solid #fff' }}>
             {page.highlight}
           </div>
         )}
       </div>
 
       {/* Right Column: Events List */}
-      <div className="flex flex-col gap-4 overflow-y-auto max-h-full pr-2 custom-scrollbar">
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', overflowY: 'auto', maxHeight: '100%', paddingRight: '0.5rem' }}>
         {page.events.map((event, idx) => (
-          <div key={idx} className="flex items-center gap-4 p-4 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 hover:border-[var(--primary-color)] transition-all group">
-            <div className="flex flex-col items-center justify-center p-3 bg-black/30 border border-white/10 rounded-lg min-w-[70px] group-hover:border-[var(--primary-color)] transition-colors">
-              <div className="text-xs uppercase text-[var(--primary-color)] font-bold">DEZ</div>
-              <div className="text-2xl font-bold text-white">{event.date.split('/')[0]}</div>
+          <div key={idx} className="revista-event-card">
+            <div className="revista-event-date-box">
+              <div style={{ fontSize: '0.7rem', textTransform: 'uppercase', color: 'var(--primary-color)', fontWeight: 'bold' }}>DEZ</div>
+              <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#fff' }}>{event.date.split('/')[0]}</div>
             </div>
 
-            <div className="flex-1">
-              <div className="text-lg font-semibold text-white group-hover:text-[var(--primary-color)] transition-colors">
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: '1.1rem', fontWeight: 600, color: '#fff' }}>
                 {event.title}
               </div>
-              <div className="flex items-center gap-2 text-sm text-white/50 mt-1">
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', color: 'rgba(255,255,255,0.5)', marginTop: '0.25rem' }}>
                 <Calendar size={14} />
                 <span>{event.date}</span>
-                <span className="mx-1">•</span>
-                <span className="text-[var(--primary-color)]">{event.time}</span>
+                <span>•</span>
+                <span style={{ color: 'var(--primary-color)' }}>{event.time}</span>
               </div>
             </div>
           </div>
@@ -196,7 +197,7 @@ export default function RevistaAdmac() {
             <button onClick={prevPage} className="btn-nav" title="Anterior">
               <ArrowLeft size={18} />
             </button>
-            <span className="flex items-center px-4 font-mono text-sm text-white/50">
+            <span style={{ display: 'flex', alignItems: 'center', padding: '0 1rem', fontFamily: 'monospace', fontSize: '0.875rem', color: 'rgba(255,255,255,0.5)' }}>
               {currentPage + 1} / {totalPages}
             </span>
             <button onClick={nextPage} className="btn-nav" title="Próxima">

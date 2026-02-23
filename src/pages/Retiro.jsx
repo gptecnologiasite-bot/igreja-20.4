@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Mountain, Calendar, MapPin, Users, Camera, Send, Heart, Clock, Tent, Book, Music } from 'lucide-react';
 import { useMinistryData } from '../hooks/useMinistryData';
+import '../css/Retiro.css';
 
 const Retiro = () => {
   const [registration, setRegistration] = useState({

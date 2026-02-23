@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Heart, Calendar, Clock, Users, Camera, MessageSquare, Send, Star, BookOpen, Sparkles, Crown } from 'lucide-react';
 import { useMinistryData } from '../hooks/useMinistryData';
+import '../css/Mulheres.css';
 
 const Mulheres = () => {
   const [testimonial, setTestimonial] = useState({
@@ -10,6 +11,16 @@ const Mulheres = () => {
   });
 
   const [data] = useMinistryData('mulheres');
+  const [currentSlide, setCurrentSlide] = useState(0);
+
+  useEffect(() => {
+    if (data.gallery && data.gallery.length > 0) {
+      const timer = setInterval(() => {
+        setCurrentSlide((prev) => (prev + 1) % data.gallery.length);
+      }, 5000);
+      return () => clearInterval(timer);
+    }
+  }, [data.gallery]);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -21,6 +32,15 @@ const Mulheres = () => {
     <div className="mulheres-page">
       {/* Hero Section */}
       <div className="mulheres-hero">
+        <div className="hero-slideshow">
+          {data.gallery && data.gallery.map((photo, index) => (
+            <div
+              key={index}
+              className={`hero-slide ${index === currentSlide ? 'active' : ''}`}
+              style={{ backgroundImage: `url(${photo.url})` }}
+            ></div>
+          ))}
+        </div>
         <div className="hero-overlay"></div>
         <div className="hero-content">
           <Crown size={80} className="hero-icon" />

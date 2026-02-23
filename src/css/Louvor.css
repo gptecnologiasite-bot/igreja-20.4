@@ -4,7 +4,7 @@
 }
 
 /* Hero Section */
-.louvor-hero {
+.louvor-page .louvor-hero {
   background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
   padding: 5rem 2rem;
   text-align: center;
@@ -13,7 +13,7 @@
   overflow: hidden;
 }
 
-.louvor-hero::before {
+.louvor-page .louvor-hero::before {
   content: '';
   position: absolute;
   top: 0;
@@ -24,12 +24,12 @@
   opacity: 0.5;
 }
 
-.hero-content {
+.louvor-page .hero-content {
   position: relative;
   z-index: 1;
 }
 
-.hero-icon {
+.louvor-page .hero-icon {
   margin-bottom: 1.5rem;
   animation: float 3s ease-in-out infinite;
   filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
@@ -40,20 +40,20 @@
   50% { transform: translateY(-15px) rotate(5deg); }
 }
 
-.louvor-hero h1 {
+.louvor-page .louvor-hero h1 {
   font-size: 3.5rem;
   margin-bottom: 1rem;
   font-weight: bold;
   text-shadow: 2px 2px 8px rgba(0,0,0,0.3);
 }
 
-.louvor-hero .hero-subtitle {
+.louvor-page .louvor-hero .hero-subtitle {
   font-size: 1.4rem;
   margin-bottom: 2rem;
   opacity: 0.95;
 }
 
-.hero-verse {
+.louvor-page .hero-verse {
   max-width: 600px;
   margin: 2rem auto 0;
   padding: 1.5rem;
@@ -63,39 +63,34 @@
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255,255,255,0.2);
 }
-@supports not ((-webkit-backdrop-filter: blur(10px)) or (backdrop-filter: blur(10px))) {
-  .hero-verse {
-    background: rgba(255,255,255,0.25);
-  }
-}
 
-.hero-verse p {
+.louvor-page .hero-verse p {
   font-size: 1.2rem;
   font-style: italic;
   margin-bottom: 0.5rem;
   line-height: 1.6;
 }
 
-.hero-verse span {
+.louvor-page .hero-verse span {
   font-size: 0.9rem;
   opacity: 0.9;
   font-weight: 600;
 }
 
 /* Mission Section */
-.mission-section {
+.louvor-page .mission-section {
   padding: 4rem 1rem;
   background: #1a1a1a;
 }
 
-.mission-section h2 {
+.louvor-page .mission-section h2 {
   text-align: center;
   font-size: 2.5rem;
   color: var(--primary-color);
   margin-bottom: 1.5rem;
 }
 
-.mission-text {
+.louvor-page .mission-text {
   max-width: 800px;
   margin: 0 auto;
   text-align: center;
@@ -105,12 +100,12 @@
 }
 
 /* Schedule Section */
-.schedule-section {
+.louvor-page .schedule-section {
   padding: 4rem 1rem;
   background-color: var(--bg-color);
 }
 
-.section-header {
+.louvor-page .section-header {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -118,23 +113,23 @@
   margin-bottom: 0.5rem;
 }
 
-.section-header svg {
+.louvor-page .section-header svg {
   color: var(--primary-color);
 }
 
-.section-header h2 {
+.louvor-page .section-header h2 {
   font-size: 2.5rem;
   color: var(--primary-color);
 }
 
-.section-subtitle {
+.louvor-page .section-subtitle {
   text-align: center;
   color: var(--text-muted);
   margin-bottom: 3rem;
   font-size: 1.1rem;
 }
 
-.schedule-grid {
+.louvor-page .schedule-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
   gap: 1.5rem;
@@ -142,7 +137,7 @@
   margin: 0 auto;
 }
 
-.schedule-card {
+.louvor-page .schedule-card {
   background: #2a2a2a;
   border-radius: 12px;
   padding: 1.5rem;
@@ -153,12 +148,12 @@
   border-left: 4px solid #9b59b6;
 }
 
-.schedule-card:hover {
+.louvor-page .schedule-card:hover {
   transform: translateY(-5px);
   box-shadow: 0 8px 16px rgba(155, 89, 182, 0.3);
 }
 
-.schedule-icon {
+.louvor-page .schedule-icon {
   background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
   color: #fff;
   width: 60px;
@@ -170,11 +165,11 @@
   flex-shrink: 0;
 }
 
-.schedule-content {
+.louvor-page .schedule-content {
   flex: 1;
 }
 
-.schedule-header {
+.louvor-page .schedule-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -183,12 +178,12 @@
   gap: 0.5rem;
 }
 
-.schedule-header h3 {
+.louvor-page .schedule-header h3 {
   color: var(--text-color);
   font-size: 1.2rem;
 }
 
-.day-badge {
+.louvor-page .day-badge {
   background: rgba(155, 89, 182, 0.2);
   color: #9b59b6;
   padding: 0.25rem 0.75rem;
@@ -197,19 +192,19 @@
   font-weight: 600;
 }
 
-.schedule-description {
+.louvor-page .schedule-description {
   color: var(--text-muted);
   margin-bottom: 1rem;
   font-size: 0.95rem;
 }
 
-.schedule-details {
+.louvor-page .schedule-details {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
 }
 
-.detail-item {
+.louvor-page .detail-item {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -217,24 +212,24 @@
   font-size: 0.9rem;
 }
 
-.detail-item svg {
+.louvor-page .detail-item svg {
   color: #9b59b6;
 }
 
 /* Team Section */
-.team-section {
+.louvor-page .team-section {
   padding: 4rem 1rem;
   background: #1a1a1a;
 }
 
-.team-section h2 {
+.louvor-page .team-section h2 {
   text-align: center;
   font-size: 2.5rem;
   color: var(--primary-color);
   margin-bottom: 0.5rem;
 }
 
-.team-grid {
+.louvor-page .team-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 2rem;
@@ -242,7 +237,7 @@
   margin: 0 auto;
 }
 
-.team-card {
+.louvor-page .team-card {
   background: #2a2a2a;
   padding: 2rem;
   border-radius: 12px;
@@ -251,11 +246,11 @@
   transition: transform 0.3s;
 }
 
-.team-card:hover {
+.louvor-page .team-card:hover {
   transform: translateY(-10px);
 }
 
-.team-photo {
+.louvor-page .team-photo {
   width: 100px;
   height: 100px;
   border-radius: 50%;
@@ -263,49 +258,49 @@
   margin-bottom: 1rem;
 }
 
-.team-card h3 {
+.louvor-page .team-card h3 {
   color: var(--text-color);
   margin-bottom: 0.5rem;
   font-size: 1.1rem;
 }
 
-.team-card p {
+.louvor-page .team-card p {
   color: #9b59b6;
   font-size: 0.9rem;
   font-weight: 600;
 }
 
 /* Testimonial Form Section */
-.testimonial-form-section {
+.louvor-page .testimonial-form-section {
   padding: 4rem 1rem;
   background-color: var(--bg-color);
 }
 
-.form-wrapper {
+.louvor-page .form-wrapper {
   max-width: 700px;
   margin: 0 auto;
 }
 
-.testimonial-form {
+.louvor-page .testimonial-form {
   background: #2a2a2a;
   padding: 2.5rem;
   border-radius: 12px;
   box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
 
-.form-group {
+.louvor-page .form-group {
   margin-bottom: 1.5rem;
 }
 
-.form-group label {
+.louvor-page .form-group label {
   display: block;
   margin-bottom: 0.5rem;
   color: var(--text-color);
   font-weight: 500;
 }
 
-.form-group input,
-.form-group textarea {
+.louvor-page .form-group input,
+.louvor-page .form-group textarea {
   width: 100%;
   padding: 12px;
   background-color: var(--bg-color);
@@ -316,18 +311,18 @@
   transition: border-color 0.3s;
 }
 
-.form-group input:focus,
-.form-group textarea:focus {
+.louvor-page .form-group input:focus,
+.louvor-page .form-group textarea:focus {
   outline: none;
   border-color: #9b59b6;
 }
 
-.form-group textarea {
+.louvor-page .form-group textarea {
   resize: vertical;
   min-height: 120px;
 }
 
-.submit-btn {
+.louvor-page .submit-btn {
   width: 100%;
   padding: 1rem;
   background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
@@ -344,19 +339,19 @@
   transition: transform 0.3s;
 }
 
-.submit-btn:hover {
+.louvor-page .submit-btn:hover {
   transform: scale(1.02);
 }
 
 /* CTA Section */
-.louvor-cta {
+.louvor-page .louvor-cta {
   padding: 4rem 2rem;
   background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
   text-align: center;
   color: #fff;
 }
 
-.cta-icon {
+.louvor-page .cta-icon {
   margin-bottom: 1rem;
   animation: pulse 2s ease-in-out infinite;
 }
@@ -366,12 +361,12 @@
   50% { transform: scale(1.1); }
 }
 
-.louvor-cta h2 {
+.louvor-page .louvor-cta h2 {
   font-size: 2.5rem;
   margin-bottom: 1rem;
 }
 
-.louvor-cta p {
+.louvor-page .louvor-cta p {
   font-size: 1.2rem;
   margin-bottom: 2rem;
   opacity: 0.95;
@@ -380,7 +375,7 @@
   margin-right: auto;
 }
 
-.cta-button {
+.louvor-page .cta-button {
   background: #fff;
   color: #9b59b6;
   padding: 1rem 2.5rem;
@@ -395,56 +390,57 @@
   cursor: pointer;
 }
 
-.cta-button:hover {
+.louvor-page .cta-button:hover {
   transform: scale(1.05);
   box-shadow: 0 8px 16px rgba(0,0,0,0.3);
 }
 
 @media (max-width: 768px) {
-  .louvor-hero h1 {
+  .louvor-page .louvor-hero h1 {
     font-size: 2.5rem;
   }
   
-  .schedule-card {
+  .louvor-page .schedule-card {
     flex-direction: column;
     text-align: center;
   }
   
-  .schedule-icon {
+  .louvor-page .schedule-icon {
     margin: 0 auto;
   }
   
-  .schedule-header {
+  .louvor-page .schedule-header {
     flex-direction: column;
     align-items: center;
   }
   
-  .testimonial-form {
+  .louvor-page .testimonial-form {
     padding: 1.5rem;
   }
 }
+
 @media (max-width: 480px) {
-  .louvor-hero h1 {
+  .louvor-page .louvor-hero h1 {
     font-size: 2rem;
   }
-  .schedule-grid {
+  .louvor-page .schedule-grid {
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     gap: 1rem;
   }
-  .team-grid {
+  .louvor-page .team-grid {
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     gap: 1rem;
   }
-  .section-header h2 {
+  .louvor-page .section-header h2 {
     font-size: 2rem;
   }
-  .louvor-cta h2 {
+  .louvor-page .louvor-cta h2 {
     font-size: 2rem;
   }
-  .louvor-cta p {
+  .louvor-page .louvor-cta p {
     font-size: 1rem;
   }
-  .cta-button {
+  .louvor-page .cta-button {
     padding: 0.75rem 1.5rem;
     font-size: 1rem;
   }

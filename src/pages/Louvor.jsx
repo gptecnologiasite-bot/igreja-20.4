@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Music, Calendar, Clock, Users, MessageSquare, Send, Mic, Guitar, Headphones, Heart } from 'lucide-react';
 import { useMinistryData } from '../hooks/useMinistryData';
+import '../css/Louvor.css';
 
 const Louvor = () => {
   const [testimonial, setTestimonial] = useState({

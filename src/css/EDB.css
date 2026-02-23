@@ -6,10 +6,11 @@
 
 /* Hero Section */
 .edb-hero {
-  background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
-  padding: 4rem 2rem;
+  background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+  padding: 8rem 2rem;
   text-align: center;
-  color: #000;
+  color: #fff;
+  border-bottom: 2px solid #d4af37;
 }
 
 .edb-hero .hero-icon {
@@ -24,10 +25,11 @@
 }
 
 .edb-hero h1 {
-  font-size: 2.5rem;
-  margin-bottom: 0.5rem;
-  font-weight: bold;
-  color: #000;
+  font-size: 4rem;
+  margin-bottom: 1rem;
+  font-weight: 800;
+  color: #d4af37;
+  text-shadow: 0 10px 30px rgba(0,0,0,0.5);
 }
 
 .edb-hero .hero-subtitle {
@@ -46,7 +48,7 @@
 .info-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1.5rem;
+  gap: 2.5rem;
 }
 
 .info-item {
@@ -79,7 +81,7 @@
 .classes-section {
   max-width: 1200px;
   margin: 0 auto;
-  padding: 3rem 1rem;
+  padding: 6rem 1rem;
 }
 
 .classes-section h2 {
@@ -99,21 +101,21 @@
 .classes-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-  gap: 2rem;
+  gap: 3rem;
 }
 
 .class-card {
-  background-color: #2a2a2a;
-  padding: 2rem;
-  border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-  transition: transform 0.3s, box-shadow 0.3s;
-  border: 1px solid rgba(212, 175, 55, 0.1);
+  background-color: #1e1e1e;
+  padding: 2.5rem;
+  border-radius: 16px;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+  transition: all 0.3s ease;
+  border: 1px solid rgba(212, 175, 55, 0.05);
 }
 
 .class-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 16px rgba(212, 175, 55, 0.2);
+  transform: translateY(-8px);
+  box-shadow: 0 20px 40px rgba(212, 175, 55, 0.15);
   border-color: var(--primary-color);
 }
 
@@ -270,7 +272,7 @@
 
 /* Team Section */
 .team-section {
-  padding: 4rem 1rem;
+  padding: 6rem 1rem;
   background: #1a1a1a;
 }
 
@@ -325,7 +327,7 @@
 
 /* Gallery Section */
 .gallery-section {
-  padding: 4rem 1rem;
+  padding: 6rem 1rem;
   background: var(--bg-color);
 }
 

@@ -4,7 +4,7 @@
 }
 
 /* Hero Section */
-.midia-hero {
+.midia-page .midia-hero {
   background: linear-gradient(135deg, #000000 0%, #1a1a1a 100%);
   padding: 5rem 2rem;
   text-align: center;
@@ -14,45 +14,51 @@
   border-bottom: 2px solid var(--primary-color);
 }
 
-.midia-hero::before {
+.midia-page .midia-hero::before {
   content: '';
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: 
+  background:
     radial-gradient(circle at 20% 50%, rgba(212, 175, 55, 0.1) 0%, transparent 50%),
     radial-gradient(circle at 80% 50%, rgba(212, 175, 55, 0.1) 0%, transparent 50%);
 }
 
-.hero-content {
+.midia-page .hero-content {
   position: relative;
   z-index: 1;
 }
 
-.hero-icon {
+.midia-page .hero-icon {
   margin-bottom: 1.5rem;
   color: var(--primary-color);
   animation: pulse 2s infinite;
 }
 
-.midia-hero h1 {
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+}
+
+.midia-page .midia-hero h1 {
   font-size: 3.5rem;
   margin-bottom: 1rem;
   font-weight: bold;
   background: linear-gradient(to right, #fff, #d4af37);
   -webkit-background-clip: text;
+  background-clip: text;
   -webkit-text-fill-color: transparent;
 }
 
-.midia-hero .hero-subtitle {
+.midia-page .midia-hero .hero-subtitle {
   font-size: 1.4rem;
   margin-bottom: 2rem;
   color: #ccc;
 }
 
-.hero-verse {
+.midia-page .hero-verse {
   max-width: 700px;
   margin: 2rem auto 0;
   padding: 1.5rem;
@@ -61,7 +67,7 @@
   border: 1px solid rgba(212, 175, 55, 0.3);
 }
 
-.hero-verse p {
+.midia-page .hero-verse p {
   font-size: 1.2rem;
   font-style: italic;
   margin-bottom: 0.5rem;
@@ -69,12 +75,12 @@
 }
 
 /* Live Section */
-.live-section {
+.midia-page .live-section {
   padding: 4rem 1rem;
   background: #111;
 }
 
-.section-header {
+.midia-page .section-header {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -82,22 +88,22 @@
   margin-bottom: 0.5rem;
 }
 
-.section-header svg {
+.midia-page .section-header svg {
   color: #ff0000;
 }
 
-.section-header h2 {
+.midia-page .section-header h2 {
   font-size: 2.5rem;
   color: #fff;
 }
 
-.section-subtitle {
+.midia-page .section-subtitle {
   text-align: center;
   color: #888;
   margin-bottom: 3rem;
 }
 
-.video-highlight {
+.midia-page .video-highlight {
   max-width: 1000px;
   margin: 0 auto;
   background: #1a1a1a;
@@ -106,7 +112,7 @@
   box-shadow: 0 10px 30px rgba(0,0,0,0.5);
 }
 
-.live-info {
+.midia-page .live-info {
   padding: 2rem;
   display: flex;
   flex-direction: column;
@@ -114,7 +120,7 @@
   gap: 1rem;
 }
 
-.live-badge {
+.midia-page .live-badge {
   background: #ff0000;
   color: white;
   padding: 0.25rem 1rem;
@@ -129,7 +135,7 @@
   50% { opacity: 0.5; }
 }
 
-.youtube-btn {
+.midia-page .youtube-btn {
   background: #ff0000;
   color: white;
   border: none;
@@ -141,26 +147,27 @@
   gap: 0.5rem;
   cursor: pointer;
   transition: transform 0.2s;
+  text-decoration: none;
 }
 
-.youtube-btn:hover {
+.midia-page .youtube-btn:hover {
   transform: scale(1.05);
 }
 
 /* Videos Grid */
-.videos-section {
+.midia-page .videos-section {
   padding: 4rem 1rem;
   background: var(--bg-color);
 }
 
-.videos-section h2 {
+.midia-page .videos-section h2 {
   text-align: center;
   color: var(--primary-color);
   margin-bottom: 2rem;
   font-size: 2rem;
 }
 
-.videos-grid {
+.midia-page .videos-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
   gap: 2rem;
@@ -168,29 +175,31 @@
   margin: 0 auto;
 }
 
-.video-card {
+.midia-page .video-card {
   background: #1a1a1a;
   border-radius: 12px;
   overflow: hidden;
   transition: transform 0.3s;
+  text-decoration: none;
+  color: inherit;
 }
 
-.video-card:hover {
+.midia-page .video-card:hover {
   transform: translateY(-5px);
 }
 
-.video-thumbnail {
+.midia-page .video-thumbnail {
   position: relative;
   aspect-ratio: 16/9;
 }
 
-.video-thumbnail img {
+.midia-page .video-thumbnail img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 
-.play-overlay {
+.midia-page .play-overlay {
   position: absolute;
   top: 0;
   left: 0;
@@ -204,21 +213,21 @@
   transition: opacity 0.3s;
 }
 
-.video-card:hover .play-overlay {
+.midia-page .video-card:hover .play-overlay {
   opacity: 1;
 }
 
-.video-info {
+.midia-page .video-info {
   padding: 1rem;
 }
 
-.video-info h3 {
+.midia-page .video-info h3 {
   color: #fff;
   font-size: 1.1rem;
   margin-bottom: 0.5rem;
 }
 
-.video-meta {
+.midia-page .video-meta {
   display: flex;
   justify-content: space-between;
   color: #888;
@@ -226,19 +235,19 @@
 }
 
 /* Areas Section */
-.areas-section {
+.midia-page .areas-section {
   padding: 4rem 1rem;
   background: #111;
 }
 
-.areas-section h2 {
+.midia-page .areas-section h2 {
   text-align: center;
   color: var(--primary-color);
   margin-bottom: 3rem;
   font-size: 2rem;
 }
 
-.areas-grid {
+.midia-page .areas-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 2rem;
@@ -246,7 +255,7 @@
   margin: 0 auto;
 }
 
-.area-card {
+.midia-page .area-card {
   background: #1a1a1a;
   padding: 2rem;
   border-radius: 12px;
@@ -255,39 +264,39 @@
   transition: all 0.3s;
 }
 
-.area-card:hover {
+.midia-page .area-card:hover {
   border-color: var(--primary-color);
   box-shadow: 0 0 20px rgba(212, 175, 55, 0.1);
 }
 
-.area-card svg {
+.midia-page .area-card svg {
   color: var(--primary-color);
   margin-bottom: 1rem;
 }
 
-.area-card h3 {
+.midia-page .area-card h3 {
   color: #fff;
   margin-bottom: 0.5rem;
 }
 
-.area-card p {
+.midia-page .area-card p {
   color: #888;
 }
 
 /* Team Section */
-.team-section {
+.midia-page .team-section {
   padding: 4rem 1rem;
   background: var(--bg-color);
 }
 
-.team-section h2 {
+.midia-page .team-section h2 {
   text-align: center;
   color: var(--primary-color);
   margin-bottom: 0.5rem;
   font-size: 2rem;
 }
 
-.team-grid {
+.midia-page .team-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 2rem;
@@ -295,7 +304,7 @@
   margin: 2rem auto 0;
 }
 
-.team-card {
+.midia-page .team-card {
   text-align: center;
   background: #1a1a1a;
   padding: 1.5rem;
@@ -303,7 +312,7 @@
   border-top: 3px solid var(--primary-color);
 }
 
-.team-photo {
+.midia-page .team-photo {
   width: 100px;
   height: 100px;
   border-radius: 50%;
@@ -311,31 +320,31 @@
   margin-bottom: 1rem;
 }
 
-.team-card h3 {
+.midia-page .team-card h3 {
   color: #fff;
   font-size: 1rem;
   margin-bottom: 0.25rem;
 }
 
-.team-card p {
+.midia-page .team-card p {
   color: var(--primary-color);
   font-size: 0.85rem;
 }
 
 /* Gallery Section */
-.gallery-section {
+.midia-page .gallery-section {
   padding: 4rem 1rem;
   background: #111;
 }
 
-.gallery-section h2 {
+.midia-page .gallery-section h2 {
   text-align: center;
   color: var(--primary-color);
   margin-bottom: 2rem;
   font-size: 2rem;
 }
 
-.gallery-grid {
+.midia-page .gallery-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 1.5rem;
@@ -343,25 +352,25 @@
   margin: 0 auto;
 }
 
-.gallery-item {
+.midia-page .gallery-item {
   position: relative;
   border-radius: 12px;
   overflow: hidden;
   aspect-ratio: 4/3;
 }
 
-.gallery-item img {
+.midia-page .gallery-item img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   transition: transform 0.3s;
 }
 
-.gallery-item:hover img {
+.midia-page .gallery-item:hover img {
   transform: scale(1.1);
 }
 
-.gallery-overlay {
+.midia-page .gallery-overlay {
   position: absolute;
   bottom: 0;
   left: 0;
@@ -373,17 +382,17 @@
   transition: transform 0.3s;
 }
 
-.gallery-item:hover .gallery-overlay {
+.midia-page .gallery-item:hover .gallery-overlay {
   transform: translateY(0);
 }
 
 /* Volunteer Form */
-.volunteer-section {
+.midia-page .volunteer-section {
   padding: 4rem 1rem;
   background: var(--bg-color);
 }
 
-.form-container {
+.midia-page .form-container {
   max-width: 600px;
   margin: 0 auto;
   background: #1a1a1a;
@@ -392,39 +401,39 @@
   border: 1px solid rgba(212, 175, 55, 0.2);
 }
 
-.form-header {
+.midia-page .form-header {
   text-align: center;
   margin-bottom: 2rem;
 }
 
-.form-header svg {
+.midia-page .form-header svg {
   color: var(--primary-color);
   margin-bottom: 1rem;
 }
 
-.form-header h2 {
+.midia-page .form-header h2 {
   color: #fff;
   margin-bottom: 0.5rem;
 }
 
-.form-header p {
+.midia-page .form-header p {
   color: #888;
 }
 
-.form-group {
+.midia-page .form-group {
   margin-bottom: 1.5rem;
 }
 
-.form-group label {
+.midia-page .form-group label {
   display: block;
   color: #fff;
   margin-bottom: 0.5rem;
   font-size: 0.9rem;
 }
 
-.form-group input,
-.form-group select,
-.form-group textarea {
+.midia-page .form-group input,
+.midia-page .form-group select,
+.midia-page .form-group textarea {
   width: 100%;
   padding: 12px;
   background: #111;
@@ -434,14 +443,14 @@
   font-family: inherit;
 }
 
-.form-group input:focus,
-.form-group select:focus,
-.form-group textarea:focus {
+.midia-page .form-group input:focus,
+.midia-page .form-group select:focus,
+.midia-page .form-group textarea:focus {
   outline: none;
   border-color: var(--primary-color);
 }
 
-.submit-btn {
+.midia-page .submit-btn {
   width: 100%;
   padding: 1rem;
   background: var(--primary-color);
@@ -453,30 +462,31 @@
   transition: background 0.3s;
 }
 
-.submit-btn:hover {
+.midia-page .submit-btn:hover {
   background: #b3922d;
 }
 
 @media (max-width: 768px) {
-  .midia-hero h1 {
+  .midia-page .midia-hero h1 {
     font-size: 2.5rem;
   }
   
-  .form-container {
+  .midia-page .form-container {
     padding: 1.5rem;
   }
 }
+
 @media (max-width: 480px) {
-  .midia-hero h1 {
+  .midia-page .midia-hero h1 {
     font-size: 2rem;
   }
-  .team-section h2,
-  .gallery-section h2 {
+  .midia-page .team-section h2,
+  .midia-page .gallery-section h2 {
     font-size: 2rem;
   }
-  .videos-grid,
-  .areas-grid,
-  .gallery-grid {
+  .midia-page .videos-grid,
+  .midia-page .areas-grid,
+  .midia-page .gallery-grid {
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     gap: 1rem;
   }

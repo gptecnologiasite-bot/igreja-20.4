@@ -4,98 +4,126 @@
 }
 
 /* Hero Section */
-.homens-hero {
-  background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-  padding: 5rem 2rem;
+.homens-page .homens-hero {
+  min-height: 80vh;
+  padding: 8rem 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   text-align: center;
   color: #fff;
   position: relative;
   overflow: hidden;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
 }
 
-.homens-hero::before {
+.homens-page .hero-slideshow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 0;
+}
+
+.homens-page .hero-slide {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  opacity: 0;
+  transition: opacity 1.5s ease-in-out;
+}
+
+.homens-page .hero-slide.active {
+  opacity: 0.3;
+}
+
+.homens-page .homens-hero::before {
   content: '';
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><polygon points="50,10 90,90 10,90" fill="rgba(255,255,255,0.03)"/><polygon points="20,20 40,60 10,60" fill="rgba(255,255,255,0.03)"/></svg>');
-  opacity: 0.5;
-}
-
-.hero-content {
-  position: relative;
+  background: linear-gradient(135deg, rgba(15, 23, 42, 0.85) 0%, rgba(30, 41, 59, 0.95) 100%);
   z-index: 1;
 }
 
-.hero-icon {
-  margin-bottom: 1.5rem;
-  animation: shield 3s ease-in-out infinite;
-  filter: drop-shadow(0 4px 8px rgba(0,0,0,0.3));
+.homens-page .hero-content {
+  position: relative;
+  z-index: 2;
+  max-width: 900px;
+  margin: 0 auto;
 }
 
-@keyframes shield {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.05); }
+.homens-page .hero-icon {
+  margin-bottom: 2rem;
+  animation: shield 4s ease-in-out infinite;
+  filter: drop-shadow(0 0 15px rgba(255, 255, 255, 0.2));
+  color: #94a3b8;
 }
 
-.homens-hero h1 {
-  font-size: 3.5rem;
+.homens-page .homens-hero h1 {
+  font-size: 4rem;
   margin-bottom: 1rem;
-  font-weight: bold;
-  text-shadow: 2px 2px 8px rgba(0,0,0,0.3);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  text-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  background: linear-gradient(to bottom, #ffffff, #94a3b8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
-.homens-hero .hero-subtitle {
+.homens-page .homens-hero .hero-subtitle {
   font-size: 1.4rem;
   margin-bottom: 2rem;
   opacity: 0.95;
 }
 
-.hero-verse {
-  max-width: 600px;
-  margin: 2rem auto 0;
-  padding: 1.5rem;
-  background: rgba(255,255,255,0.15);
-  border-radius: 12px;
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255,255,255,0.2);
-}
-@supports not ((-webkit-backdrop-filter: blur(10px)) or (backdrop-filter: blur(10px))) {
-  .hero-verse {
-    background: rgba(255,255,255,0.25);
-  }
+.homens-page .hero-verse {
+  max-width: 650px;
+  margin: 3rem auto 0;
+  padding: 2rem;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 16px;
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.4);
 }
 
-.hero-verse p {
+.homens-page .hero-verse p {
   font-size: 1.2rem;
   font-style: italic;
   margin-bottom: 0.5rem;
   line-height: 1.6;
 }
 
-.hero-verse span {
+.homens-page .hero-verse span {
   font-size: 0.9rem;
   opacity: 0.9;
   font-weight: 600;
 }
 
 /* Mission Section */
-.mission-section {
-  padding: 4rem 1rem;
+.homens-page .mission-section {
+  padding: 6rem 1rem;
   background: #1a1a1a;
 }
 
-.mission-section h2 {
+.homens-page .mission-section h2 {
   text-align: center;
   font-size: 2.5rem;
   color: var(--primary-color);
   margin-bottom: 1.5rem;
 }
 
-.mission-text {
+.homens-page .mission-text {
   max-width: 800px;
   margin: 0 auto;
   text-align: center;
@@ -105,18 +133,18 @@
 }
 
 /* Schedule Section */
-.schedule-section {
-  padding: 4rem 1rem;
+.homens-page .schedule-section {
+  padding: 6rem 1rem;
   background-color: var(--bg-color);
 }
 
 /* Video Section */
-.video-section {
+.homens-page .video-section {
   padding: 4rem 1rem;
   background-color: var(--bg-color);
 }
 
-.video-wrapper {
+.homens-page .video-wrapper {
   max-width: 900px;
   margin: 0 auto;
   border-radius: 12px;
@@ -124,12 +152,12 @@
   box-shadow: 0 8px 24px rgba(0,0,0,0.3);
 }
 
-.video-wrapper iframe {
+.homens-page .video-wrapper iframe {
   display: block;
   aspect-ratio: 16/9;
 }
 
-.section-header {
+.homens-page .section-header {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -137,98 +165,109 @@
   margin-bottom: 0.5rem;
 }
 
-.section-header svg {
+.homens-page .section-header svg {
   color: var(--primary-color);
 }
 
-.section-header h2 {
+.homens-page .section-header h2 {
   font-size: 2.5rem;
-  color: var(--primary-color);
+  color: #64748b;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
 }
 
-.section-subtitle {
+.homens-page .section-subtitle {
   text-align: center;
   color: var(--text-muted);
-  margin-bottom: 3rem;
-  font-size: 1.1rem;
+  margin-bottom: 5rem;
+  font-size: 1.2rem;
+  font-weight: 300;
+  letter-spacing: 0.05em;
 }
 
-.schedule-grid {
+.homens-page .schedule-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
-  gap: 1.5rem;
+  gap: 3rem;
   max-width: 1200px;
   margin: 0 auto;
 }
 
-.schedule-card {
-  background: #2a2a2a;
-  border-radius: 12px;
-  padding: 1.5rem;
+.homens-page .schedule-card {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 20px;
+  padding: 2.5rem;
   display: flex;
-  gap: 1.5rem;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-  transition: transform 0.3s, box-shadow 0.3s;
-  border-left: 4px solid #2c3e50;
+  gap: 2rem;
+  box-shadow: 0 15px 35px rgba(0,0,0,0.4);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  border: 1px solid rgba(148, 163, 184, 0.1);
+  -webkit-backdrop-filter: blur(15px);
+  backdrop-filter: blur(15px);
 }
 
-.schedule-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 8px 16px rgba(44, 62, 80, 0.3);
+.homens-page .schedule-card:hover {
+  transform: translateY(-12px);
+  border-color: #64748b;
+  box-shadow: 0 25px 50px rgba(0,0,0,0.5);
 }
 
-.schedule-icon {
-  background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+.homens-page .schedule-icon {
+  background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
   color: #fff;
-  width: 60px;
-  height: 60px;
-  border-radius: 12px;
+  width: 70px;
+  height: 70px;
+  border-radius: 18px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+  border: 1px solid rgba(255,255,255,0.1);
 }
 
-.schedule-content {
+.homens-page .schedule-content {
   flex: 1;
 }
 
-.schedule-header {
+.homens-page .schedule-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 0.5rem;
+  margin-bottom: 1rem;
   flex-wrap: wrap;
   gap: 0.5rem;
 }
 
-.schedule-header h3 {
+.homens-page .schedule-header h3 {
   color: var(--text-color);
   font-size: 1.2rem;
 }
 
-.day-badge {
-  background: rgba(44, 62, 80, 0.2);
-  color: #2c3e50;
-  padding: 0.25rem 0.75rem;
-  border-radius: 12px;
+.homens-page .day-badge {
+  background: rgba(100, 116, 139, 0.2);
+  color: #94a3b8;
+  padding: 0.4rem 1rem;
+  border-radius: 50px;
   font-size: 0.85rem;
-  font-weight: 600;
+  font-weight: 700;
+  border: 1px solid rgba(148, 163, 184, 0.2);
 }
 
-.schedule-description {
+.homens-page .schedule-description {
   color: var(--text-muted);
   margin-bottom: 1rem;
   font-size: 0.95rem;
 }
 
-.schedule-details {
+.homens-page .schedule-details {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
 }
 
-.detail-item {
+.homens-page .detail-item {
   display: flex;
   align-items: center;
   gap: 0.5rem;
@@ -236,24 +275,24 @@
   font-size: 0.9rem;
 }
 
-.detail-item svg {
-  color: #2c3e50;
+.homens-page .detail-item svg {
+  color: #64748b;
 }
 
 /* Team Section */
-.team-section {
-  padding: 4rem 1rem;
+.homens-page .team-section {
+  padding: 6rem 1rem;
   background: #1a1a1a;
 }
 
-.team-section h2 {
+.homens-page .team-section h2 {
   text-align: center;
   font-size: 2.5rem;
   color: var(--primary-color);
   margin-bottom: 0.5rem;
 }
 
-.team-grid {
+.homens-page .team-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   gap: 2rem;
@@ -261,7 +300,7 @@
   margin: 0 auto;
 }
 
-.team-card {
+.homens-page .team-card {
   background: #2a2a2a;
   padding: 2rem;
   border-radius: 12px;
@@ -271,11 +310,11 @@
   border-top: 3px solid #2c3e50;
 }
 
-.team-card:hover {
+.homens-page .team-card:hover {
   transform: translateY(-10px);
 }
 
-.team-photo {
+.homens-page .team-photo {
   width: 100px;
   height: 100px;
   border-radius: 50%;
@@ -283,25 +322,25 @@
   margin-bottom: 1rem;
 }
 
-.team-card h3 {
+.homens-page .team-card h3 {
   color: var(--text-color);
   margin-bottom: 0.5rem;
   font-size: 1.1rem;
 }
 
-.team-card p {
+.homens-page .team-card p {
   color: #2c3e50;
   font-size: 0.9rem;
   font-weight: 600;
 }
 
 /* Gallery Section */
-.gallery-section {
-  padding: 4rem 1rem;
+.homens-page .gallery-section {
+  padding: 6rem 1rem;
   background-color: var(--bg-color);
 }
 
-.gallery-grid {
+.homens-page .gallery-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
   gap: 1.5rem;
@@ -309,7 +348,7 @@
   margin: 0 auto;
 }
 
-.gallery-item {
+.homens-page .gallery-item {
   position: relative;
   border-radius: 12px;
   overflow: hidden;
@@ -317,18 +356,18 @@
   cursor: pointer;
 }
 
-.gallery-item img {
+.homens-page .gallery-item img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   transition: transform 0.3s;
 }
 
-.gallery-item:hover img {
+.homens-page .gallery-item:hover img {
   transform: scale(1.1);
 }
 
-.gallery-overlay {
+.homens-page .gallery-overlay {
   position: absolute;
   bottom: 0;
   left: 0;
@@ -341,41 +380,41 @@
   transition: transform 0.3s;
 }
 
-.gallery-item:hover .gallery-overlay {
+.homens-page .gallery-item:hover .gallery-overlay {
   transform: translateY(0);
 }
 
 /* Testimonial Form Section */
-.testimonial-form-section {
+.homens-page .testimonial-form-section {
   padding: 4rem 1rem;
   background: #1a1a1a;
 }
 
-.form-wrapper {
+.homens-page .form-wrapper {
   max-width: 700px;
   margin: 0 auto;
 }
 
-.testimonial-form {
+.homens-page .testimonial-form {
   background: #2a2a2a;
   padding: 2.5rem;
   border-radius: 12px;
   box-shadow: 0 4px 6px rgba(0,0,0,0.1);
 }
 
-.form-group {
+.homens-page .form-group {
   margin-bottom: 1.5rem;
 }
 
-.form-group label {
+.homens-page .form-group label {
   display: block;
   margin-bottom: 0.5rem;
   color: var(--text-color);
   font-weight: 500;
 }
 
-.form-group input,
-.form-group textarea {
+.homens-page .form-group input,
+.homens-page .form-group textarea {
   width: 100%;
   padding: 12px;
   background-color: var(--bg-color);
@@ -386,18 +425,18 @@
   transition: border-color 0.3s;
 }
 
-.form-group input:focus,
-.form-group textarea:focus {
+.homens-page .form-group input:focus,
+.homens-page .form-group textarea:focus {
   outline: none;
   border-color: #2c3e50;
 }
 
-.form-group textarea {
+.homens-page .form-group textarea {
   resize: vertical;
   min-height: 120px;
 }
 
-.submit-btn {
+.homens-page .submit-btn {
   width: 100%;
   padding: 1rem;
   background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
@@ -414,19 +453,19 @@
   transition: transform 0.3s;
 }
 
-.submit-btn:hover {
+.homens-page .submit-btn:hover {
   transform: scale(1.02);
 }
 
 /* CTA Section */
-.homens-cta {
+.homens-page .homens-cta {
   padding: 4rem 2rem;
   background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
   text-align: center;
   color: #fff;
 }
 
-.cta-icon {
+.homens-page .cta-icon {
   margin-bottom: 1rem;
   animation: pulse 2s ease-in-out infinite;
 }
@@ -436,21 +475,22 @@
   50% { transform: scale(1.1); }
 }
 
-.homens-cta h2 {
+.homens-page .homens-cta h2 {
   font-size: 2.5rem;
   margin-bottom: 1rem;
 }
 
-.homens-cta p {
-  font-size: 1.2rem;
-  margin-bottom: 2rem;
-  opacity: 0.95;
+.homens-page .homens-cta p {
+  font-size: 1.4rem;
+  margin-bottom: 3rem;
+  opacity: 0.9;
   max-width: 700px;
   margin-left: auto;
   margin-right: auto;
+  font-weight: 300;
 }
 
-.cta-button {
+.homens-page .cta-button {
   background: #fff;
   color: #2c3e50;
   padding: 1rem 2.5rem;
@@ -465,91 +505,92 @@
   cursor: pointer;
 }
 
-.cta-button:hover {
+.homens-page .cta-button:hover {
   transform: scale(1.05);
   box-shadow: 0 8px 16px rgba(0,0,0,0.3);
 }
 
 @media (max-width: 768px) {
-  .homens-hero h1 {
+  .homens-page .homens-hero h1 {
     font-size: 2.5rem;
   }
   
-  .schedule-card {
+  .homens-page .schedule-card {
     flex-direction: column;
     text-align: center;
   }
   
-  .schedule-icon {
+  .homens-page .schedule-icon {
     margin: 0 auto;
   }
   
-  .schedule-header {
+  .homens-page .schedule-header {
     flex-direction: column;
     align-items: center;
   }
   
-  .testimonial-form {
+  .homens-page .testimonial-form {
     padding: 1.5rem;
   }
 }
+
 @media (max-width: 480px) {
-  .homens-hero h1 {
+  .homens-page .homens-hero h1 {
     font-size: 2rem;
   }
-  .section-header h2 {
+  .homens-page .section-header h2 {
     font-size: 2rem;
   }
-  .schedule-grid {
+  .homens-page .schedule-grid {
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     gap: 1rem;
   }
-  .team-grid {
+  .homens-page .team-grid {
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     gap: 1rem;
   }
-  .gallery-grid {
+  .homens-page .gallery-grid {
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
     gap: 1rem;
   }
-  .homens-cta h2 {
+  .homens-page .homens-cta h2 {
     font-size: 2rem;
   }
-  .homens-cta p {
+  .homens-page .homens-cta p {
     font-size: 1rem;
   }
-  .cta-button {
+  .homens-page .cta-button {
     padding: 0.75rem 1.5rem;
     font-size: 1rem;
   }
-  .mission-section,
-  .schedule-section,
-  .team-section,
-  .gallery-section,
-  .testimonial-form-section,
-  .homens-cta,
-  .video-section {
+  .homens-page .mission-section,
+  .homens-page .schedule-section,
+  .homens-page .team-section,
+  .homens-page .gallery-section,
+  .homens-page .testimonial-form-section,
+  .homens-page .homens-cta,
+  .homens-page .video-section {
     padding: 2rem 1rem;
   }
-  .homens-hero .hero-subtitle {
+  .homens-page .homens-hero .hero-subtitle {
     font-size: 1rem;
   }
-  .section-subtitle {
+  .homens-page .section-subtitle {
     font-size: 1rem;
     margin-bottom: 2rem;
   }
-  .testimonial-form {
+  .homens-page .testimonial-form {
     padding: 1.25rem;
   }
-  .schedule-card {
+  .homens-page .schedule-card {
     padding: 1rem;
     gap: 1rem;
   }
-  .schedule-icon {
+  .homens-page .schedule-icon {
     width: 50px;
     height: 50px;
   }
-  .team-card {
+  .homens-page .team-card {
     padding: 1.5rem;
   }
 }

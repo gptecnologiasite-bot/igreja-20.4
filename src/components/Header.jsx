@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { Link } from 'react-router-dom';
 import { Instagram, Youtube, Facebook, Phone, Music, Moon, Sun, Menu, X, ShieldCheck, ChevronDown } from 'lucide-react';
 import '../css/Header.css';
@@ -11,6 +11,22 @@ const Header = ({ theme, toggleTheme }) => {
   const [showMinistries, setShowMinistries] = useState(false);
   const [isMinistriesFixed, setIsMinistriesFixed] = useState(false);
   const [ministriesTimeout, setMinistriesTimeout] = useState(null);
+  const [internalTheme, setInternalTheme] = useState(
+    typeof document !== 'undefined'
+      ? (document.documentElement.getAttribute('data-theme') || 'dark')
+      : 'dark'
+  );
+  const currentTheme = useMemo(() => theme || internalTheme, [theme, internalTheme]);
+  const handleToggleTheme = useMemo(() => {
+    if (typeof toggleTheme === 'function') return toggleTheme;
+    return () => {
+      const next = currentTheme === 'light' ? 'dark' : 'light';
+      if (typeof document !== 'undefined') {
+        document.documentElement.setAttribute('data-theme', next);
+      }
+      setInternalTheme(next);
+    };
+  }, [toggleTheme, currentTheme]);
 
   // Dynamic Header Data
   const [headerData, setHeaderData] = useState(DatabaseService.getHeaderDataDefault());
@@ -160,8 +176,8 @@ const Header = ({ theme, toggleTheme }) => {
             {headerData?.social?.phone && <a href={`tel:${headerData.social.phone}`}><Phone size={18} /></a>}
             {headerData?.social?.music && <a href={headerData.social.music}><Music size={18} /></a>}
           </div>
-          <button className="theme-toggle" onClick={toggleTheme} aria-label="Toggle theme">
-            {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
+          <button className="theme-toggle" onClick={handleToggleTheme} aria-label="Toggle theme">
+            {currentTheme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
           </button>
           <Link to="/painel" className="cta-button">
             <ShieldCheck size={16} style={{ marginRight: '8px' }} />
