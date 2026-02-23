@@ -198,6 +198,11 @@ const Header = ({ theme, toggleTheme }) => {
           {headerData?.menu?.slice(1).map((item, idx) => (
             <Link key={idx} to={item.path} onClick={toggleMenu}>{item.name}</Link>
           ))}
+
+          <Link to="/painel" className="mobile-admin-link" onClick={toggleMenu}>
+            <ShieldCheck size={18} style={{ marginRight: '8px' }} />
+            Área Administrativa
+          </Link>
         </nav>
       )}
     </header>
