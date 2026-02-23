@@ -1,7 +1,6 @@
+import React, { useState } from 'react';
 import { Zap, Calendar, Clock, Users, Camera, MessageSquare, Send, Heart, MapPin, Star, Music, Gamepad2 } from 'lucide-react';
-import { useState, useEffect,  } from 'react';
-import '../css/Jovens.css';
-import DatabaseService from '../services/DatabaseService';
+import { useMinistryData } from '../hooks/useMinistryData';
 
 const Jovens = () => {
   const [testimonial, setTestimonial] = useState({
@@ -11,17 +10,7 @@ const Jovens = () => {
     message: ''
   });
 
-  const [data, setData] = useState(DatabaseService.getMinistryDefault('jovens'));
-
-  useEffect(() => {
-    DatabaseService.getMinistry('jovens').then(setData);
-
-    const handleStorageChange = () => {
-      DatabaseService.getMinistry('jovens').then(setData);
-    };
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, []);
+  const [data] = useMinistryData('jovens');
 
   const handleSubmit = (e) => {
     e.preventDefault();

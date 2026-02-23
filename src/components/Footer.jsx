@@ -6,12 +6,15 @@ import DatabaseService from '../services/DatabaseService';
 
 const Footer = () => {
   const [footerData, setFooterData] = React.useState(DatabaseService.getFooterDataDefault());
+  const [headerData, setHeaderData] = React.useState(DatabaseService.getHeaderDataDefault());
 
   React.useEffect(() => {
     DatabaseService.getFooterData().then(setFooterData);
+    DatabaseService.getHeaderData().then(setHeaderData);
 
     const handleStorageChange = () => {
       DatabaseService.getFooterData().then(setFooterData);
+      DatabaseService.getHeaderData().then(setHeaderData);
     };
     window.addEventListener('storage', handleStorageChange);
     return () => window.removeEventListener('storage', handleStorageChange);
@@ -45,18 +48,24 @@ const Footer = () => {
         {/* About Section */}
         <div className="footer-section">
           <div className="footer-logo">
-            <div className="footer-logo-icon">AD</div>
+            <div className="footer-logo-icon">
+              {headerData?.logo?.icon && typeof headerData.logo.icon === 'string' && (headerData.logo.icon.startsWith('data:image') || headerData.logo.icon.startsWith('http')) ? (
+                <img src={headerData.logo.icon} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+              ) : (
+                headerData?.logo?.icon || footerData?.logo?.text?.substring(0, 2)
+              )}
+            </div>
             <div>
-              <h3>ADMAC</h3>
-              <p className="footer-tagline">Vivendo o Sobrenatural</p>
+              <h3>{footerData?.logo?.text}</h3>
+              <p className="footer-tagline">{footerData?.logo?.tagline}</p>
             </div>
           </div>
           <p className="footer-description">
-            Assembleia de Deus Ministério Atos e Conquistas - Uma igreja comprometida com a Palavra de Deus e a transformação de vidas.
+            {footerData?.description}
           </p>
           <div className="footer-verse">
             <Heart size={16} />
-            <span>"Ide por todo o mundo e pregai o evangelho" - Marcos 16:15</span>
+            <span>{footerData?.verse}</span>
           </div>
         </div>
 
@@ -96,23 +105,23 @@ const Footer = () => {
           <div className="footer-contact">
             <div className="footer-contact-item">
               <MapPin size={18} />
-              <span>{footerData.contact.address || 'QN 516 - Samambaia, Brasília - DF'}</span>
+              <span>{footerData?.contact?.address}</span>
             </div>
             <div className="footer-contact-item">
               <Phone size={18} />
-              <a href={`tel:${footerData.contact.phone || '+5561993241084'}`}>
-                {footerData.contact.phone || '(61) 99324-1084'}
+              <a href={`tel:${footerData?.contact?.phone}`}>
+                {footerData?.contact?.phone}
               </a>
             </div>
             <div className="footer-contact-item">
               <Mail size={18} />
-              <a href={`mailto:${footerData.contact.email || 'contato@admac.com'}`}>
-                {footerData.contact.email || 'contato@admac.com'}
+              <a href={`mailto:${footerData?.contact?.email}`}>
+                {footerData?.contact?.email}
               </a>
             </div>
             <div className="footer-contact-item">
               <Clock size={18} />
-              <span>Cultos: Dom 18h | Qua 19h30</span>
+              <span>Cultos: {footerData?.contact?.cultos}</span>
             </div>
           </div>
 
@@ -120,18 +129,26 @@ const Footer = () => {
           <div className="footer-social">
             <h4>Redes Sociais</h4>
             <div className="social-links">
-              <a href={footerData.social.instagram || '#'} target="_blank" rel="noopener noreferrer" className="social-link instagram">
-                <Instagram size={20} />
-              </a>
-              <a href={footerData.social.youtube || '#'} target="_blank" rel="noopener noreferrer" className="social-link youtube">
-                <Youtube size={20} />
-              </a>
-              <a href={footerData.social.facebook || '#'} target="_blank" rel="noopener noreferrer" className="social-link facebook">
-                <Facebook size={20} />
-              </a>
-              <a href="https://open.spotify.com/show/2lzm9pXbj4PCoWcxsFzDtf" target="_blank" rel="noopener noreferrer" className="social-link spotify">
-                <Music size={20} />
-              </a>
+              {footerData?.social?.instagram && (
+                <a href={footerData.social.instagram} target="_blank" rel="noopener noreferrer" className="social-link instagram">
+                  <Instagram size={20} />
+                </a>
+              )}
+              {footerData?.social?.youtube && (
+                <a href={footerData.social.youtube} target="_blank" rel="noopener noreferrer" className="social-link youtube">
+                  <Youtube size={20} />
+                </a>
+              )}
+              {footerData?.social?.facebook && (
+                <a href={footerData.social.facebook} target="_blank" rel="noopener noreferrer" className="social-link facebook">
+                  <Facebook size={20} />
+                </a>
+              )}
+              {footerData?.social?.spotify && (
+                <a href={footerData.social.spotify} target="_blank" rel="noopener noreferrer" className="social-link spotify">
+                  <Music size={20} />
+                </a>
+              )}
             </div>
           </div>
         </div>
@@ -141,9 +158,9 @@ const Footer = () => {
       <div className="footer-bottom">
         <div className="container">
           <div className="footer-bottom-content">
-            <p>&copy; {new Date().getFullYear()} ADMAC - Assembleia de Deus Ministério Atos e Conquistas. Todos os direitos reservados.</p>
+            <p>&copy; {new Date().getFullYear()} {footerData?.logo?.text} - Assembleia de Deus Ministério Atos e Conquistas. Todos os direitos reservados.</p>
             <p className="footer-credits">
-              Desenvolvido com <Heart size={14} className="heart-icon" /> pela equipe ADMAC
+              Desenvolvido com <Heart size={14} className="heart-icon" /> pela equipe {footerData?.logo?.text}
             </p>
           </div>
         </div>

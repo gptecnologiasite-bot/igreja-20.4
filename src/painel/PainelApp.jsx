@@ -7,9 +7,13 @@ import ContentManager from './ContentManager';
 import MinistriesManager from './managers/MinistriesManager';
 import VideosManager from './managers/VideosManager';
 import WhatsAppManager from './managers/WhatsAppManager';
+import PagesManager from './managers/PagesManager';
+import HomeEditor from './managers/HomeEditor';
 import UsersManager from './managers/UsersManager';
+import GlobalSettingsEditor from './managers/GlobalSettingsEditor';
 import SettingsPage from './Settings';
 import AnalyticsDashboard from './analytics/AnalyticsDashboard';
+import PageEditor from './managers/PageEditor';
 
 const PainelApp = () => {
     // Check if user is authenticated
@@ -39,6 +43,18 @@ const PainelApp = () => {
                 element={isAuthenticated ? <MinistriesManager /> : <Navigate to="/painel/login" />}
             />
             <Route
+                path="/content/pages"
+                element={isAuthenticated ? <PagesManager /> : <Navigate to="/painel/login" />}
+            />
+            <Route
+                path="/content/pages/home"
+                element={isAuthenticated ? <HomeEditor /> : <Navigate to="/painel/login" />}
+            />
+            <Route
+                path="/content/pages/:id"
+                element={isAuthenticated ? <PageEditor /> : <Navigate to="/painel/login" />}
+            />
+            <Route
                 path="/content/videos"
                 element={isAuthenticated ? <VideosManager /> : <Navigate to="/painel/login" />}
             />
@@ -53,6 +69,10 @@ const PainelApp = () => {
             <Route
                 path="/settings"
                 element={isAuthenticated ? <SettingsPage /> : <Navigate to="/painel/login" />}
+            />
+            <Route
+                path="/global-settings"
+                element={isAuthenticated ? <GlobalSettingsEditor /> : <Navigate to="/painel/login" />}
             />
             <Route
                 path="/analytics"

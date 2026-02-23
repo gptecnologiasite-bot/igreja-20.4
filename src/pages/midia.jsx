@@ -1,6 +1,7 @@
 import { Video, Camera, Mic, Monitor, Youtube, Instagram, Facebook, Share2, Users, Play, Image, Film } from 'lucide-react';
 import { useState, useEffect } from 'react';
 import '../css/Midia.css';
+import { useMinistryData } from '../hooks/useMinistryData';
 import DatabaseService from '../services/DatabaseService';
 
 const Midia = () => {
@@ -11,39 +12,31 @@ const Midia = () => {
     message: ''
   });
 
-  const [data, setData] = useState(() => ({
-    ...DatabaseService.getMinistryDefault('midia'),
-    live: { title: '', time: '', videoUrl: '', youtubeChannel: '' },
-    videos: [],
-    team: [],
-    gallery: []
-  }));
+  const [data] = useMinistryData('midia');
+  const [dynamicVideos, setDynamicVideos] = useState([]);
 
   useEffect(() => {
-    DatabaseService.getMinistry('midia').then((d) => {
-      setData({
-        hero: d.hero || { title: 'Ministério de Mídia', subtitle: '', verse: '' },
-        live: d.live || { title: 'Culto da Família', time: 'Domingos 18h', videoUrl: '', youtubeChannel: '' },
-        videos: Array.isArray(d.videos) ? d.videos : [],
-        team: Array.isArray(d.team) ? d.team : [],
-        gallery: Array.isArray(d.gallery) ? d.gallery : []
-      });
-    });
+    const loadDynamicVideos = async () => {
+      const videos = await DatabaseService.getVideos();
+      setDynamicVideos(videos.filter(v => v.active !== false));
+    };
+    loadDynamicVideos();
 
-    const handleStorageChange = () => {
-      DatabaseService.getMinistry('midia').then((d) => {
-        setData({
-          hero: d.hero || { title: 'Ministério de Mídia', subtitle: '', verse: '' },
-          live: d.live || { title: 'Culto da Família', time: 'Domingos 18h', videoUrl: '', youtubeChannel: '' },
-          videos: Array.isArray(d.videos) ? d.videos : [],
-          team: Array.isArray(d.team) ? d.team : [],
-          gallery: Array.isArray(d.gallery) ? d.gallery : []
-        });
-      });
+    const handleStorageChange = (e) => {
+      if (e.key === 'admac_videos') loadDynamicVideos();
     };
     window.addEventListener('storage', handleStorageChange);
     return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
+
+  // Merge hardcoded videos with dynamic ones
+  const allVideos = [...(dynamicVideos.map(v => ({
+    title: v.title,
+    videoUrl: `https://www.youtube.com/watch?v=${v.videoId}`,
+    thumbnail: `https://img.youtube.com/vi/${v.videoId}/mqdefault.jpg`,
+    date: v.createdAt ? new Date(v.createdAt).toLocaleDateString() : '',
+    views: 'Novo'
+  }))), ...(data.videos || [])].slice(0, 6);
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -76,26 +69,26 @@ const Midia = () => {
             <h2>Nossos Cultos Online</h2>
           </div>
           <p className="section-subtitle">Acompanhe nossas transmissões ao vivo</p>
-          
+
           <div className="video-highlight">
             <div className="video-wrapper">
               {data.live?.videoUrl ? (
-                <iframe 
-                  width="100%" 
-                  height="500" 
-                  src={data.live.videoUrl} 
-                  title="Culto Ao Vivo" 
-                  frameBorder="0" 
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
+                <iframe
+                  width="100%"
+                  height="500"
+                  src={data.live.videoUrl}
+                  title="Culto Ao Vivo"
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                   allowFullScreen
                 ></iframe>
               ) : (
-                <div style={{ 
-                  width: '100%', 
-                  height: '500px', 
-                  background: 'rgba(0,0,0,0.5)', 
-                  display: 'flex', 
-                  alignItems: 'center', 
+                <div style={{
+                  width: '100%',
+                  height: '500px',
+                  background: 'rgba(0,0,0,0.5)',
+                  display: 'flex',
+                  alignItems: 'center',
                   justifyContent: 'center',
                   borderRadius: '8px',
                   color: 'rgba(255,255,255,0.7)'
@@ -103,16 +96,16 @@ const Midia = () => {
                   <div style={{ textAlign: 'center' }}>
                     <Youtube size={64} style={{ marginBottom: '1rem', opacity: 0.5 }} />
                     <p>Transmissão ao vivo em breve</p>
-                    <a 
-                      href={data.live?.youtubeChannel || 'https://www.youtube.com/@ADMAC'} 
-                      target="_blank" 
+                    <a
+                      href={data.live?.youtubeChannel || 'https://www.youtube.com/@ADMAC'}
+                      target="_blank"
                       rel="noopener noreferrer"
-                      style={{ 
-                        display: 'inline-block', 
-                        marginTop: '1rem', 
-                        padding: '0.75rem 1.5rem', 
-                        background: 'var(--primary-color)', 
-                        color: '#000', 
+                      style={{
+                        display: 'inline-block',
+                        marginTop: '1rem',
+                        padding: '0.75rem 1.5rem',
+                        background: 'var(--primary-color)',
+                        color: '#000',
                         borderRadius: '8px',
                         textDecoration: 'none',
                         fontWeight: 'bold'
@@ -128,9 +121,9 @@ const Midia = () => {
               <span className="live-badge">AO VIVO</span>
               <h3>{data.live?.title || 'Culto da Família'}</h3>
               <p>{data.live?.time || 'Domingos 18h'}</p>
-              <a 
-                href={data.live?.youtubeChannel || 'https://www.youtube.com/@ADMAC'} 
-                target="_blank" 
+              <a
+                href={data.live?.youtubeChannel || 'https://www.youtube.com/@ADMAC'}
+                target="_blank"
                 rel="noopener noreferrer"
                 className="youtube-btn"
               >
@@ -146,8 +139,8 @@ const Midia = () => {
         <div className="container">
           <h2>Últimas Transmissões</h2>
           <div className="videos-grid">
-            {data.videos && data.videos.length > 0 ? (
-              data.videos.map((video, index) => (
+            {allVideos && allVideos.length > 0 ? (
+              allVideos.map((video, index) => (
                 <a
                   key={index}
                   href={video.url || video.videoUrl || '#'}
@@ -264,35 +257,35 @@ const Midia = () => {
               <h2>Seja um Voluntário</h2>
               <p>Quer servir a Deus com seus talentos na área de mídia?</p>
             </div>
-            
+
             <form onSubmit={handleSubmit} className="media-form">
               <div className="form-group">
                 <label>Nome Completo</label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   value={formData.name}
-                  onChange={(e) => setFormData({...formData, name: e.target.value})}
-                  required 
+                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                  required
                   placeholder="Seu nome"
                 />
               </div>
-              
+
               <div className="form-group">
                 <label>Email</label>
-                <input 
-                  type="email" 
+                <input
+                  type="email"
                   value={formData.email}
-                  onChange={(e) => setFormData({...formData, email: e.target.value})}
-                  required 
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                  required
                   placeholder="seu@email.com"
                 />
               </div>
 
               <div className="form-group">
                 <label>Área de Interesse</label>
-                <select 
+                <select
                   value={formData.area}
-                  onChange={(e) => setFormData({...formData, area: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, area: e.target.value })}
                   required
                 >
                   <option value="">Selecione uma área</option>
@@ -306,9 +299,9 @@ const Midia = () => {
 
               <div className="form-group">
                 <label>Mensagem / Experiência</label>
-                <textarea 
+                <textarea
                   value={formData.message}
-                  onChange={(e) => setFormData({...formData, message: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, message: e.target.value })}
                   rows="4"
                   placeholder="Conte-nos um pouco sobre sua experiência (se houver)"
                 ></textarea>

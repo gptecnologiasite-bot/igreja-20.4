@@ -3,14 +3,32 @@ import { useNavigate } from 'react-router-dom';
 import {
     LogOut, User, Menu, Home, Settings, FileEdit,
     Users, Calendar, FileText, DollarSign, TrendingUp,
-    TrendingDown, Clipboard, Heart, BookOpen, BarChart3
+    TrendingDown, Clipboard, Heart, BookOpen, BarChart3, Globe
 } from 'lucide-react';
 import './PainelDashboard.css';
 
 const PainelDashboard = () => {
     const navigate = useNavigate();
-    const user = JSON.parse(localStorage.getItem('user') || '{}');
+    const [user, setUser] = React.useState(JSON.parse(localStorage.getItem('user') || '{}'));
     const userType = user.userType || 'admin'; // Fallback to admin if not set (legacy users)
+
+    // Get real stats
+    const [stats, setStats] = React.useState({
+        userCount: 0,
+        contentCount: 0
+    });
+
+    React.useEffect(() => {
+        const loadData = () => {
+            const users = JSON.parse(localStorage.getItem('admac_users') || '[]');
+            setStats(prev => ({ ...prev, userCount: users.length }));
+            setUser(JSON.parse(localStorage.getItem('user') || '{}'));
+        };
+
+        loadData();
+        window.addEventListener('storage', loadData);
+        return () => window.removeEventListener('storage', loadData);
+    }, []);
 
     const handleLogout = () => {
         localStorage.removeItem('isAuthenticated');
@@ -27,84 +45,95 @@ const PainelDashboard = () => {
                 { icon: Users, label: 'Usuários', path: '/painel/users' },
                 { icon: FileEdit, label: 'Conteúdo', path: '/painel/content' },
                 { icon: BarChart3, label: 'Analytics', path: '/painel/analytics' },
-                { icon: Settings, label: 'Configurações', path: '/painel/settings' }
+                { icon: Settings, label: 'Configurações', path: '/painel/settings' },
+                { icon: Globe, label: 'Configurações Site', path: '/painel/global-settings' }
             ],
             widgets: [
-                { title: 'Total de Usuários', value: '1,234', icon: Users, color: '#4a90e2' },
+                { title: 'Total de Usuários', value: stats.userCount.toString(), icon: Users, color: '#4a90e2' },
                 { title: 'Visitas Hoje', value: '456', icon: TrendingUp, color: '#50c878' },
                 { title: 'Conteúdos', value: '89', icon: FileEdit, color: '#ffd700' }
+            ],
+            actions: [
+                { title: 'Gerenciar Conteúdo', desc: 'Edite o site da igreja', icon: FileEdit, path: '/painel/content' },
+                { title: 'Configurações do Site', desc: 'Editar Cabeçalho e Rodapé', icon: Globe, path: '/painel/global-settings' },
+                { title: 'Meus Dados', desc: 'Atualizar perfil', icon: Settings, path: '/painel/settings' }
             ]
         },
         pastor: {
             label: 'Pastor',
             menu: [
                 { icon: Home, label: 'Dashboard', path: '/painel/dashboard' },
-                { icon: Users, label: 'Membros', path: '/painel/members' },
-                { icon: Calendar, label: 'Agenda Pastoral', path: '/painel/schedule' },
-                { icon: FileText, label: 'Relatórios', path: '/painel/reports' }
+                { icon: Users, label: 'Membros', path: '/painel/users' },
+                { icon: FileEdit, label: 'Conteúdo', path: '/painel/content' }
             ],
             widgets: [
                 { title: 'Novos Membros (Mês)', value: '12', icon: User, color: '#50c878' },
-                { title: 'Atendimentos', value: '5', icon: Heart, color: '#ff6b6b' },
-                { title: 'Próximo Evento', value: 'Culto Ceia', sub: 'Domingo, 18h', icon: Calendar, color: '#4a90e2' }
+                { title: 'Atendimentos', value: '5', icon: Heart, color: '#ff6b6b' }
+            ],
+            actions: [
+                { title: 'Meus Dados', desc: 'Atualizar perfil', icon: Settings, path: '/painel/settings' }
             ]
         },
         lider: {
-            label: 'Líder de Ministério',
+            label: 'Líder',
             menu: [
                 { icon: Home, label: 'Dashboard', path: '/painel/dashboard' },
-                { icon: Users, label: 'Meu Ministério', path: '/painel/ministry' },
-                { icon: Clipboard, label: 'Escalas', path: '/painel/roster' },
-                { icon: Calendar, label: 'Eventos', path: '/painel/events' }
+                { icon: Users, label: 'Membros', path: '/painel/users' }
             ],
             widgets: [
-                { title: 'Membros Ativos', value: '24', icon: Users, color: '#4a90e2' },
-                { title: 'Próxima Escala', value: 'Louvor', sub: 'Quarta-feira', icon: Clipboard, color: '#ffd700' }
+                { title: 'Membros Ativos', value: '24', icon: Users, color: '#4a90e2' }
+            ],
+            actions: [
+                { title: 'Meus Dados', desc: 'Atualizar perfil', icon: Settings, path: '/painel/settings' }
             ]
         },
         secretario: {
             label: 'Secretaria',
             menu: [
                 { icon: Home, label: 'Dashboard', path: '/painel/dashboard' },
-                { icon: Users, label: 'Cadastro Membros', path: '/painel/members' },
-                { icon: FileText, label: 'Atas e Docs', path: '/painel/docs' },
-                { icon: Calendar, label: 'Agenda da Igreja', path: '/painel/church-schedule' }
+                { icon: Users, label: 'Membros', path: '/painel/users' },
+                { icon: FileEdit, label: 'Conteúdo', path: '/painel/content' }
             ],
             widgets: [
-                { title: 'Aniversariantes', value: '8', sub: 'Neste mês', icon: Calendar, color: '#ff6b6b' },
-                { title: 'Novos Cadastros', value: '3', sub: 'Aguardando Aprovação', icon: User, color: '#ffd700' }
+                { title: 'Aniversariantes', value: '8', sub: 'Neste mês', icon: Calendar, color: '#ff6b6b' }
+            ],
+            actions: [
+                { title: 'Gerenciar Usuários', desc: 'Cadastros e edits', icon: Users, path: '/painel/users' },
+                { title: 'Meus Dados', desc: 'Atualizar perfil', icon: Settings, path: '/painel/settings' }
             ]
         },
         tesoureiro: {
             label: 'Tesouraria',
             menu: [
                 { icon: Home, label: 'Dashboard', path: '/painel/dashboard' },
-                { icon: DollarSign, label: 'Dízimos & Ofertas', path: '/painel/finance/income' },
-                { icon: TrendingDown, label: 'Pagamentos', path: '/painel/finance/expenses' },
-                { icon: FileText, label: 'Relatórios', path: '/painel/finance/reports' }
+                { icon: Users, label: 'Membros', path: '/painel/users' }
             ],
             widgets: [
-                { title: 'Entradas (Mês)', value: 'R$ 12.500', icon: TrendingUp, color: '#50c878' },
-                { title: 'Saídas (Mês)', value: 'R$ 4.200', icon: TrendingDown, color: '#ff6b6b' },
                 { title: 'Saldo Atual', value: 'R$ 35.800', icon: DollarSign, color: '#ffd700' }
+            ],
+            actions: [
+                { title: 'Meus Dados', desc: 'Atualizar perfil', icon: Settings, path: '/painel/settings' }
             ]
         },
         membro: {
             label: 'Membro',
             menu: [
-                { icon: Home, label: 'Dashboard', path: '/painel/dashboard' },
-                { icon: Clipboard, label: 'Minhas Escalas', path: '/painel/my-roster' },
-                { icon: DollarSign, label: 'Meus Dízimos', path: '/painel/my-tithes' }
+                { icon: Home, label: 'Dashboard', path: '/painel/dashboard' }
             ],
             widgets: [
-                { title: 'Próximo Culto', value: 'Domingo', sub: '18:00h - Ceia', icon: Calendar, color: '#4a90e2' },
                 { title: 'Versículo do Dia', value: 'Salmos 23:1', sub: 'O Senhor é o meu pastor...', icon: BookOpen, color: '#fff' }
+            ],
+            actions: [
+                { title: 'Meus Dados', desc: 'Atualizar perfil', icon: Settings, path: '/painel/settings' }
             ]
         }
     };
 
     // Safe fallback if userType is somehow invalid
     const currentRole = roleConfig[userType] || roleConfig.admin;
+
+    // Fix active state logic
+    const currentPath = window.location.pathname;
 
     return (
         <div className="dashboard-container">
@@ -121,8 +150,8 @@ const PainelDashboard = () => {
                     {currentRole.menu.map((item, index) => (
                         <div
                             key={index}
-                            className={`menu-item ${index === 0 ? 'active' : ''}`}
-                            onClick={() => item.path !== '/painel/dashboard' && navigate(item.path)}
+                            className={`menu-item ${currentPath === item.path ? 'active' : ''}`}
+                            onClick={() => navigate(item.path)}
                         >
                             <item.icon size={20} />
                             <span>{item.label}</span>
@@ -139,16 +168,28 @@ const PainelDashboard = () => {
                         <button className="menu-toggle">
                             <Menu size={24} />
                         </button>
-                        <h1>Dashboard</h1>
+                        <div className="header-breadcrumbs">
+                            <span>Painel</span>
+                            <span className="separator">/</span>
+                            <span className="current">Dashboard</span>
+                        </div>
                     </div>
                     <div className="header-right">
-                        <div className="user-info">
-                            <User size={20} />
-                            <span>{user.name || 'Usuário'}</span>
+                        <div className="user-profile-summary">
+                            <div className="user-text">
+                                <span className="user-name">{user.name || 'Usuário'}</span>
+                                <span className="user-role">{currentRole.label}</span>
+                            </div>
+                            <div className="user-avatar-small">
+                                {user.photo ? (
+                                    <img src={user.photo} alt={user.name} />
+                                ) : (
+                                    <User size={20} />
+                                )}
+                            </div>
                         </div>
-                        <button className="logout-btn" onClick={handleLogout}>
+                        <button className="logout-btn-minimal" onClick={handleLogout} title="Sair">
                             <LogOut size={20} />
-                            Sair
                         </button>
                     </div>
                 </div>
@@ -176,24 +217,17 @@ const PainelDashboard = () => {
                         ))}
                     </div>
 
-                    {/* Quick Actions (Example context based) */}
+                    {/* Dynamic Quick Actions */}
                     <div className="dashboard-section">
                         <h3>Acesso Rápido</h3>
                         <div className="dashboard-actions">
-                            {userType === 'admin' ? (
-                                <div className="action-card" onClick={() => navigate('/painel/content')}>
-                                    <FileEdit size={32} />
-                                    <h3>Gerenciar Conteúdo</h3>
-                                    <p>Edite o site da igreja</p>
+                            {currentRole.actions.map((action, index) => (
+                                <div key={index} className="action-card" onClick={() => navigate(action.path)}>
+                                    <action.icon size={32} />
+                                    <h3>{action.title}</h3>
+                                    <p>{action.desc}</p>
                                 </div>
-                            ) : null}
-
-                            {/* Generic placeholder actions for demo */}
-                            <div className="action-card empty-action">
-                                <Settings size={32} />
-                                <h3>Meus Dados</h3>
-                                <p>Atualizar perfil</p>
-                            </div>
+                            ))}
                         </div>
                     </div>
                 </div>

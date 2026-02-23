@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, Plus, Edit2, Trash2, Youtube, Save, X } from 'lucide-react';
+import DatabaseService from '../../services/DatabaseService';
 import './VideosManager.css';
 
 const VideosManager = () => {
@@ -26,17 +27,14 @@ const VideosManager = () => {
         { value: 'outros', label: 'Outros' }
     ];
 
-    // Load videos from localStorage
+    // Load videos from DatabaseService
     useEffect(() => {
-        const savedVideos = localStorage.getItem('admac_videos');
-        if (savedVideos) {
-            setVideos(JSON.parse(savedVideos));
-        }
+        DatabaseService.getVideos().then(setVideos);
     }, []);
 
-    // Save videos to localStorage
-    const saveVideos = (updatedVideos) => {
-        localStorage.setItem('admac_videos', JSON.stringify(updatedVideos));
+    // Save videos to DatabaseService
+    const saveVideos = async (updatedVideos) => {
+        await DatabaseService.saveVideos(updatedVideos);
         setVideos(updatedVideos);
     };
 

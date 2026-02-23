@@ -1,20 +1,10 @@
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Calendar, Clock, MapPin, Heart, Star, Camera, Users, BookOpen } from 'lucide-react';
 import '../css/Kids.css';
-import DatabaseService from '../services/DatabaseService';
+import { useMinistryData } from '../hooks/useMinistryData';
 
 const Kids = () => {
-  const [data, setData] = useState(DatabaseService.getMinistryDefault('kids'));
-
-  useEffect(() => {
-    DatabaseService.getMinistry('kids').then(setData);
-
-    const handleStorageChange = () => {
-      DatabaseService.getMinistry('kids').then(setData);
-    };
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, []);
+  const [data] = useMinistryData('kids');
 
   return (
     <div className="kids-page">
@@ -79,7 +69,7 @@ const Kids = () => {
         <div className="container">
           <h2>Próximos Eventos</h2>
           <p className="section-subtitle">Não perca as atividades especiais do Kids!</p>
-          
+
           <div className="events-grid">
             {data.schedule.map((event, index) => (
               <div key={index} className="event-card">
@@ -118,7 +108,7 @@ const Kids = () => {
             <h2>Galeria de Fotos</h2>
           </div>
           <p className="section-subtitle">Momentos especiais do nosso ministério</p>
-          
+
           <div className="gallery-grid">
             {data.gallery.map((photo, index) => (
               <div key={index} className="gallery-item">
@@ -137,7 +127,7 @@ const Kids = () => {
         <div className="container">
           <h2>O Que as Crianças Dizem</h2>
           <p className="section-subtitle">Depoimentos dos nossos pequenos</p>
-          
+
           <div className="testimonials-grid">
             {data.testimonials.map((testimonial, index) => (
               <div key={index} className="testimonial-card">

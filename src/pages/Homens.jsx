@@ -1,7 +1,6 @@
+import React, { useState } from 'react';
 import { Shield, Calendar, Clock, Users, Camera, MessageSquare, Send, Heart, MapPin, Star, Play } from 'lucide-react';
-import { useState, useEffect } from 'react';
-import '../css/Homens.css';
-import DatabaseService from '../services/DatabaseService';
+import { useMinistryData } from '../hooks/useMinistryData';
 
 const Homens = () => {
   const [testimonial, setTestimonial] = useState({
@@ -13,38 +12,7 @@ const Homens = () => {
     message: ''
   });
 
-  const [data, setData] = useState(() => ({
-    ...DatabaseService.getMinistryDefault('homens'),
-    schedule: [],
-    team: [],
-    gallery: []
-  }));
-
-  useEffect(() => {
-    DatabaseService.getMinistry('homens').then((d) => {
-      setData({
-        hero: d.hero || { title: 'Ministério de Homens', subtitle: '', verse: '' },
-        mission: d.mission || { title: 'Nossa Missão', text: '' },
-        schedule: Array.isArray(d.schedule) ? d.schedule : [],
-        team: Array.isArray(d.team) ? d.team : [],
-        gallery: Array.isArray(d.gallery) ? d.gallery : []
-      });
-    });
-
-    const handleStorageChange = () => {
-      DatabaseService.getMinistry('homens').then((d) => {
-        setData({
-          hero: d.hero || { title: 'Ministério de Homens', subtitle: '', verse: '' },
-          mission: d.mission || { title: 'Nossa Missão', text: '' },
-          schedule: Array.isArray(d.schedule) ? d.schedule : [],
-          team: Array.isArray(d.team) ? d.team : [],
-          gallery: Array.isArray(d.gallery) ? d.gallery : []
-        });
-      });
-    };
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, []);
+  const [data] = useMinistryData('homens');
 
   return (
     <div className="homens-page">

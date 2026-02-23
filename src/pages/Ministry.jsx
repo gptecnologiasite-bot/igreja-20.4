@@ -1,8 +1,14 @@
-import React from 'react';
-import { Clock, MapPin, Calendar, Heart } from 'lucide-react';
-import '../css/Ministry.css';
+import { useMinistryData } from '../hooks/useMinistryData';
 
-const Ministry = ({ title, subtitle, description, schedule }) => {
+const Ministry = ({ id, ...fallbackProps }) => {
+  const [data] = useMinistryData(id || 'default');
+
+  const title = data?.hero?.title || fallbackProps.title;
+  const subtitle = data?.hero?.subtitle || fallbackProps.subtitle;
+  const description = data?.mission?.text || fallbackProps.description;
+  const schedule = Array.isArray(data?.schedule)
+    ? data.schedule.map(s => `${s.day || ''} ${s.time || ''} ${s.activity || ''}`)
+    : fallbackProps.schedule || [];
   return (
     <div className="ministry-page">
       <div className="ministry-hero">

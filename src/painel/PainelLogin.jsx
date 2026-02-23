@@ -1,6 +1,5 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate, Link, useLocation } from 'react-router-dom';
-import { User, Lock, Eye, EyeOff, ArrowRight, Menu, List } from 'lucide-react';
 import authService from '../services/AuthService';
 import activityTracker from './services/ActivityTracker';
 import './PainelLogin.css';
@@ -14,10 +13,10 @@ const PainelLogin = () => {
     const [errors, setErrors] = useState({});
     const [userType, setUserType] = useState('');
     const [successMessage, setSuccessMessage] = useState('');
+    const [particles, setParticles] = useState([]);
     const navigate = useNavigate();
     const location = useLocation();
 
-    // User type options for the list selection
     const userTypes = [
         { value: '', label: 'Selecione o tipo de usuário (opcional)' },
         { value: 'admin', label: 'Administrador' },
@@ -28,30 +27,43 @@ const PainelLogin = () => {
         { value: 'membro', label: 'Membro' }
     ];
 
-    // Check for registration success message
-    React.useEffect(() => {
+    useEffect(() => {
         if (location.state?.registered) {
             setSuccessMessage('Cadastro realizado com sucesso! Faça login para continuar.');
             setTimeout(() => setSuccessMessage(''), 5000);
         }
     }, [location]);
 
-    // Real-time email validation
-    const validateEmail = (email) => {
-        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-        return emailRegex.test(email);
-    };
+    // Load saved credentials and generate floating particles
+    useEffect(() => {
+        const savedEmail = localStorage.getItem('admac_remembered_email');
+        const savedPassword = localStorage.getItem('admac_remembered_password');
+        const isRemembered = localStorage.getItem('rememberMe') === 'true';
 
-    // Real-time password validation
-    const validatePassword = (password) => {
-        return password.length >= 6;
-    };
+        if (isRemembered && savedEmail) {
+            setEmail(savedEmail);
+            setPassword(savedPassword || '');
+            setRememberMe(true);
+        }
 
-    // Handle input changes with validation
+        const generated = Array.from({ length: 18 }, (_, i) => ({
+            id: i,
+            size: Math.random() * 6 + 2,
+            x: Math.random() * 100,
+            y: Math.random() * 100,
+            duration: Math.random() * 15 + 10,
+            delay: Math.random() * 8,
+            opacity: Math.random() * 0.4 + 0.1,
+        }));
+        setParticles(generated);
+    }, []);
+
+    const validateEmail = (email) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+    const validatePassword = (password) => password.length >= 6;
+
     const handleEmailChange = (e) => {
         const value = e.target.value;
         setEmail(value);
-
         if (value && !validateEmail(value)) {
             setErrors(prev => ({ ...prev, email: 'E-mail inválido' }));
         } else {
@@ -62,77 +74,57 @@ const PainelLogin = () => {
     const handlePasswordChange = (e) => {
         const value = e.target.value;
         setPassword(value);
-
         if (value && !validatePassword(value)) {
-            setErrors(prev => ({ ...prev, password: 'Senha deve ter pelo menos 6 caracteres' }));
+            setErrors(prev => ({ ...prev, password: 'Mínimo 6 caracteres' }));
         } else {
             setErrors(prev => ({ ...prev, password: '' }));
         }
     };
 
-    // Handle form submission
     const handleSubmit = async (e) => {
         e.preventDefault();
-
-        // Clear all previous errors first
         setErrors({});
 
-        // Validate all fields
         const newErrors = {};
-        if (!email) {
-            newErrors.email = 'E-mail é obrigatório';
-        } else if (!validateEmail(email)) {
-            newErrors.email = 'E-mail inválido';
-        }
-
-        if (!password) {
-            newErrors.password = 'Senha é obrigatória';
-        } else if (!validatePassword(password)) {
-            newErrors.password = 'Senha deve ter pelo menos 6 caracteres';
-        }
+        if (!email) newErrors.email = 'E-mail é obrigatório';
+        else if (!validateEmail(email)) newErrors.email = 'E-mail inválido';
+        if (!password) newErrors.password = 'Senha é obrigatória';
+        else if (!validatePassword(password)) newErrors.password = 'Mínimo 6 caracteres';
 
         if (Object.keys(newErrors).length > 0) {
             setErrors(newErrors);
             return;
         }
 
-        // Start loading
         setIsLoading(true);
-
         try {
-            // Login com AuthService (Supabase ou localStorage)
             const result = await authService.login(email, password);
-
             if (result.success) {
-                console.log('✅ Login bem-sucedido:', result);
-
                 const userData = result.user;
-
-                // Atualizar userType se foi selecionado
                 if (userType && userType !== userData.userType) {
                     userData.userType = userType;
                     localStorage.setItem('user', JSON.stringify(userData));
                 }
-
-                // Salvar preferência "lembrar-me"
                 if (rememberMe) {
                     localStorage.setItem('rememberMe', 'true');
+                    localStorage.setItem('admac_remembered_email', email);
+                    localStorage.setItem('admac_remembered_password', password);
+                } else {
+                    localStorage.removeItem('rememberMe');
+                    localStorage.removeItem('admac_remembered_email');
+                    localStorage.removeItem('admac_remembered_password');
                 }
 
-                // Track login activity
                 try {
                     const loginEvent = await activityTracker.trackLogin(userData);
                     localStorage.setItem('currentSessionId', loginEvent.sessionId);
                 } catch (error) {
                     console.error('Error tracking login:', error);
                 }
-
-                // Redirect to dashboard
                 navigate('/painel/dashboard');
             } else {
                 setErrors({ submit: 'E-mail ou senha incorretos' });
             }
-
         } catch (error) {
             console.error('Erro no login:', error);
             setErrors({ submit: error.message || 'E-mail ou senha incorretos' });
@@ -142,163 +134,217 @@ const PainelLogin = () => {
     };
 
     return (
-        <div className="painel-login-container">
-            {/* Sidebar */}
-            <div className="painel-sidebar">
-                <div className="sidebar-logo">
-                    <img src="/admac.png" alt="ADMAC Logo" />
-                    <h2>ADMAC</h2>
-                </div>
-                <div className="sidebar-menu">
-                    <div className="menu-item active">
-                        <User size={20} />
-                        <span>Login</span>
-                    </div>
-                </div>
+        <div className="login-page">
+            {/* Animated Background */}
+            <div className="login-bg">
+                <div className="bg-gradient-orb orb-1" />
+                <div className="bg-gradient-orb orb-2" />
+                <div className="bg-gradient-orb orb-3" />
+                {particles.map(p => (
+                    <div
+                        key={p.id}
+                        className="particle"
+                        style={{
+                            width: p.size,
+                            height: p.size,
+                            left: `${p.x}%`,
+                            top: `${p.y}%`,
+                            opacity: p.opacity,
+                            animationDuration: `${p.duration}s`,
+                            animationDelay: `${p.delay}s`,
+                        }}
+                    />
+                ))}
             </div>
 
-            {/* Main Content */}
-            <div className="painel-main">
-                {/* Header */}
-                <div className="painel-header">
-                    <div className="header-left">
-                        <button className="menu-toggle">
-                            <Menu size={24} />
-                        </button>
-                        <h1>Área Administrativa ADMAC</h1>
-                    </div>
-                    <div className="header-right">
-                        <img src="/admac.png" alt="ADMAC" className="header-logo" />
+            {/* Split Layout */}
+            <div className="login-layout">
+
+                {/* Left Panel — Brand */}
+                <div className="login-brand">
+                    <div className="brand-inner">
+                        <div className="brand-logo-wrap">
+                            <img src="/admac.png" alt="ADMAC Logo" className="brand-logo" />
+                            <div className="brand-logo-glow" />
+                        </div>
+                        <h1 className="brand-title">ADMAC</h1>
+                        <p className="brand-subtitle">Assembleia de Deus<br />Ministério de Madureira</p>
+                        <div className="brand-divider" />
+                        <div className="brand-verse">
+                            <span className="verse-icon">✦</span>
+                            <p>"Tudo posso naquele que me fortalece."</p>
+                            <span className="verse-ref">Filipenses 4:13</span>
+                        </div>
+                        <div className="brand-features">
+                            <div className="feature-item">
+                                <span className="feature-icon">⛪</span>
+                                <span>Gestão de Membros</span>
+                            </div>
+                            <div className="feature-item">
+                                <span className="feature-icon">💰</span>
+                                <span>Controle Financeiro</span>
+                            </div>
+                            <div className="feature-item">
+                                <span className="feature-icon">📋</span>
+                                <span>Relatórios Completos</span>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
-                {/* Content Area */}
-                <div className="painel-content">
-                    <div className="login-form-wrapper">
-                        <div className="login-form-card">
-                            {/* Logo in Form */}
-                            <div className="form-logo">
-                                <img src="/admac.png" alt="ADMAC Logo" />
+                {/* Right Panel — Form */}
+                <div className="login-form-panel">
+                    <div className="login-card">
+                        {/* Card Header */}
+                        <div className="card-header">
+                            <div className="card-logo-mobile">
+                                <img src="/admac.png" alt="ADMAC" />
+                            </div>
+                            <h2 className="card-title">Bem-vindo de volta</h2>
+                            <p className="card-subtitle">Entre com suas credenciais para acessar o painel</p>
+                        </div>
+
+                        {/* Alerts */}
+                        {successMessage && (
+                            <div className="alert alert-success">
+                                <span className="alert-icon">✓</span>
+                                {successMessage}
+                            </div>
+                        )}
+                        {errors.submit && (
+                            <div className="alert alert-error">
+                                <span className="alert-icon">!</span>
+                                {errors.submit}
+                            </div>
+                        )}
+
+                        {/* Form */}
+                        <form onSubmit={handleSubmit} className="login-form">
+
+                            {/* Email */}
+                            <div className={`field-group ${errors.email ? 'has-error' : ''} ${email ? 'has-value' : ''}`}>
+                                <label htmlFor="email" className="field-label">E-mail</label>
+                                <div className="field-input-wrap">
+                                    <svg className="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" />
+                                        <polyline points="22,6 12,13 2,6" />
+                                    </svg>
+                                    <input
+                                        type="email"
+                                        id="email"
+                                        placeholder="seu@email.com"
+                                        value={email}
+                                        onChange={handleEmailChange}
+                                        autoComplete="email"
+                                    />
+                                    <div className="field-underline" />
+                                </div>
+                                {errors.email && <span className="field-error">{errors.email}</span>}
                             </div>
 
-                            {/* Form Header */}
-                            <div className="form-header">
-                                <h2>Login ADMAC</h2>
-                                <p>Bem-vindo de volta! Faça login para continuar.</p>
+                            {/* Password */}
+                            <div className={`field-group ${errors.password ? 'has-error' : ''} ${password ? 'has-value' : ''}`}>
+                                <label htmlFor="password" className="field-label">Senha</label>
+                                <div className="field-input-wrap">
+                                    <svg className="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <rect x="3" y="11" width="18" height="11" rx="2" ry="2" />
+                                        <path d="M7 11V7a5 5 0 0 1 10 0v4" />
+                                    </svg>
+                                    <input
+                                        type={showPassword ? 'text' : 'password'}
+                                        id="password"
+                                        placeholder="••••••••"
+                                        value={password}
+                                        onChange={handlePasswordChange}
+                                        autoComplete="current-password"
+                                    />
+                                    <button
+                                        type="button"
+                                        className="password-toggle"
+                                        onClick={() => setShowPassword(!showPassword)}
+                                        aria-label="Mostrar/ocultar senha"
+                                    >
+                                        {showPassword ? (
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                                <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24" />
+                                                <line x1="1" y1="1" x2="23" y2="23" />
+                                            </svg>
+                                        ) : (
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                                <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
+                                                <circle cx="12" cy="12" r="3" />
+                                            </svg>
+                                        )}
+                                    </button>
+                                    <div className="field-underline" />
+                                </div>
+                                {errors.password && <span className="field-error">{errors.password}</span>}
                             </div>
 
-                            {/* Login Form */}
-                            <form onSubmit={handleSubmit} className="login-form">
-                                {/* Success Message */}
-                                {successMessage && (
-                                    <div className="success-message">{successMessage}</div>
+                            {/* User Type */}
+                            <div className="field-group">
+                                <label htmlFor="userType" className="field-label">Tipo de Usuário</label>
+                                <div className="field-input-wrap select-wrap">
+                                    <svg className="field-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" />
+                                        <circle cx="12" cy="7" r="4" />
+                                    </svg>
+                                    <select
+                                        id="userType"
+                                        value={userType}
+                                        onChange={(e) => setUserType(e.target.value)}
+                                    >
+                                        {userTypes.map(type => (
+                                            <option key={type.value} value={type.value}>{type.label}</option>
+                                        ))}
+                                    </select>
+                                    <div className="field-underline" />
+                                </div>
+                            </div>
+
+                            {/* Options Row */}
+                            <div className="form-options">
+                                <label className="remember-label">
+                                    <input
+                                        type="checkbox"
+                                        checked={rememberMe}
+                                        onChange={(e) => setRememberMe(e.target.checked)}
+                                    />
+                                    <span className="custom-check">
+                                        {rememberMe && (
+                                            <svg viewBox="0 0 12 12" fill="none" stroke="currentColor" strokeWidth="2.5">
+                                                <polyline points="2,6 5,9 10,3" />
+                                            </svg>
+                                        )}
+                                    </span>
+                                    <span>Manter conectado</span>
+                                </label>
+                                <a href="#" className="forgot-link">Esqueci a senha</a>
+                            </div>
+
+                            {/* Submit */}
+                            <button type="submit" className="submit-btn" disabled={isLoading}>
+                                {isLoading ? (
+                                    <span className="btn-loading">
+                                        <span className="btn-spinner" />
+                                        Entrando...
+                                    </span>
+                                ) : (
+                                    <span className="btn-content">
+                                        Entrar no Painel
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+                                            <line x1="5" y1="12" x2="19" y2="12" />
+                                            <polyline points="12,5 19,12 12,19" />
+                                        </svg>
+                                    </span>
                                 )}
+                            </button>
+                        </form>
 
-                                {/* Email Field */}
-                                <div className="form-group">
-                                    <label htmlFor="email">E-mail ou Usuário</label>
-                                    <div className="input-wrapper">
-                                        <User className="input-icon" size={20} />
-                                        <input
-                                            type="email"
-                                            id="email"
-                                            placeholder="seu@email.com"
-                                            value={email}
-                                            onChange={handleEmailChange}
-                                            className={errors.email ? 'error' : ''}
-                                        />
-                                    </div>
-                                    {errors.email && <span className="error-message">{errors.email}</span>}
-                                </div>
-
-                                {/* Password Field */}
-                                <div className="form-group">
-                                    <label htmlFor="password">Senha</label>
-                                    <div className="input-wrapper">
-                                        <Lock className="input-icon" size={20} />
-                                        <input
-                                            type={showPassword ? 'text' : 'password'}
-                                            id="password"
-                                            placeholder="••••••••"
-                                            value={password}
-                                            onChange={handlePasswordChange}
-                                            className={errors.password ? 'error' : ''}
-                                        />
-                                        <button
-                                            type="button"
-                                            className="toggle-password"
-                                            onClick={() => setShowPassword(!showPassword)}
-                                            aria-label="Toggle password visibility"
-                                        >
-                                            {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
-                                        </button>
-                                    </div>
-                                    {errors.password && <span className="error-message">{errors.password}</span>}
-                                </div>
-
-                                {/* User Type Selection */}
-                                <div className="form-group">
-                                    <label htmlFor="userType">Tipo de Usuário</label>
-                                    <div className="input-wrapper">
-                                        <List className="input-icon" size={20} />
-                                        <select
-                                            id="userType"
-                                            value={userType}
-                                            onChange={(e) => setUserType(e.target.value)}
-                                        >
-                                            {userTypes.map(type => (
-                                                <option key={type.value} value={type.value}>
-                                                    {type.label}
-                                                </option>
-                                            ))}
-                                        </select>
-                                    </div>
-                                </div>
-
-                                {/* Remember Me & Forgot Password */}
-                                <div className="form-options">
-                                    <label className="checkbox-label">
-                                        <input
-                                            type="checkbox"
-                                            checked={rememberMe}
-                                            onChange={(e) => setRememberMe(e.target.checked)}
-                                        />
-                                        <span>Manter-me conectado</span>
-                                    </label>
-                                    <a href="#" className="forgot-password">Esqueci minha senha?</a>
-                                </div>
-
-                                {/* Submit Error */}
-                                {errors.submit && (
-                                    <div className="submit-error">{errors.submit}</div>
-                                )}
-
-                                {/* Submit Button */}
-                                <button type="submit" className="login-button" disabled={isLoading}>
-                                    {isLoading ? (
-                                        <>
-                                            <span className="spinner"></span>
-                                            Entrando...
-                                        </>
-                                    ) : (
-                                        <>
-                                            Entrar
-                                            <ArrowRight size={20} />
-                                        </>
-                                    )}
-                                </button>
-
-                                {/* Registration Link */}
-                                <div className="register-link">
-                                    Não tem uma conta? <Link to="/painel/register">Cadastre-se aqui</Link>
-                                </div>
-                            </form>
-
-                            {/* Biblical Quote */}
-                            <div className="biblical-quote">
-                                <p>"Vinde a mim, todos os que estais cansados e sobrecarregados, e eu vos aliviarei."</p>
-                                <span>– Mateus 11:28</span>
-                            </div>
+                        {/* Footer */}
+                        <div className="card-footer">
+                            <span>Não tem uma conta?</span>
+                            <Link to="/painel/register">Cadastre-se</Link>
                         </div>
                     </div>
                 </div>

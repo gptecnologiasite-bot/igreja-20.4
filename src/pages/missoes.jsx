@@ -1,7 +1,6 @@
+import React, { useState } from 'react';
 import { Globe, Users, Heart, MapPin, Send, Calendar, DollarSign, Play, Target, TrendingUp, Award } from 'lucide-react';
-import { useState, useEffect } from 'react';
-import '../css/Lares.css';
-import DatabaseService from '../services/DatabaseService';
+import { useMinistryData } from '../hooks/useMinistryData';
 
 const Missoes = () => {
   const [donation, setDonation] = useState({
@@ -13,39 +12,25 @@ const Missoes = () => {
     missionary: 'geral'
   });
 
-  const [data, setData] = useState(DatabaseService.getMinistryDefault('missoes'));
-
-  useEffect(() => {
-    DatabaseService.getMinistry('missoes').then(ministryData => {
-      if (ministryData) setData(ministryData);
-    });
-
-    const handleStorageChange = () => {
-      DatabaseService.getMinistry('missoes').then(ministryData => {
-        if (ministryData) setData(ministryData);
-      });
-    };
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, []);
+  const [data] = useMinistryData('missoes');
 
   const handleSubmit = (e) => {
     e.preventDefault();
     alert('Obrigado pela sua contribuição! Em breve entraremos em contato com os detalhes para a doação.');
-    setDonation({ 
-      name: '', 
-      email: '', 
-      phone: '', 
-      amount: '', 
-      frequency: 'once', 
-      missionary: 'geral' 
+    setDonation({
+      name: '',
+      email: '',
+      phone: '',
+      amount: '',
+      frequency: 'once',
+      missionary: 'geral'
     });
   };
 
   return (
     <div className="lares-page">
       {/* Hero Section */}
-      <div className="lares-hero" style={{ 
+      <div className="lares-hero" style={{
         backgroundImage: 'url(https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&w=1600&q=80)',
         backgroundBlendMode: 'overlay'
       }}>
@@ -73,9 +58,9 @@ const Missoes = () => {
       {/* Stats Section */}
       <section className="stats-section" style={{ background: 'var(--nav-bg)', padding: '4rem 0' }}>
         <div className="container">
-          <div className="stats-grid" style={{ 
-            display: 'grid', 
-            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
+          <div className="stats-grid" style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
             gap: '2rem'
           }}>
             {data.stats.map((stat, index) => (
@@ -109,7 +94,7 @@ const Missoes = () => {
               <h2>Conheça o Ministério</h2>
             </div>
             <p className="section-subtitle">Assista ao vídeo e veja o impacto das missões</p>
-            
+
             <div className="video-wrapper">
               <iframe
                 width="100%"
@@ -133,10 +118,10 @@ const Missoes = () => {
             <h2>Nossos Missionários</h2>
           </div>
           <p className="section-subtitle">Conheça aqueles que estão levando o Evangelho ao campo</p>
-          
-          <div className="missionaries-grid" style={{ 
-            display: 'grid', 
-            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', 
+
+          <div className="missionaries-grid" style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
             gap: '2rem',
             marginTop: '3rem'
           }}>
@@ -149,9 +134,9 @@ const Missoes = () => {
                 textAlign: 'center',
                 transition: 'transform 0.3s ease'
               }}>
-                <img 
-                  src={missionary.photo} 
-                  alt={missionary.name} 
+                <img
+                  src={missionary.photo}
+                  alt={missionary.name}
                   style={{
                     width: '120px',
                     height: '120px',
@@ -161,10 +146,10 @@ const Missoes = () => {
                   }}
                 />
                 <h3 style={{ marginBottom: '0.5rem' }}>{missionary.name}</h3>
-                <div style={{ 
-                  display: 'flex', 
-                  alignItems: 'center', 
-                  justifyContent: 'center', 
+                <div style={{
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
                   gap: '0.5rem',
                   color: 'var(--primary-color)',
                   marginBottom: '1rem'
@@ -175,7 +160,7 @@ const Missoes = () => {
                 <p style={{ color: 'rgba(255, 255, 255, 0.7)', marginBottom: '1rem' }}>
                   {missionary.description}
                 </p>
-                <div style={{ 
+                <div style={{
                   display: 'inline-block',
                   background: 'rgba(212, 175, 55, 0.1)',
                   padding: '0.5rem 1rem',
@@ -199,10 +184,10 @@ const Missoes = () => {
             <h2>Nossos Projetos</h2>
           </div>
           <p className="section-subtitle">Ações práticas que transformam vidas</p>
-          
-          <div className="projects-grid" style={{ 
-            display: 'grid', 
-            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', 
+
+          <div className="projects-grid" style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
             gap: '2rem',
             marginTop: '3rem'
           }}>
@@ -243,7 +228,7 @@ const Missoes = () => {
         <div className="container">
           <h2>Nossa Equipe</h2>
           <p className="section-subtitle">Conheça os líderes do ministério de missões</p>
-          
+
           <div className="team-grid">
             {data.team.map((member, index) => (
               <div key={index} className="team-card">
@@ -264,7 +249,7 @@ const Missoes = () => {
             <h2>Contribua com Missões</h2>
           </div>
           <p className="section-subtitle">Sua oferta sustenta missionários e transforma vidas</p>
-          
+
           <form onSubmit={handleSubmit} className="registration-form">
             <div className="form-row">
               <div className="form-group">
@@ -272,17 +257,17 @@ const Missoes = () => {
                 <input
                   type="text"
                   value={donation.name}
-                  onChange={(e) => setDonation({...donation, name: e.target.value})}
+                  onChange={(e) => setDonation({ ...donation, name: e.target.value })}
                   required
                 />
               </div>
-              
+
               <div className="form-group">
                 <label>Email *</label>
                 <input
                   type="email"
                   value={donation.email}
-                  onChange={(e) => setDonation({...donation, email: e.target.value})}
+                  onChange={(e) => setDonation({ ...donation, email: e.target.value })}
                   required
                 />
               </div>
@@ -294,7 +279,7 @@ const Missoes = () => {
                 <input
                   type="tel"
                   value={donation.phone}
-                  onChange={(e) => setDonation({...donation, phone: e.target.value})}
+                  onChange={(e) => setDonation({ ...donation, phone: e.target.value })}
                 />
               </div>
 
@@ -305,7 +290,7 @@ const Missoes = () => {
                   min="10"
                   step="0.01"
                   value={donation.amount}
-                  onChange={(e) => setDonation({...donation, amount: e.target.value})}
+                  onChange={(e) => setDonation({ ...donation, amount: e.target.value })}
                   placeholder="100.00"
                   required
                 />
@@ -317,7 +302,7 @@ const Missoes = () => {
                 <label>Frequência</label>
                 <select
                   value={donation.frequency}
-                  onChange={(e) => setDonation({...donation, frequency: e.target.value})}
+                  onChange={(e) => setDonation({ ...donation, frequency: e.target.value })}
                 >
                   <option value="once">Única</option>
                   <option value="monthly">Mensal</option>
@@ -329,7 +314,7 @@ const Missoes = () => {
                 <label>Destino da Oferta</label>
                 <select
                   value={donation.missionary}
-                  onChange={(e) => setDonation({...donation, missionary: e.target.value})}
+                  onChange={(e) => setDonation({ ...donation, missionary: e.target.value })}
                 >
                   <option value="geral">Missões Geral</option>
                   <option value="oliveira">Família Oliveira (Moçambique)</option>

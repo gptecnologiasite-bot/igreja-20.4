@@ -1,7 +1,6 @@
+import React, { useState } from 'react';
 import { Music, Calendar, Clock, Users, MessageSquare, Send, Mic, Guitar, Headphones, Heart } from 'lucide-react';
-import { useState, useEffect } from 'react';
-import '../css/Louvor.css';
-import DatabaseService from '../services/DatabaseService';
+import { useMinistryData } from '../hooks/useMinistryData';
 
 const Louvor = () => {
   const [testimonial, setTestimonial] = useState({
@@ -10,17 +9,7 @@ const Louvor = () => {
     message: ''
   });
 
-  const [data, setData] = useState(DatabaseService.getMinistryDefault('louvor'));
-
-  useEffect(() => {
-    DatabaseService.getMinistry('louvor').then(setData);
-
-    const handleStorageChange = () => {
-      DatabaseService.getMinistry('louvor').then(setData);
-    };
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, []);
+  const [data] = useMinistryData('louvor');
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -61,13 +50,13 @@ const Louvor = () => {
             <h2>Programação Semanal</h2>
           </div>
           <p className="section-subtitle">Confira os horários de ensaios e apresentações</p>
-          
+
           <div className="schedule-grid">
             {data.schedule.map((item, index) => {
               // Default icon logic based on activity name
               const IconComponent = item.activity.includes('Vocais') ? Mic :
-                                    item.activity.includes('Instrumentos') ? Guitar :
-                                    item.activity.includes('Som') ? Headphones : Music;
+                item.activity.includes('Instrumentos') ? Guitar :
+                  item.activity.includes('Som') ? Headphones : Music;
               return (
                 <div key={index} className="schedule-card">
                   <div className="schedule-icon">
@@ -102,7 +91,7 @@ const Louvor = () => {
         <div className="container">
           <h2>Nossa Equipe</h2>
           <p className="section-subtitle">Conheça os líderes do ministério de louvor</p>
-          
+
           <div className="team-grid">
             {data.team.map((member, index) => (
               <div key={index} className="team-card">
@@ -123,7 +112,7 @@ const Louvor = () => {
             <h2>Compartilhe Seu Testemunho</h2>
           </div>
           <p className="section-subtitle">Como o louvor tem impactado sua vida? Conte para nós!</p>
-          
+
           <div className="form-wrapper">
             <form onSubmit={handleSubmit} className="testimonial-form">
               <div className="form-group">
@@ -132,7 +121,7 @@ const Louvor = () => {
                   type="text"
                   id="name"
                   value={testimonial.name}
-                  onChange={(e) => setTestimonial({...testimonial, name: e.target.value})}
+                  onChange={(e) => setTestimonial({ ...testimonial, name: e.target.value })}
                   placeholder="Seu nome"
                   required
                 />
@@ -144,7 +133,7 @@ const Louvor = () => {
                   type="email"
                   id="email"
                   value={testimonial.email}
-                  onChange={(e) => setTestimonial({...testimonial, email: e.target.value})}
+                  onChange={(e) => setTestimonial({ ...testimonial, email: e.target.value })}
                   placeholder="seu@email.com"
                 />
               </div>
@@ -154,7 +143,7 @@ const Louvor = () => {
                 <textarea
                   id="message"
                   value={testimonial.message}
-                  onChange={(e) => setTestimonial({...testimonial, message: e.target.value})}
+                  onChange={(e) => setTestimonial({ ...testimonial, message: e.target.value })}
                   placeholder="Compartilhe como o louvor tem tocado seu coração..."
                   rows="6"
                   required

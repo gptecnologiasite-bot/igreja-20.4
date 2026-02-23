@@ -80,7 +80,7 @@ const Home = () => {
       </section>
 
       {/* Recent Videos Section */}
-      <RecentVideos limit={2} />
+      <RecentVideos limit={4} />
 
       {/* Schedule Section */}
       <section className="schedule-home-section">

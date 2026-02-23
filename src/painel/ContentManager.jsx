@@ -2,15 +2,12 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import {
     Users,
-    Calendar,
-    Image,
-    Activity,
-    UserCircle,
     FileText,
     ArrowLeft,
     ChevronRight,
     Youtube,
-    MessageCircle
+    MessageCircle,
+    Home
 } from 'lucide-react';
 import DatabaseService from '../services/DatabaseService';
 import './ContentManager.css';
@@ -29,6 +26,14 @@ const ContentManager = () => {
     }, []);
 
     const contentTypes = [
+        {
+            title: 'Editor da Página Home',
+            description: 'Gerencie o carrossel, pastores, horários e atividades da página inicial',
+            icon: Home,
+            path: '/painel/content/pages/home',
+            color: '#4A90E2',
+            count: 1
+        },
         {
             title: 'Ministérios',
             description: 'Gerenciar ministérios exibidos na página inicial',
@@ -54,44 +59,12 @@ const ContentManager = () => {
             count: Object.keys(JSON.parse(localStorage.getItem('admac_whatsapp_links') || '{}')).filter(key => JSON.parse(localStorage.getItem('admac_whatsapp_links') || '{}')[key]?.active).length
         },
         {
-            title: 'Programação',
-            description: 'Editar programação semanal de cultos e eventos',
-            icon: Calendar,
-            path: '/painel/content/schedule',
-            color: '#4A90E2',
-            count: 7 // Default schedule items
-        },
-        {
-            title: 'Carousel',
-            description: 'Gerenciar slides do carousel principal',
-            icon: Image,
-            path: '/painel/content/carousel',
-            color: '#9b59b6',
-            count: 3
-        },
-        {
-            title: 'Atividades',
-            description: 'Gerenciar atividades em destaque',
-            icon: Activity,
-            path: '/painel/content/activities',
-            color: '#27ae60',
-            count: 4
-        },
-        {
-            title: 'Info do Pastor',
-            description: 'Editar informações do pastor',
-            icon: UserCircle,
-            path: '/painel/content/pastor',
-            color: '#d4af37',
-            count: 1
-        },
-        {
-            title: 'Texto de Boas-Vindas',
-            description: 'Editar texto da seção de boas-vindas',
+            title: 'Páginas Dinâmicas',
+            description: 'Criar e editar páginas extras do site',
             icon: FileText,
-            path: '/painel/content/welcome',
-            color: '#e74c3c',
-            count: 1
+            path: '/painel/content/pages',
+            color: '#50c878',
+            count: JSON.parse(localStorage.getItem('admac_pages') || '[]').length
         }
     ];
 

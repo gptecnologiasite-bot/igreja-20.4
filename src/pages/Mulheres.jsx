@@ -1,7 +1,6 @@
+import React, { useState } from 'react';
 import { Heart, Calendar, Clock, Users, Camera, MessageSquare, Send, Star, BookOpen, Sparkles, Crown } from 'lucide-react';
-import { useState, useEffect } from 'react';
-import '../css/Mulheres.css';
-import DatabaseService from '../services/DatabaseService';
+import { useMinistryData } from '../hooks/useMinistryData';
 
 const Mulheres = () => {
   const [testimonial, setTestimonial] = useState({
@@ -10,17 +9,7 @@ const Mulheres = () => {
     message: ''
   });
 
-  const [data, setData] = useState(DatabaseService.getMinistryDefault('mulheres'));
-
-  useEffect(() => {
-    DatabaseService.getMinistry('mulheres').then(setData);
-
-    const handleStorageChange = () => {
-      DatabaseService.getMinistry('mulheres').then(setData);
-    };
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, []);
+  const [data] = useMinistryData('mulheres');
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -49,8 +38,8 @@ const Mulheres = () => {
           <div className="gospel-content">
             <h2>Jesus Te Ama!</h2>
             <p className="gospel-text">
-              Querida mulher, você é preciosa aos olhos de Deus! Não importa o que você tenha passado, 
-              Jesus Cristo morreu na cruz por você e ressuscitou para te dar vida nova. Ele quer curar 
+              Querida mulher, você é preciosa aos olhos de Deus! Não importa o que você tenha passado,
+              Jesus Cristo morreu na cruz por você e ressuscitou para te dar vida nova. Ele quer curar
               suas feridas, restaurar seus sonhos e te dar um propósito eterno.
             </p>
             <div className="gospel-steps">
@@ -92,13 +81,13 @@ const Mulheres = () => {
             <h2>Programação</h2>
           </div>
           <p className="section-subtitle">Participe das nossas atividades</p>
-          
+
           <div className="schedule-grid">
             {data.schedule.map((item, index) => {
               // Default icon logic
               const IconComponent = item.activity.includes('EBD') ? BookOpen :
-                                    item.activity.includes('Célula') ? Users :
-                                    item.activity.includes('Café') ? Sparkles : Heart;
+                item.activity.includes('Célula') ? Users :
+                  item.activity.includes('Café') ? Sparkles : Heart;
               return (
                 <div key={index} className="schedule-card">
                   <div className="schedule-icon">
@@ -133,7 +122,7 @@ const Mulheres = () => {
         <div className="container">
           <h2>Nossa Equipe</h2>
           <p className="section-subtitle">Mulheres que servem a Deus com excelência</p>
-          
+
           <div className="team-grid">
             {data.team.map((member, index) => (
               <div key={index} className="team-card">
@@ -154,7 +143,7 @@ const Mulheres = () => {
             <h2>Galeria de Fotos</h2>
           </div>
           <p className="section-subtitle">Momentos especiais do ministério</p>
-          
+
           <div className="gallery-grid">
             {data.gallery.map((photo, index) => (
               <div key={index} className="gallery-item">
@@ -173,7 +162,7 @@ const Mulheres = () => {
         <div className="container">
           <h2>Testemunhos de Transformação</h2>
           <p className="section-subtitle">Veja como Jesus tem mudado vidas</p>
-          
+
           <div className="testimonials-grid">
             {data.testimonials.map((testimonial, index) => (
               <div key={index} className="testimonial-card">
@@ -201,7 +190,7 @@ const Mulheres = () => {
             <h2>Compartilhe Seu Testemunho</h2>
           </div>
           <p className="section-subtitle">Como Jesus tem trabalhado em sua vida?</p>
-          
+
           <div className="form-wrapper">
             <form onSubmit={handleSubmit} className="testimonial-form">
               <div className="form-group">
@@ -210,7 +199,7 @@ const Mulheres = () => {
                   type="text"
                   id="name"
                   value={testimonial.name}
-                  onChange={(e) => setTestimonial({...testimonial, name: e.target.value})}
+                  onChange={(e) => setTestimonial({ ...testimonial, name: e.target.value })}
                   placeholder="Seu nome"
                   required
                 />
@@ -222,7 +211,7 @@ const Mulheres = () => {
                   type="email"
                   id="email"
                   value={testimonial.email}
-                  onChange={(e) => setTestimonial({...testimonial, email: e.target.value})}
+                  onChange={(e) => setTestimonial({ ...testimonial, email: e.target.value })}
                   placeholder="seu@email.com"
                 />
               </div>
@@ -232,7 +221,7 @@ const Mulheres = () => {
                 <textarea
                   id="message"
                   value={testimonial.message}
-                  onChange={(e) => setTestimonial({...testimonial, message: e.target.value})}
+                  onChange={(e) => setTestimonial({ ...testimonial, message: e.target.value })}
                   placeholder="Compartilhe como Jesus transformou sua vida..."
                   rows="6"
                   required

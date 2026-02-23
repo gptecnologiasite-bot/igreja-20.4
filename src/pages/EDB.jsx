@@ -1,44 +1,9 @@
 import { BookOpen, Users, Clock, MapPin, GraduationCap, UserCheck, Download, Camera } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useMinistryData } from '../hooks/useMinistryData';
 import '../css/EDB.css';
-import DatabaseService from '../services/DatabaseService';
 
 const EDB = () => {
-  const [data, setData] = useState(() => ({
-    ...DatabaseService.getMinistryDefault('ebd'),
-    schedule: [],
-    team: [],
-    gallery: [],
-    info: { time: 'Domingos, 9h', location: 'ADMAC', audience: 'Todas as idades' }
-  }));
-
-  useEffect(() => {
-    DatabaseService.getMinistry('ebd').then((d) => {
-      setData({
-        hero: d.hero || { title: 'Escola Bíblica Dominical', subtitle: 'Crescendo no conhecimento' },
-        mission: d.mission || { title: 'Nossa Missão', text: '' },
-        info: d.info || { time: 'Domingos, 9h', location: 'ADMAC', audience: 'Todas as idades' },
-        schedule: Array.isArray(d.schedule) ? d.schedule : [],
-        team: Array.isArray(d.team) ? d.team : [],
-        gallery: Array.isArray(d.gallery) ? d.gallery : []
-      });
-    });
-
-    const handleStorageChange = () => {
-      DatabaseService.getMinistry('ebd').then((d) => {
-        setData({
-          hero: d.hero || { title: 'Escola Bíblica Dominical', subtitle: 'Crescendo no conhecimento' },
-          mission: d.mission || { title: 'Nossa Missão', text: '' },
-          info: d.info || { time: 'Domingos, 9h', location: 'ADMAC', audience: 'Todas as idades' },
-          schedule: Array.isArray(d.schedule) ? d.schedule : [],
-          team: Array.isArray(d.team) ? d.team : [],
-          gallery: Array.isArray(d.gallery) ? d.gallery : []
-        });
-      });
-    };
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, []);
+  const [data] = useMinistryData('ebd');
 
   return (
     <div className="edb-page">
@@ -80,15 +45,15 @@ const EDB = () => {
       <div className="classes-section">
         <h2>Nossas Classes</h2>
         <p className="section-subtitle">Encontre a classe ideal para você ou sua família</p>
-        
+
         <div className="classes-grid">
           {data.schedule && data.schedule.length > 0 ? (
             data.schedule.map((classItem, index) => {
               const className = classItem.title || classItem.class || `Classe ${index + 1}`;
               // Default icon logic
               const IconComponent = className.includes('Juniores') ? Users :
-                                    className.includes('Adolescentes') ? UserCheck :
-                                    className.includes('Jovens') ? UserCheck : GraduationCap;
+                className.includes('Adolescentes') ? UserCheck :
+                  className.includes('Jovens') ? UserCheck : GraduationCap;
               return (
                 <div key={index} className="class-card">
                   <div className="class-header">
@@ -103,12 +68,12 @@ const EDB = () => {
                   {classItem.description && (
                     <p className="class-description">{classItem.description}</p>
                   )}
-                  
+
                   {/* Teacher Section */}
                   {(classItem.image || classItem.teacher || classItem.time) && (
                     <div className="teacher-section">
-                      <img 
-                        src={classItem.image || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(classItem.teacher || classItem.time || 'Professor')} 
+                      <img
+                        src={classItem.image || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(classItem.teacher || classItem.time || 'Professor')}
                         alt={classItem.teacher || classItem.time || 'Professor'}
                         className="teacher-photo"
                       />
@@ -148,7 +113,7 @@ const EDB = () => {
         <div className="container">
           <h2>Nossa Equipe</h2>
           <p className="section-subtitle">Líderes comprometidos com o ensino da Palavra</p>
-          
+
           <div className="team-grid">
             {data.team && data.team.length > 0 ? (
               data.team.map((member, index) => (
@@ -175,7 +140,7 @@ const EDB = () => {
             <h2>Galeria de Fotos</h2>
           </div>
           <p className="section-subtitle">Momentos especiais da nossa EBD</p>
-          
+
           <div className="gallery-grid">
             {data.gallery && data.gallery.length > 0 ? (
               data.gallery.map((photo, index) => (

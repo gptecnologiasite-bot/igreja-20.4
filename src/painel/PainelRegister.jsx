@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
-import { User, Lock, Eye, EyeOff, ArrowRight, Menu, Mail, UserPlus, List } from 'lucide-react';
+import { User, Lock, Eye, EyeOff, ArrowRight, Menu, Mail, UserPlus, List, Image as ImageIcon } from 'lucide-react';
 import authService from '../services/AuthService';
+import ImageUploadField from './components/ImageUploadField';
 import './PainelRegister.css';
 
 const PainelRegister = () => {
@@ -10,7 +11,8 @@ const PainelRegister = () => {
         email: '',
         password: '',
         confirmPassword: '',
-        userType: ''
+        userType: '',
+        photo: ''
     });
     const [showPassword, setShowPassword] = useState(false);
     const [showConfirmPassword, setShowConfirmPassword] = useState(false);
@@ -106,12 +108,13 @@ const PainelRegister = () => {
         setIsLoading(true);
 
         try {
-            // Registrar usuário com AuthService (Supabase ou localStorage)
+            // Registrar usuário com AuthService
             const result = await authService.register(
                 formData.name,
                 formData.email,
                 formData.password,
-                formData.userType
+                formData.userType,
+                formData.photo
             );
 
             if (result.success) {
@@ -162,9 +165,7 @@ const PainelRegister = () => {
                         </button>
                         <h1>Cadastro de Usuário ADMAC</h1>
                     </div>
-                    <div className="header-right">
-                        <img src="/admac.png" alt="ADMAC" className="header-logo" />
-                    </div>
+                    <div className="header-right"></div>
                 </div>
 
                 {/* Content Area */}
@@ -240,6 +241,16 @@ const PainelRegister = () => {
                                         </select>
                                     </div>
                                     {errors.userType && <span className="error-message">{errors.userType}</span>}
+                                </div>
+
+                                {/* Photo Field */}
+                                <div className="form-group">
+                                    <ImageUploadField
+                                        label="Foto de Perfil (Opcional)"
+                                        value={formData.photo}
+                                        onChange={val => setFormData(prev => ({ ...prev, photo: val }))}
+                                        placeholder="Suba uma foto ou cole o link"
+                                    />
                                 </div>
 
                                 {/* Password Field */}

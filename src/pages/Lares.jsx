@@ -1,7 +1,6 @@
+import React, { useState } from 'react';
 import { Home, Users, Calendar, Camera, MessageSquare, Send, Heart, MapPin, Clock, Star, Play } from 'lucide-react';
-import { useState, useEffect } from 'react';
-import '../css/Lares.css';
-import DatabaseService from '../services/DatabaseService';
+import { useMinistryData } from '../hooks/useMinistryData';
 
 const Lares = () => {
   const [registration, setRegistration] = useState({
@@ -12,17 +11,7 @@ const Lares = () => {
     preferredDay: ''
   });
 
-  const [data, setData] = useState(DatabaseService.getMinistryDefault('lares'));
-
-  useEffect(() => {
-    DatabaseService.getMinistry('lares').then(setData);
-
-    const handleStorageChange = () => {
-      DatabaseService.getMinistry('lares').then(setData);
-    };
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, []);
+  const [data] = useMinistryData('lares');
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -64,7 +53,7 @@ const Lares = () => {
               <h2>Conheça o Ministério</h2>
             </div>
             <p className="section-subtitle">Assista ao vídeo e veja como funciona</p>
-            
+
             <div className="video-wrapper">
               <iframe
                 width="100%"
@@ -85,7 +74,7 @@ const Lares = () => {
         <div className="container">
           <h2>Nossa Equipe</h2>
           <p className="section-subtitle">Conheça os líderes do ministério de lares</p>
-          
+
           <div className="team-grid">
             {data.team.map((member, index) => (
               <div key={index} className="team-card">
@@ -106,7 +95,7 @@ const Lares = () => {
             <h2>Galeria de Fotos</h2>
           </div>
           <p className="section-subtitle">Momentos especiais dos nossos encontros</p>
-          
+
           <div className="gallery-cards">
             {(data.gallery && data.gallery.length > 0 ? data.gallery : [
               {
@@ -147,7 +136,7 @@ const Lares = () => {
         <div className="container">
           <h2>Testemunhos</h2>
           <p className="section-subtitle">Veja o que os participantes dizem</p>
-          
+
           <div className="testimonials-grid">
             {data.testimonials.map((testimonial, index) => (
               <div key={index} className="testimonial-card">
@@ -175,7 +164,7 @@ const Lares = () => {
             <h2>Cadastre-se para Participar</h2>
           </div>
           <p className="section-subtitle">Preencha o formulário e participe de um lar perto de você</p>
-          
+
           <div className="form-wrapper">
             <form onSubmit={handleSubmit} className="registration-form">
               <div className="form-group">
@@ -184,7 +173,7 @@ const Lares = () => {
                   type="text"
                   id="name"
                   value={registration.name}
-                  onChange={(e) => setRegistration({...registration, name: e.target.value})}
+                  onChange={(e) => setRegistration({ ...registration, name: e.target.value })}
                   placeholder="Seu nome completo"
                   required
                 />
@@ -197,7 +186,7 @@ const Lares = () => {
                     type="tel"
                     id="phone"
                     value={registration.phone}
-                    onChange={(e) => setRegistration({...registration, phone: e.target.value})}
+                    onChange={(e) => setRegistration({ ...registration, phone: e.target.value })}
                     placeholder="(61) 99999-9999"
                     required
                   />
@@ -209,7 +198,7 @@ const Lares = () => {
                     type="email"
                     id="email"
                     value={registration.email}
-                    onChange={(e) => setRegistration({...registration, email: e.target.value})}
+                    onChange={(e) => setRegistration({ ...registration, email: e.target.value })}
                     placeholder="seu@email.com"
                   />
                 </div>
@@ -221,7 +210,7 @@ const Lares = () => {
                   type="text"
                   id="address"
                   value={registration.address}
-                  onChange={(e) => setRegistration({...registration, address: e.target.value})}
+                  onChange={(e) => setRegistration({ ...registration, address: e.target.value })}
                   placeholder="Seu bairro"
                   required
                 />
@@ -232,7 +221,7 @@ const Lares = () => {
                 <select
                   id="preferredDay"
                   value={registration.preferredDay}
-                  onChange={(e) => setRegistration({...registration, preferredDay: e.target.value})}
+                  onChange={(e) => setRegistration({ ...registration, preferredDay: e.target.value })}
                 >
                   <option value="">Selecione...</option>
                   <option value="segunda">Segunda-feira</option>

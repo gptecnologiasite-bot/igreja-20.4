@@ -106,37 +106,22 @@ const AnalyticsDebug = {
 
     // Check storage status
     async checkStorageStatus() {
-        const { testSupabaseConnection } = await import('../../services/supabaseClient.js');
-        const isSupabaseOnline = await testSupabaseConnection();
-        
         console.log('=== STORAGE STATUS ===');
-        console.log('Supabase:', isSupabaseOnline ? '✅ ONLINE' : '❌ OFFLINE');
         console.log('localStorage:', '✅ AVAILABLE');
-        
         const pending = JSON.parse(localStorage.getItem('admac_pending_sync') || '[]');
         console.log('Pending Sync:', pending.length, 'events');
-        
-        return { supabase: isSupabaseOnline, localStorage: true, pendingSync: pending.length };
+        return { localStorage: true, pendingSync: pending.length };
     },
 
-    // Force sync to Supabase
-    async syncToSupabase() {
-        const activityTracker = (await import('../services/ActivityTracker.js')).default;
-        await activityTracker.syncPendingData();
+    // Force sync (noop - local only)
+    async sync() {
+        console.log('No remote sync. Using localStorage only.');
     },
 
-    // Test Supabase connection
-    async testConnection() {
-        const { testSupabaseConnection } = await import('../../services/supabaseClient.js');
-        const isOnline = await testSupabaseConnection();
-        
-        if (isOnline) {
-            console.log('✅ Supabase connection successful!');
-        } else {
-            console.log('❌ Supabase connection failed!');
-        }
-        
-        return isOnline;
+    // Test connection (noop)
+    async testStorage() {
+        console.log('No remote connection. Using localStorage only.');
+        return false;
     }
 };
 
@@ -149,8 +134,6 @@ console.log('  AnalyticsDebug.checkData() - Check if data exists');
 console.log('  AnalyticsDebug.generateTestData() - Generate test data');
 console.log('  AnalyticsDebug.viewStats() - View current statistics');
 console.log('  AnalyticsDebug.clearData() - Clear all data');
-console.log('  AnalyticsDebug.checkStorageStatus() - Check Supabase/localStorage status');
-console.log('  AnalyticsDebug.testConnection() - Test Supabase connection');
-console.log('  AnalyticsDebug.syncToSupabase() - Force sync to Supabase');
+console.log('  AnalyticsDebug.checkStorageStatus() - Check localStorage status');
 
 export default AnalyticsDebug;

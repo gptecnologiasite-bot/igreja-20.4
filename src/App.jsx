@@ -54,6 +54,7 @@ const AppContent = () => {
             path="/intercessao"
             element={
               <Ministry
+                id="intercessao"
                 title="Ministério de Intercessão"
                 subtitle="Unidos em oração, transformando vidas através do clamor"
                 description="O Ministério de Intercessão é dedicado a orar pelas necessidades da igreja e do mundo. Junte-se a nós nesta missão de fé."
@@ -80,11 +81,22 @@ const AppContent = () => {
           <Route path="/social" element={<Social />} />
           <Route path="/missoes" element={<Missoes />} />
 
+          <Route path="/sobre" element={
+            <Ministry
+              id="sobre"
+              title="Sobre a ADMAC"
+              subtitle="Nossa história e valores"
+              description="Conheça mais sobre quem somos e nossa missão."
+              schedule={['Domingos: 9h e 18h', 'Terças: 20h']}
+            />
+          } />
+
           <Route path="/contato" element={<Contact />} />
           <Route
             path="/ministerios"
             element={
               <Ministry
+                id="ministerios"
                 title="Ministérios"
                 subtitle="Conheça os ministérios da ADMAC"
                 description="Explore os principais ministérios e encontre onde se envolver."

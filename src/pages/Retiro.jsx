@@ -1,7 +1,6 @@
+import React, { useState } from 'react';
 import { Mountain, Calendar, MapPin, Users, Camera, Send, Heart, Clock, Tent, Book, Music } from 'lucide-react';
-import { useState, useEffect } from 'react';
-import '../css/Retiro.css';
-import DatabaseService from '../services/DatabaseService';
+import { useMinistryData } from '../hooks/useMinistryData';
 
 const Retiro = () => {
   const [registration, setRegistration] = useState({
@@ -11,38 +10,7 @@ const Retiro = () => {
     retreat: ''
   });
 
-  const [data, setData] = useState(() => ({
-    ...DatabaseService.getMinistryDefault('retiro'),
-    schedule: [],
-    team: [],
-    gallery: []
-  }));
-
-  useEffect(() => {
-    DatabaseService.getMinistry('retiro').then((d) => {
-      setData({
-        hero: d.hero || { title: 'Retiros Espirituais', subtitle: '', verse: '' },
-        mission: d.mission || { title: 'Por Que Participar?', text: '' },
-        schedule: Array.isArray(d.schedule) ? d.schedule : [],
-        team: Array.isArray(d.team) ? d.team : [],
-        gallery: Array.isArray(d.gallery) ? d.gallery : []
-      });
-    });
-
-    const handleStorageChange = () => {
-      DatabaseService.getMinistry('retiro').then((d) => {
-        setData({
-          hero: d.hero || { title: 'Retiros Espirituais', subtitle: '', verse: '' },
-          mission: d.mission || { title: 'Por Que Participar?', text: '' },
-          schedule: Array.isArray(d.schedule) ? d.schedule : [],
-          team: Array.isArray(d.team) ? d.team : [],
-          gallery: Array.isArray(d.gallery) ? d.gallery : []
-        });
-      });
-    };
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, []);
+  const [data] = useMinistryData('retiro');
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -105,15 +73,15 @@ const Retiro = () => {
             <h2>Próximos Retiros</h2>
           </div>
           <p className="section-subtitle">Escolha o retiro ideal para você</p>
-          
+
           <div className="retreats-grid">
             {data.schedule && data.schedule.length > 0 ? (
               data.schedule.map((retreat, index) => {
                 const retreatTitle = retreat.title || retreat.activity || 'Retiro';
                 // Default icon logic
                 const IconComponent = retreatTitle.includes('Jovens') ? Music :
-                                      retreatTitle.includes('Casais') ? Heart :
-                                      retreatTitle.includes('Obreiros') ? Book : Mountain;
+                  retreatTitle.includes('Casais') ? Heart :
+                    retreatTitle.includes('Obreiros') ? Book : Mountain;
                 return (
                   <div key={index} className="retreat-card">
                     <div className="retreat-icon">
@@ -121,7 +89,7 @@ const Retiro = () => {
                     </div>
                     <h3>{retreatTitle}</h3>
                     <p className="retreat-description">{retreat.description || ''}</p>
-                    
+
                     <div className="retreat-details">
                       {(retreat.date || retreat.day) && (
                         <div className="detail-item">
@@ -136,7 +104,7 @@ const Retiro = () => {
                         </div>
                       )}
                     </div>
-                    
+
                     <button className="register-btn">
                       <Send size={16} /> Inscrever-se
                     </button>
@@ -157,7 +125,7 @@ const Retiro = () => {
         <div className="container">
           <h2>Nossa Equipe</h2>
           <p className="section-subtitle">Coordenadores dedicados a servir</p>
-          
+
           <div className="team-grid">
             {data.team && data.team.length > 0 ? (
               data.team.map((member, index) => (
@@ -184,7 +152,7 @@ const Retiro = () => {
             <h2>Galeria de Fotos</h2>
           </div>
           <p className="section-subtitle">Momentos especiais dos nossos retiros</p>
-          
+
           <div className="gallery-grid">
             {data.gallery && data.gallery.length > 0 ? (
               data.gallery.map((photo, index) => (
@@ -212,7 +180,7 @@ const Retiro = () => {
             <h2>Faça Sua Inscrição</h2>
           </div>
           <p className="section-subtitle">Preencha o formulário e garanta sua vaga</p>
-          
+
           <div className="form-wrapper">
             <form onSubmit={handleSubmit} className="registration-form">
               <div className="form-group">
@@ -221,7 +189,7 @@ const Retiro = () => {
                   type="text"
                   id="name"
                   value={registration.name}
-                  onChange={(e) => setRegistration({...registration, name: e.target.value})}
+                  onChange={(e) => setRegistration({ ...registration, name: e.target.value })}
                   placeholder="Seu nome completo"
                   required
                 />
@@ -234,7 +202,7 @@ const Retiro = () => {
                     type="tel"
                     id="phone"
                     value={registration.phone}
-                    onChange={(e) => setRegistration({...registration, phone: e.target.value})}
+                    onChange={(e) => setRegistration({ ...registration, phone: e.target.value })}
                     placeholder="(00) 00000-0000"
                     required
                   />
@@ -246,7 +214,7 @@ const Retiro = () => {
                     type="email"
                     id="email"
                     value={registration.email}
-                    onChange={(e) => setRegistration({...registration, email: e.target.value})}
+                    onChange={(e) => setRegistration({ ...registration, email: e.target.value })}
                     placeholder="seu@email.com"
                     required
                   />
@@ -258,13 +226,13 @@ const Retiro = () => {
                 <select
                   id="retreat"
                   value={registration.retreat}
-                  onChange={(e) => setRegistration({...registration, retreat: e.target.value})}
+                  onChange={(e) => setRegistration({ ...registration, retreat: e.target.value })}
                   required
                 >
                   <option value="">Selecione um retiro</option>
                   {data.schedule && data.schedule.length > 0 ? (
                     data.schedule.map((item, index) => {
-                      const retreatName = item.title || item.activity || `Retiro ${index + 1}`;
+                      const retreatName = item.title || item.activity || `Retiro ${index + 1} `;
                       return (
                         <option key={index} value={retreatName}>{retreatName}</option>
                       );

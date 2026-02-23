@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Instagram, Youtube, Facebook, Phone, Music, Moon, Sun, Menu, X, Lock, ChevronDown } from 'lucide-react';
+import { Instagram, Youtube, Facebook, Phone, Music, Moon, Sun, Menu, X, ShieldCheck, ChevronDown } from 'lucide-react';
 import '../css/Header.css';
+import DatabaseService from '../services/DatabaseService';
 
 const Header = ({ theme, toggleTheme }) => {
   // State for mobile menu
@@ -10,6 +11,33 @@ const Header = ({ theme, toggleTheme }) => {
   const [showMinistries, setShowMinistries] = useState(false);
   const [isMinistriesFixed, setIsMinistriesFixed] = useState(false);
   const [ministriesTimeout, setMinistriesTimeout] = useState(null);
+
+  // Dynamic Header Data
+  const [headerData, setHeaderData] = useState(DatabaseService.getHeaderDataDefault());
+
+  React.useEffect(() => {
+    DatabaseService.getHeaderData().then(setHeaderData);
+
+    const handleStorageChange = () => {
+      DatabaseService.getHeaderData().then(setHeaderData);
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
+  // Update favicon if logo icon is an image
+  React.useEffect(() => {
+    const icon = headerData?.logo?.icon;
+    if (icon && typeof icon === 'string' && (icon.startsWith('data:image') || icon.startsWith('http'))) {
+      let link = document.querySelector("link[rel~='icon']");
+      if (!link) {
+        link = document.createElement('link');
+        link.rel = 'icon';
+        document.head.appendChild(link);
+      }
+      link.href = headerData.logo.icon;
+    }
+  }, [headerData.logo.icon]);
 
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
@@ -70,13 +98,21 @@ const Header = ({ theme, toggleTheme }) => {
       <div className="container header-content">
         <div className="logo-section">
           <Link to="/" className="logo-link">
-            <div className="logo-icon">✝</div>
-            <span className="logo-text">ADMAC</span>
+            <div className="logo-icon">
+              {headerData?.logo?.icon && typeof headerData.logo.icon === 'string' && (headerData.logo.icon.startsWith('data:image') || headerData.logo.icon.startsWith('http')) ? (
+                <img src={headerData.logo.icon} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+              ) : (
+                headerData?.logo?.icon
+              )}
+            </div>
+            <span className="logo-text">{headerData?.logo?.text}</span>
           </Link>
         </div>
 
         <nav className="desktop-nav">
-          <Link to="/" className="nav-link">Home</Link>
+          {headerData?.menu?.slice(0, 1).map((item, idx) => (
+            <Link key={idx} to={item.path} className="nav-link">{item.name}</Link>
+          ))}
 
           {/* Ministries dropdown */}
           <div
@@ -110,31 +146,25 @@ const Header = ({ theme, toggleTheme }) => {
             )}
           </div>
 
-          {/* Mídia link */}
-          <Link to="/midia" className="nav-link">Mídia</Link>
-
-          {/* Revista link */}
-          <Link to="/revista" className="nav-link">Revista</Link>
-
-          <Link to="/contato" className="nav-link">Contato</Link>
+          {/* Dynamic links */}
+          {headerData?.menu?.slice(1).map((item, idx) => (
+            <Link key={idx} to={item.path} className="nav-link">{item.name}</Link>
+          ))}
         </nav>
 
         <div className="header-actions">
           <div className="social-icons">
-            <a href="#"><Instagram size={18} /></a>
-            <a href="#"><Youtube size={18} /></a>
-            <a href="#"><Facebook size={18} /></a>
-            <a href="#"><Phone size={18} /></a>
-            <a href="#"><Music size={18} /></a>
-            <Link to={'/painel'} title={'Área Administrativa'} aria-label={'Área Administrativa'}>
-              <Lock size={18} />
-            </Link>
+            {headerData?.social?.instagram && <a href={headerData.social.instagram}><Instagram size={18} /></a>}
+            {headerData?.social?.youtube && <a href={headerData.social.youtube}><Youtube size={18} /></a>}
+            {headerData?.social?.facebook && <a href={headerData.social.facebook}><Facebook size={18} /></a>}
+            {headerData?.social?.phone && <a href={`tel:${headerData.social.phone}`}><Phone size={18} /></a>}
+            {headerData?.social?.music && <a href={headerData.social.music}><Music size={18} /></a>}
           </div>
           <button className="theme-toggle" onClick={toggleTheme} aria-label="Toggle theme">
             {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
           </button>
           <Link to="/painel" className="cta-button">
-            <Lock size={16} style={{ marginRight: '8px' }} />
+            <ShieldCheck size={16} style={{ marginRight: '8px' }} />
             Área Administrativa
           </Link>
           <button className="mobile-menu-btn" onClick={toggleMenu}>
@@ -146,7 +176,9 @@ const Header = ({ theme, toggleTheme }) => {
       {/* Mobile navigation */}
       {isMenuOpen && (
         <nav className="mobile-nav">
-          <Link to="/" onClick={toggleMenu}>Home</Link>
+          {headerData?.menu?.slice(0, 1).map((item, idx) => (
+            <Link key={idx} to={item.path} onClick={toggleMenu}>{item.name}</Link>
+          ))}
 
           <div className="mobile-dropdown">
             <button className="mobile-dropdown-trigger" onClick={() => setShowMinistries(!showMinistries)}>
@@ -163,10 +195,9 @@ const Header = ({ theme, toggleTheme }) => {
             )}
           </div>
 
-          <Link to="/midia" onClick={toggleMenu}>Mídia</Link>
-
-          <Link to="/revista" onClick={toggleMenu}>Revista</Link>
-          <Link to="/contato" onClick={toggleMenu}>Contato</Link>
+          {headerData?.menu?.slice(1).map((item, idx) => (
+            <Link key={idx} to={item.path} onClick={toggleMenu}>{item.name}</Link>
+          ))}
         </nav>
       )}
     </header>

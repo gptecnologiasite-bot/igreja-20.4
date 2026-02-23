@@ -1,7 +1,8 @@
+import React, { useState } from 'react';
 import { Heart, Calendar, Users, Camera, MessageSquare, MapPin, Clock, Send, Package, Utensils, Shirt } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { motion } from 'framer-motion';
 import '../css/Social.css';
-import DatabaseService from '../services/DatabaseService';
+import { useMinistryData } from '../hooks/useMinistryData';
 
 const Social = () => {
   const [testimonial, setTestimonial] = useState({
@@ -10,35 +11,7 @@ const Social = () => {
     message: ''
   });
 
-  const [data, setData] = useState(() => ({
-    ...DatabaseService.getMinistryDefault('social'),
-    schedule: [],
-    gallery: []
-  }));
-
-  useEffect(() => {
-    DatabaseService.getMinistry('social').then((d) => {
-      setData({
-        hero: d.hero || { title: 'Ação Social', subtitle: 'Servindo com amor' },
-        mission: d.mission || { title: 'Nossa Missão', text: '' },
-        schedule: Array.isArray(d.schedule) ? d.schedule : [],
-        gallery: Array.isArray(d.gallery) ? d.gallery : []
-      });
-    });
-
-    const handleStorageChange = () => {
-      DatabaseService.getMinistry('social').then((d) => {
-        setData({
-          hero: d.hero || { title: 'Ação Social', subtitle: 'Servindo com amor' },
-          mission: d.mission || { title: 'Nossa Missão', text: '' },
-          schedule: Array.isArray(d.schedule) ? d.schedule : [],
-          gallery: Array.isArray(d.gallery) ? d.gallery : []
-        });
-      });
-    };
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, []);
+  const [data] = useMinistryData('social');
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -93,15 +66,15 @@ const Social = () => {
             <h2>Nossos Projetos</h2>
           </div>
           <p className="section-subtitle">Conheça as ações que realizamos regularmente</p>
-          
+
           <div className="events-grid">
             {data.schedule && data.schedule.length > 0 ? (
               data.schedule.map((event, index) => {
                 const eventTitle = event.title || event.activity || 'Projeto';
                 // Default icon logic
                 const IconComponent = eventTitle.includes('Cestas') ? Package :
-                                      eventTitle.includes('Sopa') ? Utensils :
-                                      eventTitle.includes('Bazar') ? Shirt : Heart;
+                  eventTitle.includes('Sopa') ? Utensils :
+                    eventTitle.includes('Bazar') ? Shirt : Heart;
                 return (
                   <div key={index} className="event-card">
                     <div className="event-image" style={{ backgroundImage: `url(${event.image || 'https://images.unsplash.com/photo-1593113598332-cd288d649433?w=400&h=300&fit=crop'})` }}>
@@ -156,7 +129,7 @@ const Social = () => {
             <h2>Galeria de Fotos</h2>
           </div>
           <p className="section-subtitle">Momentos especiais das nossas ações</p>
-          
+
           <div className="gallery-grid">
             {data.gallery && data.gallery.length > 0 ? (
               data.gallery.map((photo, index) => (
@@ -184,7 +157,7 @@ const Social = () => {
             <h2>Compartilhe Seu Testemunho</h2>
           </div>
           <p className="section-subtitle">Você foi impactado pela nossa ação social? Conte sua história!</p>
-          
+
           <div className="form-wrapper">
             <form onSubmit={handleSubmit} className="testimonial-form">
               <div className="form-group">
@@ -193,7 +166,7 @@ const Social = () => {
                   type="text"
                   id="name"
                   value={testimonial.name}
-                  onChange={(e) => setTestimonial({...testimonial, name: e.target.value})}
+                  onChange={(e) => setTestimonial({ ...testimonial, name: e.target.value })}
                   placeholder="Seu nome"
                   required
                 />
@@ -205,7 +178,7 @@ const Social = () => {
                   type="email"
                   id="email"
                   value={testimonial.email}
-                  onChange={(e) => setTestimonial({...testimonial, email: e.target.value})}
+                  onChange={(e) => setTestimonial({ ...testimonial, email: e.target.value })}
                   placeholder="seu@email.com"
                 />
               </div>
@@ -215,7 +188,7 @@ const Social = () => {
                 <textarea
                   id="message"
                   value={testimonial.message}
-                  onChange={(e) => setTestimonial({...testimonial, message: e.target.value})}
+                  onChange={(e) => setTestimonial({ ...testimonial, message: e.target.value })}
                   placeholder="Compartilhe como a ação social impactou sua vida..."
                   rows="6"
                   required

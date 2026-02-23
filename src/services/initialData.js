@@ -346,12 +346,160 @@ export const INITIAL_MINISTRIES_DATA = {
       { number: '1.200', label: 'Famílias Assistidas/Ano', icon: 'Heart' },
       { number: 'R$ 50k', label: 'Investido em 2024', icon: 'DollarSign' }
     ]
+  },
+  revista: {
+    hero: { title: 'Revista Admac', subtitle: 'Nossa revista mensal' },
+    pages: [
+      {
+        id: 1,
+        type: "cover",
+        title: "ANO DE ROMPER",
+        subtitle: "Vivendo o sobrenatural de Deus em 2025",
+        edition: "Edição Nº 42 • Dezembro 2025",
+        image: "https://images.unsplash.com/photo-1438232992991-995b7058bbb3?auto=format&fit=crop&w=1200&q=80",
+      },
+      {
+        id: 2,
+        type: "index",
+        title: "Nesta Edição",
+        items: [
+          { label: "Palavra do Pastor", page: 3, icon: "BookOpen" },
+          { label: "Colunista: Pr. João", page: 4, icon: "PenTool" },
+          { label: "Devocional Diário", page: 5, icon: "Sun" },
+          { label: "Agenda do Mês", page: 6, icon: "Calendar" },
+          { label: "Missões & Social", page: 7, icon: "Heart" },
+          { label: "Ministério Infantil", page: 8, icon: "Star" },
+          { label: "Jovens & Teen", page: 9, icon: "Users" },
+        ],
+      },
+      {
+        id: 3,
+        type: "article",
+        category: "Palavra Pastoral",
+        title: "Um Novo Tempo",
+        image: "https://images.unsplash.com/photo-1470225620780-dba8ba36b745?auto=format&fit=crop&w=1200&q=80",
+        body: `Amada igreja, estamos vivendo um tempo precioso de renovação. O Senhor tem nos chamado para águas mais profundas e para um compromisso renovado com a Sua Palavra. \n\n    Neste mês, quero desafiar cada um de vocês a buscar a face de Deus como nunca antes. Não se contentem com o raso, não se contentem com o que já viveram. Deus tem coisas novas e maiores para nós.\n    \n    Lembrem-se das palavras de Isaías 43:19: "Eis que faço uma coisa nova; agora está saindo à luz; porventura não a percebeis? Eis que porei um caminho no deserto, e rios no ermo."\n    \n    Que este seja o nosso clamor e a nossa expectativa para o próximo ano. Deus abençoe a todos!`,
+      },
+      {
+        id: 4,
+        type: "columnist",
+        category: "Liderança",
+        author: {
+          name: "Pr. João Silva",
+          role: "Vice-Presidente ADMAC",
+          image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=300&q=80",
+          bio: "Teólogo, escritor e conferencista. Dedica sua vida ao ensino da Palavra e formação de líderes."
+        },
+        title: "O Poder da Unidade",
+        body: `A unidade não é apenas uma boa ideia, é um mandamento do Senhor. Quando a igreja caminha unida, o inferno estremece e o Reino de Deus avança.\n    \n    Muitas vezes confundimos unidade com uniformidade. Deus ama a diversidade, mas Ele exige unidade de propósito e de espírito. Como corpo de Cristo, somos muitos membros, mas um só corpo.\n    \n    <quote>A verdadeira unidade nasce aos pés da cruz, onde reconhecemos que todos carecemos da mesma graça.</quote>\n    \n    Neste tempo final, precisamos deixar de lado nossas diferenças menores e focar no que realmente importa: a salvação de almas e a glória de Deus.`,
+      },
+      {
+        id: 5,
+        type: "devotional",
+        category: "Pão Diário",
+        title: "Alimento para a Alma",
+        items: [
+          { date: "01 DEZ", title: "Fé Inabalável", text: "A fé não é sentir que tudo vai dar certo, é saber que Deus está no controle mesmo quando tudo parece dar errado. Hebreus 11:1 nos lembra que a fé é a certeza." },
+          { date: "02 DEZ", title: "Amor ao Próximo", text: "Amar quem nos ama é fácil. O desafio do Evangelho é amar quem nos persegue. Jesus nos ensinou a orar pelos nossos inimigos e abençoar quem nos maldiz." },
+          { date: "03 DEZ", title: "Esperança Viva", text: "Nossa esperança não está nas circunstâncias, mas na promessa daquele que é fiel. Ele prometeu estar conosco todos os dias até a consumação dos séculos." },
+        ]
+      },
+      {
+        id: 6,
+        type: "feature",
+        category: "Agenda",
+        title: "Dezembro na ADMAC",
+        events: [
+          { date: "07/12", title: "Santa Ceia do Senhor", time: "19:00" },
+          { date: "14/12", title: "Cantata de Natal Kids", time: "19:30" },
+          { date: "21/12", title: "Culto da Família Especial", time: "18:00" },
+          { date: "31/12", title: "Culto da Virada", time: "22:00" },
+        ],
+      },
+      {
+        id: 7,
+        type: "article",
+        category: "Missões",
+        title: "Ide por todo o mundo",
+        image: "https://images.unsplash.com/photo-1469571486292-0ba58a3f068b?auto=format&fit=crop&w=1200&q=80",
+        body: `Nosso departamento de missões tem alcançado vidas em lugares onde o Evangelho ainda é pouco conhecido. Graças às suas orações e contribuições, enviamos mais dois missionários para o campo no último mês.\n    \n    O trabalho social também continua forte. Foram distribuídas mais de 50 cestas básicas para famílias carentes da nossa comunidade. Isso é ser igreja: amar a Deus e amar ao próximo com atitudes concretas.\n    \n    Continue orando e contribuindo. A obra não pode parar!`,
+      },
+      {
+        id: 8,
+        type: "feature",
+        category: "Kids",
+        title: "Geração do Futuro",
+        events: [
+          { date: "Todo Domingo", title: "Escola Bíblica Dominical", time: "09:00" },
+          { date: "Sábados", title: "Ensaio do Coral Kids", time: "15:00" },
+        ],
+        highlight: "Não perca a nossa Cantata de Natal! As crianças estão preparando algo lindo para o Senhor.",
+      },
+      {
+        id: 9,
+        type: "article",
+        category: "Jovens",
+        title: "Conferência Radical",
+        image: "https://images.unsplash.com/photo-1511632765486-a01980e01a18?auto=format&fit=crop&w=1200&q=80",
+        body: `A Conferência Radical foi um marco na vida dos nossos jovens. Foram três dias de muita adoração, palavra e quebrantamento. Vimos jovens se entregando a Jesus e sendo batizados no Espírito Santo.\n    \n    Mas não para por aí! Nossos cultos de sábado continuam a todo vapor. Se você tem entre 18 e 30 anos, venha fazer parte dessa galera que é apaixonada por Jesus.`,
+      },
+    ]
+  },
+  sobre: {
+    hero: { 
+      title: 'Sobre a ADMAC', 
+      subtitle: 'Nossa história, missão e valores',
+      verse: '"Até aqui nos ajudou o Senhor." - 1 Samuel 7:12'
+    },
+    mission: { 
+      title: 'Nossa Missão', 
+      text: 'Proclamar o evangelho de Jesus Cristo, fazer discípulos e transformar vidas através do amor e da palavra de Deus. Queremos ser uma igreja relevante, que impacta a sociedade e vive o sobrenatural de Deus todos os dias.' 
+    },
+    team: [
+      { name: 'Pr. Roberto Silva', role: 'Pastor Presidente', photo: 'https://ui-avatars.com/api/?name=Pastor+Roberto&background=d4af37&color=000&size=200&bold=true' },
+      { name: 'Pra. Ana Silva', role: 'Pastora Auxiliar', photo: 'https://ui-avatars.com/api/?name=Pastora+Ana&background=d4af37&color=000&size=200&bold=true' }
+    ],
+    gallery: [
+      { url: 'https://images.unsplash.com/photo-1510936111840-65e151ad71bb?auto=format&fit=crop&w=1200&q=80', caption: 'Nossa sede' },
+      { url: 'https://images.unsplash.com/photo-1438232992991-995b7058bbb3?auto=format&fit=crop&w=1200&q=80', caption: 'Comunhão' }
+    ]
+  }
+};
+
+export const INITIAL_HEADER_DATA = {
+  logo: { text: 'ADMAC', icon: '✝' },
+  menu: [
+    { name: 'Home', path: '/' },
+    { name: 'Mídia', path: '/midia' },
+    { name: 'Revista', path: '/revista' },
+    { name: 'Sobre', path: '/sobre' },
+    { name: 'Contato', path: '/contato' }
+  ],
+  social: {
+    instagram: '#',
+    youtube: '#',
+    facebook: '#',
+    phone: '(61) 99324-1084',
+    music: '#'
   }
 };
 
 export const INITIAL_FOOTER_DATA = {
-  contact: { address: 'QN 404 Conjunto A Lote 1 - Samambaia Norte, DF', phone: '(61) 99999-9999', email: 'contato@admac.com.br' },
-  social: { facebook: 'admac', instagram: '@admac', youtube: 'ADMAC TV' }
+  logo: { text: 'ADMAC', tagline: 'Vivendo o Sobrenatural' },
+  description: 'Assembleia de Deus Ministério Atos e Conquistas - Uma igreja comprometida com a Palavra de Deus e a transformação de vidas.',
+  verse: '"Ide por todo o mundo e pregai o evangelho" - Marcos 16:15',
+  contact: { 
+    address: 'QN 404 Conjunto A Lote 1 - Samambaia Norte, DF', 
+    phone: '(61) 99999-9999', 
+    email: 'contato@admac.com.br',
+    cultos: 'Dom 18h | Qua 19h30'
+  },
+  social: { 
+    facebook: 'admac', 
+    instagram: '@admac', 
+    youtube: 'ADMAC TV',
+    spotify: 'https://open.spotify.com/show/2lzm9pXbj4PCoWcxsFzDtf'
+  }
 };
 
 export const INITIAL_PAGES_DATA = [
