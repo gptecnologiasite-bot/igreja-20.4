@@ -15,7 +15,8 @@ const DB_KEYS = {
   THEME: 'admac_theme',
   MINISTRIES: 'admac_ministry_',
   MINISTRIES_LIST: 'admac_ministries', // Lista de ministérios para a home
-  VIDEOS: 'admac_videos'
+  VIDEOS: 'admac_videos',
+  LOGS: 'admac_logs'
 };
 
 const DatabaseService = {
@@ -43,6 +44,7 @@ const DatabaseService = {
       if (!item) return defaultValue;
       
       const parsed = JSON.parse(item);
+      if (!parsed) return defaultValue;
       
       // Deep merge with default to ensure new nested fields are present
       if (typeof defaultValue === 'object' && defaultValue !== null && !Array.isArray(defaultValue)) {
@@ -70,7 +72,15 @@ const DatabaseService = {
   getHomeDataDefault: () => INITIAL_HOME_DATA,
   
   getHomeData: async () => {
-    return DatabaseService.fetchItem(DB_KEYS.HOME, INITIAL_HOME_DATA);
+    const data = await DatabaseService.fetchItem(DB_KEYS.HOME, INITIAL_HOME_DATA);
+    
+    // Robusta garantia de dados: previne campos vazios salvos acidentalmente
+    if (!data.welcome || !data.welcome.title) data.welcome = { ...INITIAL_HOME_DATA.welcome };
+    if (!data.cta || !data.cta.title) data.cta = { ...INITIAL_HOME_DATA.cta };
+    if (!data.carousel || data.carousel.length === 0) data.carousel = [...INITIAL_HOME_DATA.carousel];
+    if (!data.pastors || data.pastors.length === 0) data.pastors = [...INITIAL_HOME_DATA.pastors];
+    
+    return data;
   },
 
   saveHomeData: async (data) => {
@@ -88,8 +98,12 @@ const DatabaseService = {
   ],
 
   getMinistriesList: async () => {
+    const homeData = await DatabaseService.getHomeData();
+    if (homeData && homeData.ministries && homeData.ministries.length > 0) {
+      return homeData.ministries;
+    }
     const defaultList = DatabaseService.getMinistriesListDefault();
-    return DatabaseService.fetchItem(DB_KEYS.MINISTRIES_LIST, defaultList);
+    return await DatabaseService.fetchItem(DB_KEYS.MINISTRIES_LIST, defaultList);
   },
 
   saveMinistriesList: async (ministries) => {
@@ -162,11 +176,13 @@ const DatabaseService = {
   },
 
   getMinistry: async (id) => {
+    if (id === 'home') return await DatabaseService.getHomeData();
     const defaultData = DatabaseService.getMinistryDefault(id);
-    return DatabaseService.fetchItem(`${DB_KEYS.MINISTRIES}${id}`, defaultData);
+    return await DatabaseService.fetchItem(`${DB_KEYS.MINISTRIES}${id}`, defaultData);
   },
 
   saveMinistry: async (id, data) => {
+    if (id === 'home') return DatabaseService.saveHomeData(data);
     return DatabaseService.saveItem(`${DB_KEYS.MINISTRIES}${id}`, data);
   },
 
@@ -174,11 +190,41 @@ const DatabaseService = {
   getFooterDataDefault: () => INITIAL_FOOTER_DATA,
 
   getFooterData: async () => {
-    return DatabaseService.fetchItem(DB_KEYS.FOOTER, INITIAL_FOOTER_DATA);
+    return await DatabaseService.fetchItem(DB_KEYS.FOOTER, INITIAL_FOOTER_DATA);
   },
 
   saveFooterData: async (data) => {
     return DatabaseService.saveItem(DB_KEYS.FOOTER, data);
+  },
+
+  // --- Logs ---
+  getLogs: async () => {
+    try {
+      const logs = localStorage.getItem(DB_KEYS.LOGS);
+      return logs ? JSON.parse(logs) : [];
+    } catch {
+      return [];
+    }
+  },
+
+  addLog: async (action, userEmail, details = '') => {
+    try {
+      const logs = await DatabaseService.getLogs();
+      const newLog = {
+        id: Date.now(),
+        date: new Date().toISOString(),
+        action,
+        user: userEmail,
+        details,
+        location: ['SP, Brasil', 'RJ, Brasil', 'DF, Brasil', 'Desconhecido'][Math.floor(Math.random() * 4)] // Simulação de local
+      };
+      logs.unshift(newLog); // Adiciona no início
+      if (logs.length > 500) logs.pop(); // Mantém no máximo 500 logs
+      localStorage.setItem(DB_KEYS.LOGS, JSON.stringify(logs));
+      return true;
+    } catch {
+      return false;
+    }
   },
 
   // --- Header Data ---

@@ -1,31 +1,17 @@
-import React, { useState, useEffect } from 'react';
+import React, { useMemo } from 'react';
 import { Youtube } from 'lucide-react';
 import '../css/RecentVideos.css';
 
 const RecentVideos = ({ limit = 2, category = null }) => {
-    const [videos, setVideos] = useState([]);
-
-    useEffect(() => {
-        // Load videos from localStorage
-        const savedVideos = localStorage.getItem('admac_videos');
-        if (savedVideos) {
-            let allVideos = JSON.parse(savedVideos);
-
-            // Filter by category if specified
-            if (category) {
-                allVideos = allVideos.filter(video => video.category === category);
-            }
-
-            // Filter only active videos
-            allVideos = allVideos.filter(video => video.active !== false);
-
-            // Sort by order and get limited number
-            const sortedVideos = allVideos
-                .sort((a, b) => a.order - b.order)
-                .slice(0, limit);
-
-            setVideos(sortedVideos);
+    const videos = useMemo(() => {
+        const saved = localStorage.getItem('admac_videos');
+        if (!saved) return [];
+        let all = JSON.parse(saved);
+        if (category) {
+            all = all.filter(v => v.category === category);
         }
+        all = all.filter(v => v.active !== false);
+        return all.sort((a, b) => a.order - b.order).slice(0, limit);
     }, [limit, category]);
 
     if (videos.length === 0) {

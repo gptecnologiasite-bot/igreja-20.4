@@ -1,13 +1,17 @@
 import { MapPin, Phone, Mail, Clock, Send } from 'lucide-react';
 import '../css/Contact.css';
 
-/**cius */
+// Página de contato com marcadores para edição via painel
 const Contact = () => {
   return (
     <div className="contact-page">
       <div className="contact-header">
-        <h1>Entre em Contato</h1>
-        <p>Estamos aqui para ouvir você. Envie sua mensagem ou faça-nos uma visita.</p>
+        <h1>
+          {/* CMS_CONTACT_TITLE_START */}Entre em Contato{/* CMS_CONTACT_TITLE_END */}
+        </h1>
+        <p>
+          {/* CMS_CONTACT_SUBTITLE_START */}Estamos aqui para ouvir você. Envie sua mensagem ou faça-nos uma visita.{/* CMS_CONTACT_SUBTITLE_END */}
+        </p>
       </div>
    
       <div className="contact-container">
@@ -18,28 +22,36 @@ const Contact = () => {
               <MapPin className="icon" />
               <div>
                 <strong>Endereço</strong>
-                <p>QN 516 - Samambaia, Brasília - DF, 72314-200</p>
+                <p>
+                  {/* CMS_CONTACT_ADDRESS_START */}QN 516 - Samambaia, Brasília - DF, 72314-200{/* CMS_CONTACT_ADDRESS_END */}
+                </p>
               </div>
             </div>
             <div className="info-item">
               <Phone className="icon" />
               <div>
                 <strong>Telefone</strong>
-                <p>(61) 99324-1084</p>
+                <p>
+                  {/* CMS_CONTACT_PHONE_START */}(61) 99324-1085{/* CMS_CONTACT_PHONE_END */}
+                </p>
               </div>
             </div>
             <div className="info-item">
               <Mail className="icon" />
               <div>
                 <strong>Email</strong>
-                <p>admacdf@gmail.com</p>
+                <p>
+                  {/* CMS_CONTACT_EMAIL_START */}admacdf@gmail.com{/* CMS_CONTACT_EMAIL_END */}
+                </p>
               </div>
             </div>
             <div className="info-item">
               <Clock className="icon" />
               <div>
                 <strong>Cultos</strong>
-                <p>Domingo: 18h | Quinta: 19h30</p>
+                <p>
+                  {/* CMS_CONTACT_SCHEDULE_START */}Domingo: 18h | Quinta: 19h30{/* CMS_CONTACT_SCHEDULE_END */}
+                </p>
               </div>
             </div>
           </div>

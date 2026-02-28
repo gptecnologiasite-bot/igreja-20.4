@@ -66,6 +66,23 @@ export const INITIAL_HOME_DATA = {
       description: 'Preparação da equipe de louvor para os cultos',
       image: 'https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=400&h=300&fit=crop'
     }
+  ],
+  spotifyUrl: 'https://open.spotify.com/embed/episode/6vf8aTHBG3ms8DGo5jCsAG?utm_source=generator',
+  cta: {
+    title: 'Faça Parte da Nossa Família',
+    subtitle: 'Venha nos visitar e experimente o amor de Deus em nossa comunidade',
+    primaryBtn: 'Quero Visitar',
+    primaryLink: '/contato',
+    secondaryBtn: 'Ligar Agora',
+    secondaryLink: 'tel:+5561993241084'
+  },
+  ministries: [
+    { title: "Kids", description: "Ensinando a criança no caminho em que deve andar", link: "/kids", icon: "👶", color: "#ff6b9d" },
+    { title: "Louvor", description: "Adorando a Deus em espírito e em verdade", link: "/louvor", icon: "🎵", color: "#9b59b6" },
+    { title: "EBD", description: "Crescendo no conhecimento da Palavra", link: "/edb", icon: "📚", color: "#d4af37" },
+    { title: "Ação Social", description: "Servindo ao próximo com amor", link: "/social", icon: "❤️", color: "#e74c3c" },
+    { title: "Lares", description: "Comunhão e crescimento nos lares", link: "/lares", icon: "🏠", color: "#3498db" },
+    { title: "Retiro", description: "Momentos de renovação espiritual", link: "/retiro", icon: "⛰️", color: "#27ae60" }
   ]
 };
 
@@ -85,7 +102,13 @@ export const INITIAL_MINISTRIES_DATA = {
     testimonials: [
       { name: 'Ana Clara', age: 8, text: 'Eu amo a tia da salinha, ela conta histórias muito legais!', photo: 'https://ui-avatars.com/api/?name=Ana+Clara&background=random' },
       { name: 'Pedro', age: 10, text: 'Fiz muitos amigos aqui na igreja.', photo: 'https://ui-avatars.com/api/?name=Pedro&background=random' }
-    ]
+    ],
+    birthdays: {
+      title: 'Aniversariantes do Mês',
+      text: 'Vamos celebrar a vida dos nossos pequenos!',
+      videoUrl: '',
+      people: []
+    }
   },
   louvor: {
     hero: { title: 'Ministério de Louvor', subtitle: 'Adorando a Deus em espírito e em verdade', verse: '"Cantai ao Senhor um cântico novo..." - Salmos 96:1' },
@@ -98,7 +121,13 @@ export const INITIAL_MINISTRIES_DATA = {
       { name: 'Carlos Oliveira', role: 'Líder de Louvor', photo: 'https://ui-avatars.com/api/?name=Carlos+Oliveira&background=random' },
       { name: 'Mariana Santos', role: 'Vocal', photo: 'https://ui-avatars.com/api/?name=Mariana+Santos&background=random' },
       { name: 'João Paulo', role: 'Tecladista', photo: 'https://ui-avatars.com/api/?name=Joao+Paulo&background=random' }
-    ]
+    ],
+    birthdays: {
+      title: 'Aniversariantes do Mês',
+      text: 'Parabéns aos nossos adoradores aniversariantes!',
+      videoUrl: '',
+      people: []
+    }
   },
   jovens: {
     hero: { title: 'Ministério de Jovens', subtitle: 'Jovens apaixonados por Deus', verse: '"Ninguém despreze a tua mocidade..." - 1 Timóteo 4:12' },
@@ -119,7 +148,13 @@ export const INITIAL_MINISTRIES_DATA = {
     testimonials: [
       { name: 'Gabriel', age: 22, text: 'O grupo de jovens mudou minha vida. Encontrei amigos verdadeiros.', photo: 'https://ui-avatars.com/api/?name=Gabriel&background=random' },
       { name: 'Juliana', age: 19, text: 'Aqui aprendi a amar a Bíblia.', photo: 'https://ui-avatars.com/api/?name=Juliana&background=random' }
-    ]
+    ],
+    birthdays: {
+      title: 'Aniversariantes do Mês',
+      text: 'Nossos jovens ficando mais velhos!',
+      videoUrl: '',
+      people: []
+    }
   },
   mulheres: {
     hero: { title: 'Ministério de Mulheres', subtitle: 'Mulheres transformadas pelo amor de Jesus', verse: '"Mulher virtuosa, quem a achará?" - Provérbios 31:10' },
@@ -138,7 +173,13 @@ export const INITIAL_MINISTRIES_DATA = {
     ],
     testimonials: [
       { name: 'Maria', text: 'Me sinto muito acolhida neste ministério.', photo: 'https://ui-avatars.com/api/?name=Maria&background=random' }
-    ]
+    ],
+    birthdays: {
+      title: 'Aniversariantes do Mês',
+      text: 'Mulheres virtuosas e abençoadas que celebram vida este mês!',
+      videoUrl: '',
+      people: []
+    }
   },
   homens: {
     hero: { title: 'Ministério de Homens', subtitle: 'Firmes na fé, liderando em amor', verse: '"Sede firmes, inabaláveis..." - 1 Coríntios 15:58', videoUrl: '' },
@@ -160,7 +201,13 @@ export const INITIAL_MINISTRIES_DATA = {
     ],
     testimonials: [
       { name: 'André', text: 'Encontrei direção e irmãos que caminham comigo.', photo: 'https://ui-avatars.com/api/?name=Andre&background=random' }
-    ]
+    ],
+    birthdays: {
+      title: 'Aniversariantes do Mês',
+      text: 'Homens segundo o coração de Deus.',
+      videoUrl: '',
+      people: []
+    }
   },
   lares: {
     hero: { title: 'Ministério de Lares', subtitle: 'Comunhão nos lares', verse: '"...partindo o pão em casa" - Atos 2:46' },
@@ -176,7 +223,13 @@ export const INITIAL_MINISTRIES_DATA = {
     ],
     testimonials: [
       { name: 'Roberto', text: 'A célula foi fundamental para minha caminhada cristã.', photo: 'https://ui-avatars.com/api/?name=Roberto&background=random' }
-    ]
+    ],
+    birthdays: {
+      title: 'Aniversariantes',
+      text: 'Celebrando a comunhão.',
+      videoUrl: '',
+      people: []
+    }
   },
   retiro: {
     hero: { title: 'Retiros Espirituais', subtitle: 'Renovação e comunhão', verse: '"Vinde a mim..." - Mateus 11:28' },

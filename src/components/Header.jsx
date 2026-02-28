@@ -27,7 +27,6 @@ const Header = ({ theme, toggleTheme }) => {
       setInternalTheme(next);
     };
   }, [toggleTheme, currentTheme]);
-
   // Dynamic Header Data
   const [headerData, setHeaderData] = useState(DatabaseService.getHeaderDataDefault());
 
@@ -37,14 +36,22 @@ const Header = ({ theme, toggleTheme }) => {
     const handleStorageChange = () => {
       DatabaseService.getHeaderData().then(setHeaderData);
     };
+
+    // Escuta alteração em outras abas
     window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
+    // Escuta evento customizado da mesma aba (Painel gravou)
+    window.addEventListener('admac_header', handleStorageChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      window.removeEventListener('admac_header', handleStorageChange);
+    };
   }, []);
 
   // Update favicon if logo icon is an image
   React.useEffect(() => {
-    const icon = headerData?.logo?.icon;
-    if (icon && typeof icon === 'string' && (icon.startsWith('data:image') || icon.startsWith('http'))) {
+    const icon = headerData?.logo?.icon?.trim();
+    if (icon && typeof icon === 'string' && (icon.includes('data:image') || icon.includes('http'))) {
       let link = document.querySelector("link[rel~='icon']");
       if (!link) {
         link = document.createElement('link');
@@ -115,10 +122,10 @@ const Header = ({ theme, toggleTheme }) => {
         <div className="logo-section">
           <Link to="/" className="logo-link">
             <div className="logo-icon">
-              {headerData?.logo?.icon && typeof headerData.logo.icon === 'string' && (headerData.logo.icon.startsWith('data:image') || headerData.logo.icon.startsWith('http')) ? (
-                <img src={headerData.logo.icon} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+              {headerData?.logo?.icon && typeof headerData.logo.icon === 'string' && (headerData.logo.icon.includes('data:image') || headerData.logo.icon.includes('http')) ? (
+                <img src={headerData.logo.icon.trim()} alt="Logo" />
               ) : (
-                headerData?.logo?.icon
+                <span>{headerData?.logo?.icon || '⛪'}</span>
               )}
             </div>
             <span className="logo-text">{headerData?.logo?.text}</span>

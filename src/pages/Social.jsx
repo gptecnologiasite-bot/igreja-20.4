@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { Heart, Calendar, Users, Camera, MessageSquare, MapPin, Clock, Send, Package, Utensils, Shirt } from 'lucide-react';
-import { motion } from 'framer-motion';
 import '../css/Social.css';
 import { useMinistryData } from '../hooks/useMinistryData';
 

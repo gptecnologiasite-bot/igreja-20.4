@@ -25,6 +25,26 @@
 }
 
 .logo-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 4px;
+  font-weight: bold;
+  overflow: hidden;
+  /* Added for transparency */
+  background-color: transparent;
+}
+
+.logo-icon img {
+  height: 40px;
+  max-width: 140px;
+  object-fit: contain;
+  /* Adjusted for larger image rendering */
+  height: 50px;
+  max-width: 160px;
+}
+
+.logo-icon span {
   background: #fff;
   color: #000;
   width: 30px;
@@ -33,15 +53,9 @@
   align-items: center;
   justify-content: center;
   border-radius: 4px;
-  font-weight: bold;
-  overflow: hidden;
-}
-
-.logo-icon img {
-  width: 100%;
-  height: 100%;
-  object-fit: contain;
-  padding: 2px;
+  /* Made transparent as per instruction */
+  background: transparent;
+  color: var(--text-color); /* Use text color for icon */
 }
 
 .desktop-nav {
