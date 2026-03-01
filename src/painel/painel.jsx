@@ -648,13 +648,16 @@ export default function PainelAdm() {
     } catch { void 0 }
   };
 
+  // Gera o HTML completo de um relatório de acessos para ser aberto em nova aba ou impresso.
+  // CORREÇÃO: variáveis renomeadas de `pages`/`people` para `pagesData`/`peopleData` para evitar
+  // sombreamento (variable shadowing) com o estado `pages` declarado no componente.
   const buildAccessReportHTML = (days = 30) => {
-    let pages = [];
-    let people = [];
-    try { pages = AnalyticsService.getPagesSummary(days) || []; } catch { pages = []; }
-    try { people = AnalyticsService.getPeopleSummary() || []; } catch { people = []; }
+    let pagesData = [];
+    let peopleData = [];
+    try { pagesData = AnalyticsService.getPagesSummary(days) || []; } catch { pagesData = []; }
+    try { peopleData = AnalyticsService.getPeopleSummary() || []; } catch { peopleData = []; }
     const period = new Date(Date.now() - days * 86400000).toLocaleDateString('pt-BR') + ' a ' + new Date().toLocaleDateString('pt-BR');
-    const total = pages.reduce((s, x) => s + x.count, 0);
+    const total = pagesData.reduce((s, x) => s + x.count, 0);
     const style = `
       body{font-family:Arial,Helvetica,sans-serif;color:#000;padding:20px}
       .hdr{border-bottom:2px solid #000;margin-bottom:10px}
@@ -666,8 +669,9 @@ export default function PainelAdm() {
       th{background:#eee}
       .right{text-align:right}
     `;
-    const rowsPages = pages.map(p => `<tr><td>${p.path}</td><td class="right">${p.count}</td><td class="right">${p.sessions}</td><td class="right">${p.people}</td><td>${p.last ? new Date(p.last).toLocaleString('pt-BR') : ''}</td></tr>`).join('');
-    const rowsPeople = people.map(p => `<tr><td>${p.name}</td><td>${p.email || ''}</td><td class="right">${p.count}</td><td class="right">${p.sessions}</td><td class="right">${p.pagesCount}</td><td>${p.last ? new Date(p.last).toLocaleString('pt-BR') : ''}</td></tr>`).join('');
+    // Gera as linhas HTML da tabela de páginas e pessoas para o relatório
+    const rowsPages = pagesData.map(p => `<tr><td>${p.path}</td><td class="right">${p.count}</td><td class="right">${p.sessions}</td><td class="right">${p.people}</td><td>${p.last ? new Date(p.last).toLocaleString('pt-BR') : ''}</td></tr>`).join('');
+    const rowsPeople = peopleData.map(p => `<tr><td>${p.name}</td><td>${p.email || ''}</td><td class="right">${p.count}</td><td class="right">${p.sessions}</td><td class="right">${p.pagesCount}</td><td>${p.last ? new Date(p.last).toLocaleString('pt-BR') : ''}</td></tr>`).join('');
     return `<!doctype html><html><head><meta charset="utf-8"><style>${style}</style><title>Relatório de Acessos</title></head><body>
       <div class="hdr">
         <div class="title">ADMAC — Relatório de Acessos</div>

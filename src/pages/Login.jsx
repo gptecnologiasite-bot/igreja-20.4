@@ -1,25 +1,36 @@
+// ================================================================
+// Login.jsx — Página de autenticação do Painel Administrativo
+// Suporta login com usuários salvos no localStorage e com a
+// conta admin hardcoded (admin@admac.com / REDACTED_SENHA).
+// Também permite criar novos usuários via formulário de cadastro.
+// ================================================================
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { User, Plus, ArrowRight } from 'lucide-react';
 import '../css/Login.css';
 
 const Login = () => {
+  // Controla se o formulário exibido é de login ou de cadastro
   const [isRegistering, setIsRegistering] = useState(false);
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  // Lê os usuários salvos do localStorage para exibir a seleção rápida
   const [savedUsers, setSavedUsers] = useState(() => {
     const users = localStorage.getItem('admac_users');
     return users ? JSON.parse(users) : [];
   });
   const navigate = useNavigate();
 
+  // Processa o login: verifica usuários do localStorage e admin hardcoded
   const handleLogin = (e) => {
     e.preventDefault();
 
     const users = JSON.parse(localStorage.getItem('admac_users') || '[]');
     const user = users.find(u => u.email === email && u.password === password);
 
+    // Aceita usuário do localStorage ou a conta admin padrão
     if (user || (email === 'admin@admac.com' && password === 'REDACTED_SENHA')) {
       const userData = user || { name: 'Admin', email: 'admin@admac.com' };
       localStorage.setItem('isAuthenticated', 'true');
@@ -30,6 +41,7 @@ const Login = () => {
     }
   };
 
+  // Processa o cadastro de novo usuário e salva no localStorage
   const handleRegister = (e) => {
     e.preventDefault();
     if (name && email && password) {
@@ -159,11 +171,11 @@ const Login = () => {
       <div className="login-video-section">
         {/* Placeholder para testes ou erro de carregamento */}
         <div className="video-fallback" style={{
-           position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
-           background: 'linear-gradient(45deg, #1a1a1a, #2a2a2a)',
-           zIndex: -1
+          position: 'absolute', top: 0, left: 0, width: '100%', height: '100%',
+          background: 'linear-gradient(45deg, #1a1a1a, #2a2a2a)',
+          zIndex: -1
         }}></div>
-        
+
         {import.meta.env.MODE !== 'test' && (
           <iframe
             width="100%"

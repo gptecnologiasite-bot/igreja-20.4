@@ -1,11 +1,19 @@
+// ================================================================
+// routes/index.jsx — Configuração central de rotas do ADMAC
+// Todas as páginas são carregadas com lazy loading (import dinâmico)
+// para reduzir o bundle inicial e melhorar o tempo de carregamento.
+// O spinner de carregamento é exibido pelo Suspense enquanto o
+// componente da página está sendo baixado.
+// ================================================================
+
 import React, { Suspense, lazy } from 'react';
 import { Navigate } from 'react-router-dom';
 
-// Layouts
+// Layouts — envolvem as páginas com Header + Footer
 const PublicLayout = lazy(() => import('../layouts/PublicLayout'));
 const AdminLayout = lazy(() => import('../layouts/AdminLayout'));
 
-// Pages
+// Páginas pública carregadas dinamicamente (code splitting)
 const Home = lazy(() => import('../pages/Home'));
 const Revista = lazy(() => import('../pages/RevistaAdmac'));
 const Login = lazy(() => import('../pages/Login'));
@@ -24,15 +32,18 @@ const Sobre = lazy(() => import('../pages/Sobre'));
 // Painel administrativo completo (sincroniza pasta pages via serviços)
 const PainelApp = lazy(() => import('../painel/painel'));
 
-// Loading element (não exporta componente para evitar alerta do fast refresh)
+// Spinner de carregamento exibido enquanto o componente é importado
+// Não é exportado como componente para evitar alerta do Fast Refresh
 const pageLoader = (
-  <div className="flex items-center justify-center min-h-screen bg-[#121212]">
-    <div className="w-12 h-12 border-4 border-[#d4af37] border-t-transparent rounded-full animate-spin"></div>
-  </div>
+    <div className="flex items-center justify-center min-h-screen bg-[#121212]">
+        <div className="w-12 h-12 border-4 border-[#d4af37] border-t-transparent rounded-full animate-spin"></div>
+    </div>
 );
 
+// Configuração das rotas: rotas pública aninhadas sob PublicLayout
+// e rotas admin protegidas sob AdminLayout
 export const routes = [
-    // Public Routes (Original look preserved)
+    // Rotas Pública (mantêm a aparência original do site)
     {
         path: '/',
         element: <Suspense fallback={pageLoader}><PublicLayout /></Suspense>,
@@ -53,15 +64,18 @@ export const routes = [
             { path: 'contato', element: <Suspense fallback={pageLoader}><Contact /></Suspense> },
         ]
     },
-    // Admin Routes
+    // Rotas Admin (painel de gerenciamento de conteúdo)
     {
         path: '/painel',
         element: <Suspense fallback={pageLoader}><AdminLayout /></Suspense>,
         children: [
             { index: true, element: <Suspense fallback={pageLoader}><PainelApp /></Suspense> },
+            // Qualquer sub-rota do painel também carrega o PainelApp
             { path: '*', element: <Suspense fallback={pageLoader}><PainelApp /></Suspense> },
         ]
     },
+    // Página de login — fora dos layouts
     { path: '/login', element: <Suspense fallback={pageLoader}><Login /></Suspense> },
+    // Rota 404: redireciona para a home
     { path: '*', element: <Navigate to="/" replace /> }
 ];

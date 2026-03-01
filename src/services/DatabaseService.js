@@ -1,3 +1,12 @@
+// ================================================================
+// DatabaseService.js — Camada de persistência local (localStorage)
+// Todos os dados do site (home, cabeçalho, rodapé, ministérios,
+// páginas, vídeos e logs) são salvos e recuperados daqui.
+// Usa `deepMerge` para garantir que novos campos adicionados ao
+// `initialData.js` não sejam perdidos quando o localStorage já
+// existir com dados de uma versão anterior.
+// ================================================================
+
 import { 
   INITIAL_HOME_DATA, 
   INITIAL_MINISTRIES_DATA, 
@@ -6,6 +15,7 @@ import {
   INITIAL_PAGES_DATA 
 } from './initialData';
 
+// Chaves utilizadas para armazenar cada recurso no localStorage
 const DB_KEYS = {
   HOME: 'admac_home',
   PAGES: 'admac_pages',
@@ -13,24 +23,30 @@ const DB_KEYS = {
   HEADER: 'admac_header',
   USER: 'admac_user',
   THEME: 'admac_theme',
-  MINISTRIES: 'admac_ministry_',
-  MINISTRIES_LIST: 'admac_ministries', // Lista de ministérios para a home
+  MINISTRIES: 'admac_ministry_',        // Prefixo; ID do ministério é concatenado
+  MINISTRIES_LIST: 'admac_ministries',  // Lista de ministérios exibida na Home
   VIDEOS: 'admac_videos',
   LOGS: 'admac_logs'
 };
 
 const DatabaseService = {
+  // Mescla recursiva de dois objetos, priorizando os dados do `source`.
+  // Garante que campos novos do `target` (defaults) sejam preservados
+  // quando o `source` (dado salvo) não os contém.
   deepMerge: (target, source) => {
     const output = { ...target };
     if (typeof target === 'object' && target !== null && typeof source === 'object' && source !== null) {
       Object.keys(source).forEach(key => {
         if (typeof source[key] === 'object' && source[key] !== null && !Array.isArray(source[key])) {
           if (!(key in target)) {
+            // Chave não existe no alvo: copia diretamente
             output[key] = source[key];
           } else {
+            // Chave existe em ambos: mescla recursivamente
             output[key] = DatabaseService.deepMerge(target[key], source[key]);
           }
         } else {
+          // Arrays e primitivos: o source tem prioridade
           output[key] = source[key];
         }
       });
@@ -38,6 +54,8 @@ const DatabaseService = {
     return output;
   },
 
+  // Lê um item do localStorage e faz deep merge com o `defaultValue`.
+  // Retorna `defaultValue` se o item não existir ou estiver corrompido.
   fetchItem: async (key, defaultValue) => {
     try {
       const item = localStorage.getItem(key);
@@ -46,7 +64,7 @@ const DatabaseService = {
       const parsed = JSON.parse(item);
       if (!parsed) return defaultValue;
       
-      // Deep merge with default to ensure new nested fields are present
+      // Deep merge com o default para garantir que novos campos estejam presentes
       if (typeof defaultValue === 'object' && defaultValue !== null && !Array.isArray(defaultValue)) {
         return DatabaseService.deepMerge(defaultValue, parsed);
       }
@@ -58,6 +76,7 @@ const DatabaseService = {
     }
   },
 
+  // Salva qualquer valor serializável no localStorage como JSON.
   saveItem: async (key, value) => {
     try {
       localStorage.setItem(key, JSON.stringify(value));
@@ -68,7 +87,8 @@ const DatabaseService = {
     }
   },
 
-  // --- Home Data ---
+  // ── Dados da Home ────────────────────────────────────────────
+  // Retorna os dados padrão sem acessar o localStorage (síncrono)
   getHomeDataDefault: () => INITIAL_HOME_DATA,
   
   getHomeData: async () => {
