@@ -424,7 +424,8 @@ export default function PainelAdm() {
     midia: 'midia',
     Sobre: 'sobre',
     Retiro: 'retiro',
-    Intercessão: 'intercesao',
+    Intercessão: 'intercessao',
+    Intercessao: 'intercessao',
     missoes: 'missoes',
     Missoes: 'missoes',
   };
