@@ -100,6 +100,16 @@ const DatabaseService = {
     if (!data.carousel || data.carousel.length === 0) data.carousel = [...INITIAL_HOME_DATA.carousel];
     if (!data.pastors || data.pastors.length === 0) data.pastors = [...INITIAL_HOME_DATA.pastors];
     
+    // Garante que "Mídia" esteja na lista de ministérios da Home
+    if (data.ministries) {
+      const hasMidia = data.ministries.some(m => m.link === '/midia');
+      if (!hasMidia) {
+        data.ministries.push({ title: "Mídia", description: "Comunicação e tecnologia a serviço do Reino", link: "/midia", icon: "🎬", color: "#d4af37" });
+      }
+    } else {
+      data.ministries = [...INITIAL_HOME_DATA.ministries];
+    }
+    
     return data;
   },
 

@@ -18,8 +18,9 @@ const PublicLayout = () => {
             .catch(() => setLoading(false));
     }, []);
 
+    const normalize = (str) => str?.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
     const currentPageName = location.pathname === '/' ? 'Home' : location.pathname.split('/').filter(Boolean)[0];
-    const currentPage = pages.find(p => p.name.toLowerCase() === currentPageName?.toLowerCase());
+    const currentPage = pages.find(p => normalize(p.name) === normalize(currentPageName));
     const isInactive = currentPage && currentPage.active === false;
 
     if (loading) return null;

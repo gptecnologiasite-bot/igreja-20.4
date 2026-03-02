@@ -40,7 +40,7 @@ const Home = () => {
 
   // Carrega aniversariantes de todos os ministérios e ordena por data (DD/MM)
   useEffect(() => {
-    const ministryIds = ['kids', 'louvor', 'jovens', 'mulheres', 'homens', 'lares', 'retiro', 'social', 'midia', 'ebd'];
+    const ministryIds = ['kids', 'louvor', 'jovens', 'mulheres', 'homens', 'lares', 'retiro', 'social', 'ebd', 'midia'];
     const loadBirthdays = async () => {
       const results = [];
       for (const id of ministryIds) {

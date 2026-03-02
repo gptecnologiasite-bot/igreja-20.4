@@ -1,321 +1,350 @@
-import { Video, Camera, Mic, Monitor, Youtube, Instagram, Facebook, Share2, Users, Play, Image, Film } from 'lucide-react';
-import { useState, useEffect } from 'react';
-import '../css/Midia.css';
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import {
+    Play,
+    Users,
+    Image as ImageIcon,
+    Calendar,
+    MessageSquare,
+    Gift,
+    ChevronLeft,
+    ChevronRight,
+    Clock,
+    MapPin,
+    ExternalLink,
+    Video,
+    Camera,
+    Newspaper,
+    Instagram,
+    Youtube,
+    Facebook,
+    Mail,
+    ArrowRight
+} from 'lucide-react';
 import { useMinistryData } from '../hooks/useMinistryData';
-import DatabaseService from '../services/DatabaseService';
+import '../css/Midia.css';
 
 const Midia = () => {
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    area: '',
-    message: ''
-  });
+    const [data] = useMinistryData('midia');
+    const [galleryIndex, setGalleryIndex] = useState(0);
 
-  const [data] = useMinistryData('midia');
-  const [dynamicVideos, setDynamicVideos] = useState([]);
+    // Default data structure consistent with initialData.js
+    const {
+        hero = {
+            title: "Portal de Mídia",
+            subtitle: "Excelência técnica e criatividade a serviço do Reino de Deus",
+            bgImage: "/midia.jpg",
+            cta: "Ver Programação"
+        },
+        live = {
+            title: "Culto Online - Assista Agora",
+            url: "https://www.youtube.com/embed/live_stream?channel=UCxxxxxxxxxxxx",
+            description: "Acompanhe nossas transmissões ao vivo todos os domingos às 18h."
+        },
+        team = [],
+        gallery = [],
+        backstage = [],
+        birthdays = {
+            title: "Aniversariantes do Mês",
+            text: "Celebrando a vida daqueles que tornam nossa missão possível!",
+            people: []
+        },
+        testimonials = [],
+        schedule = [],
+        news = [],
+        footer = {
+            text: "ADMAC Mídia - Comunicando a Verdade com Excelência",
+            social: { instagram: "@admacoficial", youtube: "ADMAC TV", facebook: "ADMAC" }
+        }
+    } = data || {};
 
-  useEffect(() => {
-    const loadDynamicVideos = async () => {
-      const videos = await DatabaseService.getVideos();
-      setDynamicVideos(videos.filter(v => v.active !== false));
+    const nextPhoto = () => {
+        if (!gallery || gallery.length === 0) return;
+        setGalleryIndex(prev => (prev + 1) % gallery.length);
     };
-    loadDynamicVideos();
-
-    const handleStorageChange = (e) => {
-      if (e.key === 'admac_videos') loadDynamicVideos();
+    const prevPhoto = () => {
+        if (!gallery || gallery.length === 0) return;
+        setGalleryIndex(prev => (prev - 1 + gallery.length) % gallery.length);
     };
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, []);
 
-  // Merge hardcoded videos with dynamic ones
-  const allVideos = [...(dynamicVideos.map(v => ({
-    title: v.title,
-    videoUrl: `https://www.youtube.com/watch?v=${v.videoId}`,
-    thumbnail: `https://img.youtube.com/vi/${v.videoId}/mqdefault.jpg`,
-    date: v.createdAt ? new Date(v.createdAt).toLocaleDateString() : '',
-    views: 'Novo'
-  }))), ...(data.videos || [])].slice(0, 6);
+    // Animation variants
+    const fadeIn = {
+        initial: { opacity: 0, y: 30 },
+        whileInView: { opacity: 1, y: 0 },
+        viewport: { once: true },
+        transition: { duration: 0.8 }
+    };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    alert('Mensagem enviada com sucesso! Entraremos em contato.');
-    setFormData({ name: '', email: '', area: '', message: '' });
-  };
+    return (
+        <div className="midia-page">
 
-  return (
-    <div className="midia-page">
-      {/* Hero Section */}
-      <div className="midia-hero">
-        <div className="hero-overlay"></div>
-        <div className="hero-content">
-          <Monitor size={80} className="hero-icon" />
-          <h1>{data.hero?.title || 'Ministério de Mídia'}</h1>
-          <p className="hero-subtitle">{data.hero?.subtitle || ''}</p>
-          {data.hero?.verse && (
-            <div className="hero-verse">
-              <p>{data.hero.verse}</p>
-            </div>
-          )}
-        </div>
-      </div>
-
-      {/* Live Stream Section */}
-      <section className="live-section">
-        <div className="container">
-          <div className="section-header">
-            <Youtube size={32} />
-            <h2>Nossos Cultos Online</h2>
-          </div>
-          <p className="section-subtitle">Acompanhe nossas transmissões ao vivo</p>
-
-          <div className="video-highlight">
-            <div className="video-wrapper">
-              {data.live?.videoUrl ? (
-                <iframe
-                  width="100%"
-                  height="500"
-                  src={data.live.videoUrl}
-                  title="Culto Ao Vivo"
-                  frameBorder="0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                ></iframe>
-              ) : (
-                <div style={{
-                  width: '100%',
-                  height: '500px',
-                  background: 'rgba(0,0,0,0.5)',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  borderRadius: '8px',
-                  color: 'rgba(255,255,255,0.7)'
-                }}>
-                  <div style={{ textAlign: 'center' }}>
-                    <Youtube size={64} style={{ marginBottom: '1rem', opacity: 0.5 }} />
-                    <p>Transmissão ao vivo em breve</p>
-                    <a
-                      href={data.live?.youtubeChannel || 'https://www.youtube.com/@ADMAC'}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      style={{
-                        display: 'inline-block',
-                        marginTop: '1rem',
-                        padding: '0.75rem 1.5rem',
-                        background: 'var(--primary-color)',
-                        color: '#000',
-                        borderRadius: '8px',
-                        textDecoration: 'none',
-                        fontWeight: 'bold'
-                      }}
-                    >
-                      Acessar Canal no YouTube
-                    </a>
-                  </div>
-                </div>
-              )}
-            </div>
-            <div className="live-info">
-              <span className="live-badge">AO VIVO</span>
-              <h3>{data.live?.title || 'Culto da Família'}</h3>
-              <p>{data.live?.time || 'Domingos 18h'}</p>
-              <a
-                href={data.live?.youtubeChannel || 'https://www.youtube.com/@ADMAC'}
-                target="_blank"
-                rel="noopener noreferrer"
-                className="youtube-btn"
-              >
-                <Youtube size={20} /> Inscreva-se no Canal
-              </a>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Recent Videos */}
-      <section className="videos-section">
-        <div className="container">
-          <h2>Últimas Transmissões</h2>
-          <div className="videos-grid">
-            {allVideos && allVideos.length > 0 ? (
-              allVideos.map((video, index) => (
-                <a
-                  key={index}
-                  href={video.url || video.videoUrl || '#'}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="video-card"
-                  style={{ textDecoration: 'none', color: 'inherit' }}
-                >
-                  <div className="video-thumbnail">
-                    <img src={video.thumbnail || 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=400&h=300&fit=crop'} alt={video.title || 'Vídeo'} />
-                    <div className="play-overlay">
-                      <Play size={40} fill="white" />
+            {/* --- 1. HERO SECTION --- */}
+            <section className="midia-hero" style={{ backgroundImage: `url(${hero.bgImage})` }}>
+                <motion.div className="hero-content" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 1 }}>
+                    <span className="hero-badge">Inovação • Comunicação • Reino</span>
+                    <h1 className="hero-title">{hero.title}</h1>
+                    <p className="hero-subtitle">{hero.subtitle}</p>
+                    <div className="hero-actions">
+                        <a href="#agenda" className="btn-primary">{hero.cta}</a>
+                        <a href="#equipe" className="btn-secondary">Conheça a Equipe</a>
                     </div>
-                  </div>
-                  <div className="video-info">
-                    <h3>{video.title || 'Vídeo'}</h3>
-                    <div className="video-meta">
-                      {video.date && <span>{video.date}</span>}
-                      {video.views && <span>{video.views} visualizações</span>}
+                </motion.div>
+            </section>
+
+            {/* --- 2. FEATURED VIDEO --- */}
+            <section id="video" className="midia-live">
+                <div className="container">
+                    <div className="section-header">
+                        <Video className="section-icon" />
+                        <h2>Vídeo em Destaque</h2>
+                        <p>{live.description}</p>
                     </div>
-                  </div>
-                </a>
-              ))
-            ) : (
-              <p style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '2rem', color: 'rgba(255, 255, 255, 0.7)' }}>
-                Nenhum vídeo disponível no momento. Em breve teremos novidades!
-              </p>
-            )}
-          </div>
-        </div>
-      </section>
 
-      {/* Areas of Action */}
-      <section className="areas-section">
-        <div className="container">
-          <h2>Nossas Áreas</h2>
-          <div className="areas-grid">
-            <div className="area-card">
-              <Video size={40} />
-              <h3>Transmissão</h3>
-              <p>Levando o culto para quem não pode estar presente</p>
-            </div>
-            <div className="area-card">
-              <Camera size={40} />
-              <h3>Fotografia</h3>
-              <p>Registrando momentos especiais da nossa comunhão</p>
-            </div>
-            <div className="area-card">
-              <Mic size={40} />
-              <h3>Áudio</h3>
-              <p>Garantindo a excelência no som para adoração</p>
-            </div>
-            <div className="area-card">
-              <Share2 size={40} />
-              <h3>Social Media</h3>
-              <p>Compartilhando o evangelho nas redes sociais</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Team Section */}
-      <section className="team-section">
-        <div className="container">
-          <h2>Nossa Equipe</h2>
-          <p className="section-subtitle">Voluntários dedicados à excelência</p>
-          <div className="team-grid">
-            {data.team && data.team.length > 0 ? (
-              data.team.map((member, index) => (
-                <div key={index} className="team-card">
-                  <img src={member.photo || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(member.name || 'Membro')} alt={member.name || 'Membro'} className="team-photo" />
-                  <h3>{member.name || 'Membro'}</h3>
-                  <p>{member.role || ''}</p>
+                    <motion.div className="live-card" {...fadeIn}>
+                        <div className="live-header">
+                            <div className="live-status">
+                                <span className="dot"></span>
+                                AO VIVO • YOUTUBE
+                            </div>
+                            <h3>{live.title}</h3>
+                        </div>
+                        <div className="video-container">
+                            <iframe
+                                src={live.url}
+                                title={live.title}
+                                frameBorder="0"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allowFullScreen
+                            ></iframe>
+                        </div>
+                        <div className="live-footer">
+                            <p>Assista também pelo nosso aplicativo ou TV Box.</p>
+                        </div>
+                    </motion.div>
                 </div>
-              ))
-            ) : (
-              <p style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '2rem', color: 'rgba(255, 255, 255, 0.7)' }}>
-                Informações da equipe em breve.
-              </p>
-            )}
-          </div>
-        </div>
-      </section>
+            </section>
 
-      {/* Gallery Section */}
-      <section className="gallery-section">
-        <div className="container">
-          <h2>Bastidores</h2>
-          <div className="gallery-grid">
-            {data.gallery && data.gallery.length > 0 ? (
-              data.gallery.map((photo, index) => (
-                <div key={index} className="gallery-item">
-                  <img src={photo.url} alt={photo.caption || 'Foto'} />
-                  <div className="gallery-overlay">
-                    <span>{photo.caption || 'Bastidores'}</span>
-                  </div>
+            {/* --- 3. TESTIMONIALS --- */}
+            <section className="midia-testimonials">
+                <div className="container">
+                    <div className="section-header">
+                        <MessageSquare className="section-icon" />
+                        <h2>Depoimentos</h2>
+                        <p>Impacto do nosso ministério na vida das pessoas.</p>
+                    </div>
+                    <div className="testimonial-grid">
+                        {testimonials && testimonials.map((t, idx) => (
+                            <motion.div key={idx} className="testimonial-card" {...fadeIn} transition={{ delay: idx * 0.2 }}>
+                                <p>"{t.text}"</p>
+                                <div className="testimonial-author">
+                                    <img src={t.photo || `https://ui-avatars.com/api/?name=${encodeURIComponent(t.name)}`} alt={t.name} className="author-photo" />
+                                    <div className="author-info">
+                                        <h4>{t.name}</h4>
+                                        <span>{t.role}</span>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        ))}
+                    </div>
                 </div>
-              ))
-            ) : (
-              <p style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '2rem', color: 'rgba(255, 255, 255, 0.7)' }}>
-                Galeria de fotos em breve.
-              </p>
-            )}
-          </div>
+            </section>
+
+            {/* --- 4. BASTIDORES (BACKSTAGE) --- */}
+            <section id="bastidores" className="midia-backstage">
+                <div className="container">
+                    <div className="section-header">
+                        <Camera className="section-icon" />
+                        <h2>Por Trás das Câmeras</h2>
+                        <p>O que acontece nos bastidores para levar a Palavra de Deus até você.</p>
+                    </div>
+                    {backstage && backstage.map((item, idx) => (
+                        <div key={idx} className={`backstage-item ${item.layout === 'right' ? 'reverse' : ''}`}>
+                            <motion.div className="backstage-image" {...fadeIn}>
+                                <img src={item.image} alt={item.title} />
+                            </motion.div>
+                            <motion.div className="backstage-content" {...fadeIn} transition={{ delay: 0.3 }}>
+                                <h3>{item.title}</h3>
+                                <p>{item.text}</p>
+                                <div style={{ marginTop: '2rem' }}>
+                                    <a href="#galeria" className="btn-secondary" style={{ padding: '0.8rem 1.8rem', fontSize: '0.9rem' }}>Ver Mais Fotos</a>
+                                </div>
+                            </motion.div>
+                        </div>
+                    ))}
+                </div>
+            </section>
+
+            {/* --- 5. BIRTHDAYS --- */}
+            <section className="midia-birthdays">
+                <div className="container">
+                    <div className="section-header">
+                        <Gift className="section-icon" />
+                        <h2>Aniversariantes do Mês</h2>
+                        <p>{birthdays.text}</p>
+                    </div>
+                    <div className="birthday-grid">
+                        {birthdays.people && birthdays.people.map((person, idx) => (
+                            <motion.div key={idx} className={`birthday-card ${person.isToday ? 'is-today' : ''}`} {...fadeIn}>
+                                {person.isToday && <span className="today-label">Aniversariante do Dia!</span>}
+                                <div className="person-photo">
+                                    <img src={person.photo || `https://ui-avatars.com/api/?name=${encodeURIComponent(person.name)}`} alt={person.name} />
+                                </div>
+                                <h4>{person.name}</h4>
+                                <span className="birthday-date">{person.date}</span>
+                            </motion.div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            {/* --- 6. GALLERY --- */}
+            <section id="galeria" className="midia-gallery">
+                <div className="container">
+                    <div className="section-header">
+                        <ImageIcon className="section-icon" />
+                        <h2>Galeria de Fotos</h2>
+                        <p>Momentos inesquecíveis da nossa jornada.</p>
+                    </div>
+
+                    <div className="gallery-main">
+                        <AnimatePresence mode="wait">
+                            {gallery && gallery.length > 0 && gallery[galleryIndex] && (
+                                <motion.div
+                                    key={galleryIndex}
+                                    className="gallery-slide"
+                                    initial={{ opacity: 0, scale: 1.1 }}
+                                    animate={{ opacity: 1, scale: 1 }}
+                                    exit={{ opacity: 0, scale: 1.05 }}
+                                    transition={{ duration: 0.6 }}
+                                >
+                                    <img src={gallery[galleryIndex].url} alt={gallery[galleryIndex].caption} />
+                                    <div className="gallery-info">
+                                        <p>{gallery[galleryIndex].caption}</p>
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
+                        {gallery && gallery.length > 1 && (
+                            <>
+                                <button className="carousel-btn prev" onClick={prevPhoto}><ChevronLeft /></button>
+                                <button className="carousel-btn next" onClick={nextPhoto}><ChevronRight /></button>
+                            </>
+                        )}
+                    </div>
+
+                    <div className="thumb-grid">
+                        {gallery && gallery.map((thumb, idx) => (
+                            <div
+                                key={idx}
+                                className={`thumb-item ${idx === galleryIndex ? 'active' : ''}`}
+                                onClick={() => setGalleryIndex(idx)}
+                            >
+                                <img src={thumb.url} alt={`Minis ${idx}`} />
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            {/* --- 7. TEAM --- */}
+            <section id="equipe" className="midia-team">
+                <div className="container">
+                    <div className="section-header">
+                        <Users className="section-icon" />
+                        <h2>Nossa Equipe</h2>
+                        <p>Pessoas dedicadas que fazem a engrenagem girar.</p>
+                    </div>
+                    <div className="team-grid">
+                        {team && team.map((member, idx) => (
+                            <motion.div key={idx} className="team-card" {...fadeIn} transition={{ delay: idx * 0.1 }}>
+                                <img src={member.photo || `https://ui-avatars.com/api/?name=${encodeURIComponent(member.name)}`} alt={member.name} />
+                                <div className="team-overlay">
+                                    <h3>{member.name}</h3>
+                                    <span>{member.role}</span>
+                                </div>
+                            </motion.div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            {/* --- 8. SCHEDULE --- */}
+            <section id="agenda" className="midia-schedule">
+                <div className="container">
+                    <div className="section-header">
+                        <Calendar className="section-icon" />
+                        <h2>Agenda de Programação</h2>
+                        <p>Fique por dentro dos nossos horários e eventos especiais.</p>
+                    </div>
+                    <div className="schedule-container">
+                        {schedule && schedule.map((item, idx) => (
+                            <motion.div key={idx} className={`schedule-card ${item.isNext ? 'highlight' : ''}`} {...fadeIn}>
+                                <div className="schedule-date-box">
+                                    <span className="day">{item.day}</span>
+                                    <span className="time">{item.time}</span>
+                                </div>
+                                <div className="schedule-info">
+                                    <h4>{item.activity}</h4>
+                                    <p><MapPin size={16} /> {item.location}</p>
+                                </div>
+                                {item.isNext && <span className="next-label">Próximo Evento</span>}
+                            </motion.div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            {/* --- 9. NEWS (EXTRAS) --- */}
+            <section className="midia-news">
+                <div className="container">
+                    <div className="section-header">
+                        <Newspaper className="section-icon" />
+                        <h2>Últimas Novidades</h2>
+                        <p>Fique informado sobre os avanços do nosso ministério.</p>
+                    </div>
+                    <div className="news-grid">
+                        {news && news.map((item, idx) => (
+                            <motion.div key={idx} className="news-card" {...fadeIn} transition={{ delay: idx * 0.1 }}>
+                                <img src={item.image} alt={item.title} className="news-img" />
+                                <div className="news-body">
+                                    <span className="news-date">{item.date}</span>
+                                    <h4>{item.title}</h4>
+                                    <p>{item.summary}</p>
+                                    <div style={{ marginTop: '1.5rem' }}>
+                                        <a href="#" style={{ color: 'var(--midia-gold)', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '5px' }}>Ler Mais <ArrowRight size={16} /></a>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        ))}
+                    </div>
+                </div>
+            </section>
+
+            {/* --- 10. FOOTER --- */}
+            <footer className="midia-footer">
+                <div className="container">
+                    <div className="footer-content">
+                        <div className="footer-logo">
+                            <h3>MÍDIA<span>ADMAC</span></h3>
+                            <p style={{ marginTop: '10px', color: 'rgba(255,255,255,0.4)' }}>Excelência para o Reino.</p>
+                        </div>
+                        <div className="social-links">
+                            <a href="#" className="social-link"><Instagram /> {footer.social.instagram}</a>
+                            <a href="#" className="social-link"><Youtube /> {footer.social.youtube}</a>
+                            <a href="#" className="social-link"><Facebook /> {footer.social.facebook}</a>
+                        </div>
+                        <div className="footer-contact">
+                            <a href="mailto:contato@admac.com" className="btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Mail size={18} /> Contato</a>
+                        </div>
+                    </div>
+                    <div className="footer-bottom">
+                        <p>&copy; 2024 ADMAC - Departamento de Mídia. Todos os direitos reservados.</p>
+                        <p>Design & Tecnologia</p>
+                    </div>
+                </div>
+            </footer>
         </div>
-      </section>
-
-      {/* Volunteer Form */}
-      <section className="volunteer-section">
-        <div className="container">
-          <div className="form-container">
-            <div className="form-header">
-              <Film size={32} />
-              <h2>Seja um Voluntário</h2>
-              <p>Quer servir a Deus com seus talentos na área de mídia?</p>
-            </div>
-
-            <form onSubmit={handleSubmit} className="media-form">
-              <div className="form-group">
-                <label>Nome Completo</label>
-                <input
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                  required
-                  placeholder="Seu nome"
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Email</label>
-                <input
-                  type="email"
-                  value={formData.email}
-                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                  required
-                  placeholder="seu@email.com"
-                />
-              </div>
-
-              <div className="form-group">
-                <label>Área de Interesse</label>
-                <select
-                  value={formData.area}
-                  onChange={(e) => setFormData({ ...formData, area: e.target.value })}
-                  required
-                >
-                  <option value="">Selecione uma área</option>
-                  <option value="video">Vídeo / Transmissão</option>
-                  <option value="audio">Áudio / Som</option>
-                  <option value="photo">Fotografia</option>
-                  <option value="design">Design / Social Media</option>
-                  <option value="projection">Projeção</option>
-                </select>
-              </div>
-
-              <div className="form-group">
-                <label>Mensagem / Experiência</label>
-                <textarea
-                  value={formData.message}
-                  onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                  rows="4"
-                  placeholder="Conte-nos um pouco sobre sua experiência (se houver)"
-                ></textarea>
-              </div>
-
-              <button type="submit" className="submit-btn">
-                Enviar Inscrição
-              </button>
-            </form>
-          </div>
-        </div>
-      </section>
-    </div>
-  );
+    );
 };
 
 export default Midia;
