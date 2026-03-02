@@ -158,6 +158,7 @@ const Header = ({ theme, toggleTheme }) => {
     { name: 'Retiros', path: '/retiro' },
     { name: 'Ação Social', path: '/social' },
     { name: 'EBD', path: '/edb' },
+    { name: 'Mídia', path: '/midia' },
   ];
 
   return (
@@ -169,7 +170,7 @@ const Header = ({ theme, toggleTheme }) => {
           <Link to="/" className="logo-link">
             <div className="logo-icon">
               {/* Exibe imagem se o ícone for uma URL ou base64, senão exibe emoji */}
-              {headerData?.logo?.icon && typeof headerData.logo.icon === 'string' && (headerData.logo.icon.includes('data:image') || headerData.logo.icon.includes('http')) ? (
+              {headerData?.logo?.icon && typeof headerData.logo.icon === 'string' && (headerData.logo.icon.includes('data:image') || headerData.logo.icon.includes('http') || headerData.logo.icon.startsWith('/')) ? (
                 <img src={headerData.logo.icon.trim()} alt="Logo da Igreja" />
               ) : (
                 <span>{headerData?.logo?.icon || '⛪'}</span>

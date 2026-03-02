@@ -28,12 +28,12 @@ const Footer = () => {
   ];
 
   const ministries = [
+    { name: 'Mídia', path: '/midia' },
     { name: 'Lares', path: '/lares' },
     { name: 'Louvor', path: '/louvor' },
     { name: 'Kids', path: '/kids' },
     { name: 'Jovens', path: '/jovens' },
-    { name: 'Missões', path: '/missoes' },
-    { name: 'Intercessão', path: '/intercessao' }
+    { name: 'Revista', path: '/revista' }
   ];
 
   return (
@@ -49,7 +49,7 @@ const Footer = () => {
         <div className="footer-section">
           <div className="footer-logo">
             <div className="footer-logo-icon">
-              {headerData?.logo?.icon && typeof headerData.logo.icon === 'string' && (headerData.logo.icon.startsWith('data:image') || headerData.logo.icon.startsWith('http')) ? (
+              {headerData?.logo?.icon && typeof headerData.logo.icon === 'string' && (headerData.logo.icon.startsWith('data:image') || headerData.logo.icon.startsWith('http') || headerData.logo.icon.startsWith('/')) ? (
                 <img src={headerData.logo.icon} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
               ) : (
                 headerData?.logo?.icon || footerData?.logo?.text?.substring(0, 2)
@@ -124,32 +124,32 @@ const Footer = () => {
               <span>Cultos: {footerData?.contact?.cultos}</span>
             </div>
           </div>
+        </div>
 
-          {/* Social Media */}
-          <div className="footer-social">
-            <h4>Redes Sociais</h4>
-            <div className="social-links">
-              {footerData?.social?.instagram && (
-                <a href={footerData.social.instagram} target="_blank" rel="noopener noreferrer" className="social-link instagram">
-                  <Instagram size={20} />
-                </a>
-              )}
-              {footerData?.social?.youtube && (
-                <a href={footerData.social.youtube} target="_blank" rel="noopener noreferrer" className="social-link youtube">
-                  <Youtube size={20} />
-                </a>
-              )}
-              {footerData?.social?.facebook && (
-                <a href={footerData.social.facebook} target="_blank" rel="noopener noreferrer" className="social-link facebook">
-                  <Facebook size={20} />
-                </a>
-              )}
-              {footerData?.social?.spotify && (
-                <a href={footerData.social.spotify} target="_blank" rel="noopener noreferrer" className="social-link spotify">
-                  <Music size={20} />
-                </a>
-              )}
-            </div>
+        {/* Social Media Column */}
+        <div className="footer-section">
+          <h4>Redes Sociais</h4>
+          <div className="social-links">
+            {footerData?.social?.instagram && (
+              <a href={footerData.social.instagram} target="_blank" rel="noopener noreferrer" className="social-link instagram" aria-label="Instagram">
+                <Instagram size={20} />
+              </a>
+            )}
+            {footerData?.social?.youtube && (
+              <a href={footerData.social.youtube} target="_blank" rel="noopener noreferrer" className="social-link youtube" aria-label="YouTube">
+                <Youtube size={20} />
+              </a>
+            )}
+            {footerData?.social?.facebook && (
+              <a href={footerData.social.facebook} target="_blank" rel="noopener noreferrer" className="social-link facebook" aria-label="Facebook">
+                <Facebook size={20} />
+              </a>
+            )}
+            {footerData?.social?.spotify && (
+              <a href={footerData.social.spotify} target="_blank" rel="noopener noreferrer" className="social-link spotify" aria-label="Spotify">
+                <Music size={20} />
+              </a>
+            )}
           </div>
         </div>
       </div>

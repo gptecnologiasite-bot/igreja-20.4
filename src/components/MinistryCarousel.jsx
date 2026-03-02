@@ -11,7 +11,6 @@ const MinistryCarousel = () => {
     { name: 'Mulheres', icon: <Heart size={40} />, path: '/mulheres' },
     { name: 'Lares', icon: <Home size={40} />, path: '/lares' },
     { name: 'Retiros', icon: <Mountain size={40} />, path: '/retiro' },
-    { name: 'Mídia', icon: <Monitor size={40} />, path: '/midia' },
     { name: 'EBD', icon: <BookOpen size={40} />, path: '/edb' },
   ];
 

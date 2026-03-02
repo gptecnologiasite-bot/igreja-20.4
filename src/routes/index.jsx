@@ -27,8 +27,8 @@ const Louvor = lazy(() => import('../pages/Louvor'));
 const Lares = lazy(() => import('../pages/Lares'));
 const Contact = lazy(() => import('../pages/Contact'));
 const Retiro = lazy(() => import('../pages/Retiro'));
-const Midia = lazy(() => import('../pages/Midia'));
 const Sobre = lazy(() => import('../pages/Sobre'));
+const Midia = lazy(() => import('../pages/Midia'));
 // Painel administrativo completo (sincroniza pasta pages via serviços)
 const PainelApp = lazy(() => import('../painel/painel'));
 
@@ -59,8 +59,8 @@ export const routes = [
             { path: 'lares', element: <Suspense fallback={pageLoader}><Lares /></Suspense> },
             { path: 'revista', element: <Suspense fallback={pageLoader}><Revista /></Suspense> },
             { path: 'retiro', element: <Suspense fallback={pageLoader}><Retiro /></Suspense> },
-            { path: 'midia', element: <Suspense fallback={pageLoader}><Midia /></Suspense> },
             { path: 'sobre', element: <Suspense fallback={pageLoader}><Sobre /></Suspense> },
+            { path: 'midia', element: <Suspense fallback={pageLoader}><Midia /></Suspense> },
             { path: 'contato', element: <Suspense fallback={pageLoader}><Contact /></Suspense> },
         ]
     },

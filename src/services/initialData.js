@@ -82,7 +82,8 @@ export const INITIAL_HOME_DATA = {
     { title: "EBD", description: "Crescendo no conhecimento da Palavra", link: "/edb", icon: "📚", color: "#d4af37" },
     { title: "Ação Social", description: "Servindo ao próximo com amor", link: "/social", icon: "❤️", color: "#e74c3c" },
     { title: "Lares", description: "Comunhão e crescimento nos lares", link: "/lares", icon: "🏠", color: "#3498db" },
-    { title: "Retiro", description: "Momentos de renovação espiritual", link: "/retiro", icon: "⛰️", color: "#27ae60" }
+    { title: "Retiro", description: "Momentos de renovação espiritual", link: "/retiro", icon: "⛰️", color: "#27ae60" },
+    { title: "Mídia", description: "Comunicação e tecnologia a serviço do Reino", link: "/midia", icon: "🎬", color: "#d4af37" }
   ]
 };
 
@@ -293,6 +294,24 @@ export const INITIAL_MINISTRIES_DATA = {
     gallery: [
       { url: 'https://images.unsplash.com/photo-1520509414578-d9cbf09933a1?w=400&h=300&fit=crop', caption: 'Equipe em Ação' },
       { url: 'https://images.unsplash.com/photo-1505236858219-8359eb29e329?w=400&h=300&fit=crop', caption: 'Transmissão Ao Vivo' }
+    ],
+    birthdays: {
+      title: 'Aniversariantes do Mês',
+      text: 'Parabéns aos nossos comunicadores!',
+      people: [
+        { name: "João Silva", date: "15/03", photo: "" },
+        { name: "Maria Oliveira", date: "22/03", photo: "" },
+        { name: "Carlos Souza", date: "05/03", photo: "" },
+        { name: "Ana Beatriz", date: "10/03", photo: "" }
+      ]
+    },
+    testimonials: [
+      { name: "Roberto Santos", text: "O trabalho da mídia é fundamental para alcançarmos mais vidas!", photo: "" },
+      { name: "Luciana Lima", text: "Equipe dedicada e excelente em tudo o que faz.", photo: "" }
+    ],
+    schedule: [
+      { activity: 'Transmissão Culto', day: 'Domingo', time: '18h00', location: 'Templo Principal' },
+      { activity: 'Gravação Mensagens', day: 'Terça-feira', time: '14h00', location: 'Estúdio' }
     ]
   },
   intercessao: {
@@ -399,6 +418,66 @@ export const INITIAL_MINISTRIES_DATA = {
       { number: '1.200', label: 'Famílias Assistidas/Ano', icon: 'Heart' },
       { number: 'R$ 50k', label: 'Investido em 2024', icon: 'DollarSign' }
     ]
+  },
+  midia: {
+    hero: { 
+      title: "Portal de Mídia", 
+      subtitle: "Excelência técnica e criatividade a serviço do Reino de Deus", 
+      bgImage: "/midia.jpg",
+      cta: "Ver Programação"
+    },
+    live: { 
+      title: "Culto Online - Assista Agora", 
+      url: "https://www.youtube.com/embed/live_stream?channel=UCxxxxxxxxxxxx",
+      description: "Acompanhe nossas transmissões ao vivo todos os domingos às 18h."
+    },
+    team: [
+      { name: "Humberto Freitas", role: "Coordenador Geral", photo: "/midia.jpg" },
+      { name: "Equipe Técnica", role: "Produção & Transmissão", photo: "/midia.jpg" }
+    ],
+    gallery: [
+      { url: "/midia1.jpg", caption: "Equipe em Ação" },
+      { url: "/midia.jpg", caption: "Transmissão Especial" },
+      { url: "/banner2.png", caption: "Workshop de Fotografia" }
+    ],
+    backstage: [
+      { 
+        title: "Por Trás das Câmeras", 
+        text: "Nossa equipe trabalha incansavelmente para garantir que a mensagem chegue a cada lar com a melhor qualidade possível.",
+        image: "/midia.jpg",
+        layout: "left"
+      },
+      { 
+        title: "Tecnologia & Fé", 
+        text: "Utilizamos as melhores ferramentas digitais para expandir o alcance do Evangelho no mundo digital.",
+        image: "/midia1.jpg",
+        layout: "right"
+      }
+    ],
+    birthdays: { 
+      title: "Aniversariantes do Mês", 
+      text: "Celebrando a vida daqueles que tornam nossa missão possível!", 
+      people: [
+        { name: "Humberto Freitas", date: "02/03", photo: "/midia.jpg", isToday: true }
+      ] 
+    },
+    testimonials: [
+      { name: "Maria Oliveira", role: "Membro Online", text: "A qualidade da transmissão é impecável. Sinto-me parte da igreja mesmo estando longe.", photo: "https://ui-avatars.com/api/?name=Maria+Oliveira" },
+      { name: "João Souza", role: "Visitante", text: "Conheci a ADMAC através do YouTube e hoje sou membro presencial. Trabalho incrível!", photo: "https://ui-avatars.com/api/?name=Joao+Souza" }
+    ],
+    schedule: [
+      { day: "Domingo", time: "18h", activity: "Culto de Celebração", location: "Templo Principal", isNext: true },
+      { day: "Quarta", time: "19h30", activity: "Culto de Ensino", location: "Templo Principal", isNext: false },
+      { day: "Sábado", time: "14h", activity: "Ensaio Técnico", location: "Cabine de Som", isNext: false }
+    ],
+    news: [
+      { title: "Novo Equipamento de Transmissão", summary: "Chegaram as novas câmeras 4K para elevar o nível das nossas lives.", image: "/midia1.jpg", date: "28 Fev, 2024" },
+      { title: "Workshop de Mídia 2024", summary: "Treinamento intensivo para novos voluntários no próximo mês.", image: "/midia.jpg", date: "25 Fev, 2024" }
+    ],
+    footer: {
+      text: "ADMAC Mídia - Comunicando a Verdade com Excelência",
+      social: { instagram: "@admacoficial", youtube: "ADMAC TV", facebook: "ADMAC" }
+    }
   },
   revista: {
     hero: { title: 'Revista Admac', subtitle: 'Nossa revista mensal' },
@@ -569,7 +648,7 @@ export const INITIAL_PAGES_DATA = [
   { id: 'lares', name: 'Min. Lares', path: '/lares', status: 'online', type: 'system' },
   { id: 'retiro', name: 'Retiros', path: '/retiro', status: 'online', type: 'system' },
   { id: 'social', name: 'Ação Social', path: '/social', status: 'online', type: 'system' },
-  { id: 'midia', name: 'Mídia', path: '/midia', status: 'online', type: 'system' },
   { id: 'ebd', name: 'EBD', path: '/ebd', status: 'online', type: 'system' },
+  { id: 'midia', name: 'Midia', path: '/midia', status: 'online', type: 'system' },
 ];
 

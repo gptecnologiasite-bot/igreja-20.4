@@ -405,8 +405,8 @@ export default function PainelAdm() {
     { id: 'lares', label: 'Lares' },
     { id: 'social', label: 'Ação Social' },
     { id: 'retiro', label: 'Retiro' },
-    { id: 'midia', label: 'Mídia' },
     { id: 'sobre', label: 'Sobre' },
+    { id: 'midia', label: 'Mídia' },
   ];
   const pageToMinistry = {
     Home: 'home',
@@ -420,14 +420,14 @@ export default function PainelAdm() {
     EDB: 'ebd',
     Lares: 'lares',
     Social: 'social',
-    Midia: 'midia',
-    midia: 'midia',
     Sobre: 'sobre',
     Retiro: 'retiro',
     Intercessão: 'intercessao',
     Intercessao: 'intercessao',
     missoes: 'missoes',
     Missoes: 'missoes',
+    Midia: 'midia',
+    midia: 'midia',
   };
 
   // Carrega configurações do menu do painel (se existirem)
@@ -437,7 +437,7 @@ export default function PainelAdm() {
       if (!raw) return;
       const parsed = JSON.parse(raw);
       if (Array.isArray(parsed.main) && parsed.main.length) {
-        const mainFiltered = parsed.main.filter((i) => i.id !== 'eventos' && i.id !== 'servicos' && i.id !== 'midia' && i.id !== 'membros' && i.id !== 'financeiro');
+        const mainFiltered = parsed.main.filter((i) => i.id !== 'eventos' && i.id !== 'servicos' && i.id !== 'membros' && i.id !== 'financeiro');
         setNavMain(mainFiltered);
         const membItem = parsed.main.find((i) => i.id === 'membros');
         if (membItem) {
@@ -1290,7 +1290,9 @@ export default function PainelAdm() {
             <div style={{ display: 'flex', gap: '.6rem', marginBottom: '.8rem', flexWrap: 'wrap' }}>
               {(ministryId === 'home'
                 ? ['geral', 'sliders', 'pastores', 'mensagens', 'ministérios', 'programacao', 'atividades', 'cta', 'aniversariantes']
-                : ['geral', 'equipe', 'programacao', 'galeria', 'testemunhos', 'aniversariantes']
+                : ministryId === 'midia'
+                  ? ['geral', 'equipe', 'mensagens', 'programacao', 'galeria', 'bastidores', 'noticias', 'testemunhos', 'aniversariantes']
+                  : ['geral', 'equipe', 'programacao', 'galeria', 'testemunhos', 'aniversariantes']
               ).map(t => (
                 <button
                   key={t}
@@ -1313,7 +1315,9 @@ export default function PainelAdm() {
                                   : t === 'cta' ? 'CTA'
                                     : t === 'galeria' ? 'Galeria'
                                       : t === 'aniversariantes' ? 'Aniversariantes'
-                                        : 'Testemunhos'}
+                                        : t === 'bastidores' ? 'Bastidores'
+                                          : t === 'noticias' ? 'Notícias'
+                                            : 'Testemunhos'}
                 </button>
               ))}
             </div>
@@ -1681,30 +1685,61 @@ export default function PainelAdm() {
                 )}
                 {ministryTab === 'mensagens' && (
                   <div style={{ padding: '1.2rem' }}>
-                    <div className="pm-field">
-                      <label>URL do Spotify (Embed)</label>
-                      <div className="pm-field-wrap">
-                        <span className="pm-icon">🎧</span>
-                        <input
-                          className="pm-input"
-                          value={ministryData?.spotifyUrl || ''}
-                          onChange={e => setMinistryData(d => ({ ...d, spotifyUrl: e.target.value }))}
-                          placeholder="Ex: https://open.spotify.com/embed/episode/..."
-                        />
-                      </div>
-                    </div>
-                    {ministryData?.spotifyUrl && (
-                      <iframe
-                        data-testid="embed-iframe"
-                        style={{ borderRadius: "12px" }}
-                        src={ministryData.spotifyUrl}
-                        width="100%"
-                        height="352"
-                        frameBorder="0"
-                        allowFullScreen=""
-                        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
-                        loading="lazy"
-                      ></iframe>
+                    {ministryId === 'midia' ? (
+                      <>
+                        <div className="pm-field">
+                          <label>Título da Live / Vídeo</label>
+                          <div className="pm-field-wrap">
+                            <span className="pm-icon">✏️</span>
+                            <input
+                              className="pm-input"
+                              value={ministryData?.live?.title || ''}
+                              onChange={e => setMinistryData(d => ({ ...d, live: { ...(d.live || {}), title: e.target.value } }))}
+                              placeholder="Ex: Culto Ao Vivo"
+                            />
+                          </div>
+                        </div>
+                        <div className="pm-field">
+                          <label>URL do YouTube (Embed)</label>
+                          <div className="pm-field-wrap">
+                            <span className="pm-icon">▶</span>
+                            <input
+                              className="pm-input"
+                              value={ministryData?.live?.url || ''}
+                              onChange={e => setMinistryData(d => ({ ...d, live: { ...(d.live || {}), url: e.target.value } }))}
+                              placeholder="Ex: https://www.youtube.com/embed/..."
+                            />
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      <>
+                        <div className="pm-field">
+                          <label>URL do Spotify (Embed)</label>
+                          <div className="pm-field-wrap">
+                            <span className="pm-icon">🎧</span>
+                            <input
+                              className="pm-input"
+                              value={ministryData?.spotifyUrl || ''}
+                              onChange={e => setMinistryData(d => ({ ...d, spotifyUrl: e.target.value }))}
+                              placeholder="Ex: https://open.spotify.com/embed/episode/..."
+                            />
+                          </div>
+                        </div>
+                        {ministryData?.spotifyUrl && (
+                          <iframe
+                            data-testid="embed-iframe"
+                            style={{ borderRadius: "12px" }}
+                            src={ministryData.spotifyUrl}
+                            width="100%"
+                            height="352"
+                            frameBorder="0"
+                            allowFullScreen=""
+                            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+                            loading="lazy"
+                          ></iframe>
+                        )}
+                      </>
                     )}
                   </div>
                 )}
@@ -2335,6 +2370,175 @@ export default function PainelAdm() {
                       onClick={() => setMinistryData(d => ({ ...d, testimonials: [...(d.testimonials || []), { name: '', text: '', photo: '' }] }))}
                     >
                       + Adicionar Testemunho
+                    </button>
+                  </div>
+                )}
+                {ministryTab === 'bastidores' && (
+                  <div style={{ padding: '1.2rem' }}>
+                    {(ministryData?.backstage || []).map((b, idx) => (
+                      <div key={idx} className="pm-row" style={{ marginBottom: '.8rem' }}>
+                        <div className="pm-field">
+                          <label>Título</label>
+                          <div className="pm-field-wrap">
+                            <span className="pm-icon">✏️</span>
+                            <input
+                              className="pm-input"
+                              value={b.title || ''}
+                              onChange={e => {
+                                const next = [...(ministryData.backstage || [])];
+                                next[idx] = { ...next[idx], title: e.target.value };
+                                setMinistryData(d => ({ ...d, backstage: next }));
+                              }}
+                            />
+                          </div>
+                        </div>
+                        <div className="pm-field" style={{ gridColumn: '1 / -1' }}>
+                          <label>Texto descritivo</label>
+                          <textarea
+                            value={b.text || ''}
+                            onChange={e => {
+                              const next = [...(ministryData.backstage || [])];
+                              next[idx] = { ...next[idx], text: e.target.value };
+                              setMinistryData(d => ({ ...d, backstage: next }));
+                            }}
+                            style={{ width: '100%', height: 80, background: palette.bg, color: palette.text, border: `1px solid ${palette.border}`, borderRadius: 10, padding: 12, fontSize: '.9rem', outline: 'none', resize: 'vertical', fontFamily: 'Inter, sans-serif', lineHeight: 1.6 }}
+                          />
+                        </div>
+                        <div className="pm-field">
+                          <label>Imagem (URL)</label>
+                          <div className="pm-field-wrap">
+                            <span className="pm-icon">🖼</span>
+                            <input
+                              className="pm-input"
+                              value={b.image || ''}
+                              onChange={e => {
+                                const next = [...(ministryData.backstage || [])];
+                                next[idx] = { ...next[idx], image: e.target.value };
+                                setMinistryData(d => ({ ...d, backstage: next }));
+                              }}
+                            />
+                          </div>
+                        </div>
+                        <div className="pm-field">
+                          <label>Layout</label>
+                          <select
+                            className="pm-input"
+                            value={b.layout || 'left'}
+                            onChange={e => {
+                              const next = [...(ministryData.backstage || [])];
+                              next[idx] = { ...next[idx], layout: e.target.value };
+                              setMinistryData(d => ({ ...d, backstage: next }));
+                            }}
+                            style={{ background: palette.bg, color: palette.text, border: `1px solid ${palette.border}` }}
+                          >
+                            <option value="left">Imagem Esquerda</option>
+                            <option value="right">Imagem Direita</option>
+                          </select>
+                        </div>
+                        <div className="pm-field">
+                          <label style={{ visibility: 'hidden' }}>x</label>
+                          <button
+                            className="btn-deletar"
+                            onClick={() => {
+                              const next = [...(ministryData.backstage || [])];
+                              next.splice(idx, 1);
+                              setMinistryData(d => ({ ...d, backstage: next }));
+                            }}
+                          >
+                            Remover
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                    <button
+                      className="pm-add-btn"
+                      onClick={() => setMinistryData(d => ({ ...d, backstage: [...(d.backstage || []), { title: '', text: '', image: '', layout: 'left' }] }))}
+                    >
+                      + Adicionar Item Bastidores
+                    </button>
+                  </div>
+                )}
+                {ministryTab === 'noticias' && (
+                  <div style={{ padding: '1.2rem' }}>
+                    {(ministryData?.news || []).map((n, idx) => (
+                      <div key={idx} className="pm-row" style={{ marginBottom: '.8rem' }}>
+                        <div className="pm-field">
+                          <label>Título da Notícia</label>
+                          <div className="pm-field-wrap">
+                            <span className="pm-icon">📰</span>
+                            <input
+                              className="pm-input"
+                              value={n.title || ''}
+                              onChange={e => {
+                                const next = [...(ministryData.news || [])];
+                                next[idx] = { ...next[idx], title: e.target.value };
+                                setMinistryData(d => ({ ...d, news: next }));
+                              }}
+                            />
+                          </div>
+                        </div>
+                        <div className="pm-field">
+                          <label>Data</label>
+                          <div className="pm-field-wrap">
+                            <span className="pm-icon">📅</span>
+                            <input
+                              className="pm-input"
+                              value={n.date || ''}
+                              onChange={e => {
+                                const next = [...(ministryData.news || [])];
+                                next[idx] = { ...next[idx], date: e.target.value };
+                                setMinistryData(d => ({ ...d, news: next }));
+                              }}
+                            />
+                          </div>
+                        </div>
+                        <div className="pm-field" style={{ gridColumn: '1 / -1' }}>
+                          <label>Resumo</label>
+                          <textarea
+                            value={n.summary || ''}
+                            onChange={e => {
+                              const next = [...(ministryData.news || [])];
+                              next[idx] = { ...next[idx], summary: e.target.value };
+                              setMinistryData(d => ({ ...d, news: next }));
+                            }}
+                            style={{ width: '100%', height: 60, background: palette.bg, color: palette.text, border: `1px solid ${palette.border}`, borderRadius: 10, padding: 12, fontSize: '.9rem', outline: 'none', resize: 'vertical', fontFamily: 'Inter, sans-serif', lineHeight: 1.6 }}
+                          />
+                        </div>
+                        <div className="pm-field">
+                          <label>Imagem (URL)</label>
+                          <div className="pm-field-wrap">
+                            <span className="pm-icon">🖼</span>
+                            <input
+                              className="pm-input"
+                              value={n.image || ''}
+                              onChange={e => {
+                                const next = [...(ministryData.news || [])];
+                                next[idx] = { ...next[idx], image: e.target.value };
+                                setMinistryData(d => ({ ...d, news: next }));
+                              }}
+                            />
+                          </div>
+                        </div>
+                        <div className="pm-field">
+                          <label style={{ visibility: 'hidden' }}>x</label>
+                          <button
+                            className="btn-deletar"
+                            onClick={() => {
+                              const next = [...(ministryData.news || [])];
+                              next.splice(idx, 1);
+                              setMinistryData(d => ({ ...d, news: next }));
+                            }}
+                          >
+                            Remover
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                    <button
+                      className="pm-add-btn"
+                      onClick={() => setMinistryData(d => ({ ...d, news: [...(d.news || []), { title: '', summary: '', image: '', date: '' }] }))}
+                    >
+                      + Adicionar Notícia
                     </button>
                   </div>
                 )}
