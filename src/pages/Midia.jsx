@@ -39,7 +39,7 @@ const Midia = () => {
         hero = {
             title: "Portal de Mídia",
             subtitle: "Excelência técnica e criatividade a serviço do Reino de Deus",
-            bgImage: "/midia.jpg",
+            image: "/midia.jpg",
             cta: "Ver Programação"
         },
         live = {
@@ -57,6 +57,7 @@ const Midia = () => {
         },
         testimonials = [],
         schedule = [],
+        videos = [],
         news = [],
         footer = {
             text: "ADMAC Mídia - Comunicando a Verdade com Excelência",
@@ -86,7 +87,7 @@ const Midia = () => {
         <div className="midia-page">
 
             {/* --- 1. HERO SECTION --- */}
-            <section className="midia-hero" style={{ backgroundImage: `url(${hero.bgImage})` }}>
+            <section className="midia-hero" style={{ backgroundImage: `url(${hero.image})` }}>
                 <motion.div className="hero-content" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 1 }}>
                     <span className="hero-badge">Inovação • Comunicação • Reino</span>
                     <h1 className="hero-title">{hero.title}</h1>
@@ -98,36 +99,63 @@ const Midia = () => {
                 </motion.div>
             </section>
 
-            {/* --- 2. FEATURED VIDEO --- */}
             <section id="video" className="midia-live">
                 <div className="container">
                     <div className="section-header">
                         <Video className="section-icon" />
-                        <h2>Vídeo em Destaque</h2>
+                        <h2>Vídeos e Transmissões</h2>
                         <p>{live.description}</p>
                     </div>
 
-                    <motion.div className="live-card" {...fadeIn}>
-                        <div className="live-header">
-                            <div className="live-status">
-                                <span className="dot"></span>
-                                AO VIVO • YOUTUBE
+                    <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '2rem' }}>
+                        <motion.div className="live-card" {...fadeIn}>
+                            <div className="live-header">
+                                <div className="live-status">
+                                    <span className="dot"></span>
+                                    AO VIVO • YOUTUBE
+                                </div>
+                                <h3>{live.title}</h3>
                             </div>
-                            <h3>{live.title}</h3>
-                        </div>
-                        <div className="video-container">
-                            <iframe
-                                src={live.url}
-                                title={live.title}
-                                frameBorder="0"
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                                allowFullScreen
-                            ></iframe>
-                        </div>
-                        <div className="live-footer">
-                            <p>Assista também pelo nosso aplicativo ou TV Box.</p>
-                        </div>
-                    </motion.div>
+                            <div className="video-container">
+                                <iframe
+                                    src={live.url}
+                                    title={live.title}
+                                    frameBorder="0"
+                                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                    allowFullScreen
+                                ></iframe>
+                            </div>
+                        </motion.div>
+
+                        {videos && videos.length > 0 && (
+                            <div className="video-gallery-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
+                                {videos.map((vid, idx) => (
+                                    <motion.div
+                                        key={idx}
+                                        className="video-thumb-card"
+                                        {...fadeIn}
+                                        transition={{ delay: idx * 0.1 }}
+                                        style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '12px', overflow: 'hidden', cursor: 'pointer' }}
+                                        onClick={() => window.open(vid.url.replace('embed/', 'watch?v='), '_blank')}
+                                    >
+                                        <div style={{ position: 'relative', height: '180px' }}>
+                                            <img src={vid.thumbnail} alt={vid.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                            <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.3)' }}>
+                                                <Play fill="white" size={40} />
+                                            </div>
+                                        </div>
+                                        <div style={{ padding: '1rem' }}>
+                                            <h4 style={{ margin: '0 0 0.5rem 0', fontSize: '1rem' }}>{vid.title}</h4>
+                                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'rgba(255,255,255,0.6)' }}>
+                                                <span>{vid.date}</span>
+                                                <span>{vid.views} visualizações</span>
+                                            </div>
+                                        </div>
+                                    </motion.div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
                 </div>
             </section>
 

@@ -37,6 +37,16 @@ const Home = () => {
       setData(homeData);
     };
     loadData();
+
+    // Listener para atualizações em tempo real vindas do painel
+    const handleStorageChange = (e) => {
+      if (e.key === 'admac_home' || e.key === 'admac_videos') {
+        loadData();
+      }
+    };
+
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
   // Carrega aniversariantes de todas as áreas do site para exibir na Home

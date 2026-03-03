@@ -112,7 +112,7 @@ export const INITIAL_MINISTRIES_DATA = {
     }
   },
   louvor: {
-    hero: { title: 'Ministério de Louvor', subtitle: 'Adorando a Deus em espírito e em verdade', verse: '"Cantai ao Senhor um cântico novo..." - Salmos 96:1' },
+    hero: { title: 'Ministério de Louvor', subtitle: 'Adorando a Deus em espírito e em verdade', verse: '"Cantai ao Senhor um cântico novo..." - Salmos 96:1', image: 'https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=1200&h=400&fit=crop' },
     mission: { title: 'Nossa Missão', text: 'Conduzir a igreja à presença de Deus através da música, com excelência e unção.' },
     schedule: [
       { activity: 'Ensaio Geral', day: 'Quinta-feira', time: '20h00', location: 'Templo Principal', description: 'Preparação para o culto de domingo.' },
@@ -131,7 +131,7 @@ export const INITIAL_MINISTRIES_DATA = {
     }
   },
   jovens: {
-    hero: { title: 'Ministério de Jovens', subtitle: 'Jovens apaixonados por Deus', verse: '"Ninguém despreze a tua mocidade..." - 1 Timóteo 4:12' },
+    hero: { title: 'Ministério de Jovens', subtitle: 'Jovens apaixonados por Deus', verse: '"Ninguém despreze a tua mocidade..." - 1 Timóteo 4:12', image: 'https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=1200&h=400&fit=crop' },
     mission: { title: 'Nossa Missão', text: 'Formar uma geração de jovens comprometidos com a Palavra de Deus, que influenciam a sociedade.' },
     schedule: [
       { activity: 'Culto Jovem', day: 'Sábado', time: '19h30', location: 'Templo Principal', description: 'Muito louvor, adoração e palavra direcionada.' },
@@ -158,7 +158,7 @@ export const INITIAL_MINISTRIES_DATA = {
     }
   },
   mulheres: {
-    hero: { title: 'Ministério de Mulheres', subtitle: 'Mulheres transformadas pelo amor de Jesus', verse: '"Mulher virtuosa, quem a achará?" - Provérbios 31:10' },
+    hero: { title: 'Ministério de Mulheres', subtitle: 'Mulheres transformadas pelo amor de Jesus', verse: '"Mulher virtuosa, quem a achará?" - Provérbios 31:10', image: 'https://images.unsplash.com/photo-1573164713714-d95e436ab8d6?w=1200&h=400&fit=crop' },
     mission: { title: 'Nossa Missão', text: 'Acolher, ensinar e inspirar mulheres a viverem o propósito de Deus em suas famílias e na sociedade.' },
     schedule: [
       { activity: 'Culto Rosa', day: '3ª Sexta do Mês', time: '19h30', location: 'Templo Principal', description: 'Um tempo especial só para elas.' },
@@ -183,7 +183,7 @@ export const INITIAL_MINISTRIES_DATA = {
     }
   },
   homens: {
-    hero: { title: 'Ministério de Homens', subtitle: 'Firmes na fé, liderando em amor', verse: '"Sede firmes, inabaláveis..." - 1 Coríntios 15:58', videoUrl: '' },
+    hero: { title: 'Ministério de Homens', subtitle: 'Firmes na fé, liderando em amor', verse: '"Sede firmes, inabaláveis..." - 1 Coríntios 15:58', videoUrl: '', image: 'https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=1200&h=400&fit=crop' },
     mission: { title: 'Nossa Missão', text: 'Fortalecer homens na Palavra e no caráter de Cristo para liderarem suas famílias e servirem à igreja.' },
     schedule: [
       { activity: 'Encontro de Homens', day: '1º Sábado do Mês', time: '8h00', location: 'Salão Social', description: 'Comunhão, estudo e oração.' },
@@ -211,7 +211,7 @@ export const INITIAL_MINISTRIES_DATA = {
     }
   },
   lares: {
-    hero: { title: 'Ministério de Lares', subtitle: 'Comunhão nos lares', verse: '"...partindo o pão em casa" - Atos 2:46' },
+    hero: { title: 'Ministério de Lares', subtitle: 'Comunhão nos lares', verse: '"...partindo o pão em casa" - Atos 2:46', image: 'https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=1200&h=400&fit=crop' },
     mission: { title: 'Nossa Missão', text: 'Levar a igreja para dentro das casas, promovendo comunhão, discipulado e fortalecimento de vínculos.' },
     team: [
       { name: 'Ricardo & Vânia', role: 'Coordenadores Gerais', photo: 'https://ui-avatars.com/api/?name=Ricardo+Vania&background=random' },
@@ -233,7 +233,7 @@ export const INITIAL_MINISTRIES_DATA = {
     }
   },
   retiro: {
-    hero: { title: 'Retiros Espirituais', subtitle: 'Renovação e comunhão', verse: '"Vinde a mim..." - Mateus 11:28' },
+    hero: { title: 'Retiros Espirituais', subtitle: 'Renovação e comunhão', verse: '"Vinde a mim..." - Mateus 11:28', image: 'https://images.unsplash.com/photo-1478131143081-80f7f84ca84d?w=1200&h=400&fit=crop' },
     mission: { title: 'Por Que Participar?', text: 'Desconecte-se do mundo e conecte-se profundamente com Deus em dias de imersão espiritual.' },
     schedule: [
       { activity: 'Retiro de Carnaval', date: 'Fevereiro', location: 'Chácara Recanto', description: '4 dias de muita glória.' },
@@ -248,7 +248,7 @@ export const INITIAL_MINISTRIES_DATA = {
     ]
   },
   social: {
-    hero: { title: 'Ação Social', subtitle: 'Servindo com amor', stats: [
+    hero: { title: 'Ação Social', subtitle: 'Servindo com amor', image: 'https://images.unsplash.com/photo-1593113598332-cd288d649433?w=1200&h=400&fit=crop', stats: [
       { value: '500+', label: 'Cestas Básicas' },
       { value: '1000+', label: 'Refeições' },
       { value: '50+', label: 'Voluntários' }
@@ -264,7 +264,7 @@ export const INITIAL_MINISTRIES_DATA = {
     ]
   },
   ebd: {
-    hero: { title: 'Escola Bíblica Dominical', subtitle: 'Crescendo no conhecimento', verse: '"Conheçamos e prossigamos em conhecer ao Senhor." - Oseias 6:3' },
+    hero: { title: 'Escola Bíblica Dominical', subtitle: 'Crescendo no conhecimento', verse: '"Conheçamos e prossigamos em conhecer ao Senhor." - Oseias 6:3', image: 'https://images.unsplash.com/photo-1491841550275-ad7854e35ca6?w=1200&h=400&fit=crop' },
     info: { time: 'Domingos, 9h', location: 'ADMAC', audience: 'Todas as idades' },
     schedule: [
       { class: 'Novos Convertidos', teacher: 'Pb. Marcos', room: 'Sala 1' },
@@ -280,157 +280,22 @@ export const INITIAL_MINISTRIES_DATA = {
     ]
   },
   midia: {
-    hero: { title: 'Mídia e Comunicação', subtitle: 'Levando a mensagem através da tecnologia', verse: '"...pregai-o sobre os telhados." - Mateus 10:27' },
-    live: { title: 'Culto da Família', time: 'Domingos 18h', videoUrl: 'https://www.youtube.com/embed/live_stream?channel=UC...' },
-    videos: [
-      { title: 'Culto de Domingo - 24/11', date: '24 Nov 2024', views: '1.2k', thumbnail: 'https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=400&h=225&fit=crop' },
-      { title: 'Palavra de Fé - Pr. Roberto', date: '20 Nov 2024', views: '850', thumbnail: 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&h=225&fit=crop' },
-      { title: 'Melhores Momentos - Louvor', date: '15 Nov 2024', views: '2k', thumbnail: 'https://images.unsplash.com/photo-1510936111840-65e151ad71bb?w=400&h=225&fit=crop' }
-    ],
-    team: [
-      { name: 'Lucas Silva', role: 'Líder de Mídia', photo: 'https://ui-avatars.com/api/?name=Lucas+Silva&background=random' },
-      { name: 'Ana Paula', role: 'Social Media', photo: 'https://ui-avatars.com/api/?name=Ana+Paula&background=random' }
-    ],
-    gallery: [
-      { url: 'https://images.unsplash.com/photo-1520509414578-d9cbf09933a1?w=400&h=300&fit=crop', caption: 'Equipe em Ação' },
-      { url: 'https://images.unsplash.com/photo-1505236858219-8359eb29e329?w=400&h=300&fit=crop', caption: 'Transmissão Ao Vivo' }
-    ],
-    birthdays: {
-      title: 'Aniversariantes do Mês',
-      text: 'Parabéns aos nossos comunicadores!',
-      people: [
-        { name: "João Silva", date: "15/03", photo: "" },
-        { name: "Maria Oliveira", date: "22/03", photo: "" },
-        { name: "Carlos Souza", date: "05/03", photo: "" },
-        { name: "Ana Beatriz", date: "10/03", photo: "" }
-      ]
-    },
-    testimonials: [
-      { name: "Roberto Santos", text: "O trabalho da mídia é fundamental para alcançarmos mais vidas!", photo: "" },
-      { name: "Luciana Lima", text: "Equipe dedicada e excelente em tudo o que faz.", photo: "" }
-    ],
-    schedule: [
-      { activity: 'Transmissão Culto', day: 'Domingo', time: '18h00', location: 'Templo Principal' },
-      { activity: 'Gravação Mensagens', day: 'Terça-feira', time: '14h00', location: 'Estúdio' }
-    ]
-  },
-  intercessao: {
-    hero: {
-      title: 'Ministério de Intercessão',
-      subtitle: 'Levando as necessidades da igreja ao trono da graça',
-      verse: '"A oração do justo é poderosa e eficaz." - Tiago 5:16',
-      videoUrl: ''
-    },
-    mission: {
-      title: 'Nossa Missão',
-      text: 'Somos um grupo dedicado à oração e intercessão pela igreja, pelos líderes, pelas famílias e pelas necessidades apresentadas. Cremos no poder da oração e no mover de Deus através da intercessão.'
-    },
-    team: [
-      { name: 'Ana Paula', role: 'Coordenadora', photo: 'https://ui-avatars.com/api/?name=Ana+Paula&background=d4af37&color=000' },
-      { name: 'Carlos Mendes', role: 'Vice-Coordenador', photo: 'https://ui-avatars.com/api/?name=Carlos+Mendes&background=d4af37&color=000' },
-      { name: 'Maria Santos', role: 'Secretária', photo: 'https://ui-avatars.com/api/?name=Maria+Santos&background=d4af37&color=000' }
-    ],
-    schedule: [
-      { day: 'Segunda-feira', time: '06:00', activity: 'Vigília da Madrugada' },
-      { day: 'Quarta-feira', time: '19:30', activity: 'Reunião de Intercessão' },
-      { day: 'Sexta-feira', time: '21:00', activity: 'Corrente de Oração Online' },
-      { day: 'Sábado', time: '08:00', activity: 'Intercessão pelos Ministérios' }
-    ],
-    testimonials: [
-      {
-        text: 'Deus tem feito maravilhas através da intercessão. Minha família foi restaurada!',
-        author: 'Joana Silva'
-      },
-      {
-        text: 'A oração mudou minha vida. Sou grato por este ministério.',
-        author: 'Pedro Costa'
-      }
-    ]
-  },
-  missoes: {
-    hero: {
-      title: 'Missões & Ação Social',
-      subtitle: 'Levando o amor de Cristo até os confins da terra',
-      verse: '"Ide por todo o mundo e pregai o evangelho a toda criatura." - Marcos 16:15',
-      videoUrl: ''
-    },
-    mission: {
-      title: 'Nossa Missão',
-      text: 'Somos chamados a levar o Evangelho a todas as nações e a demonstrar o amor de Cristo através de ações práticas. Apoiamos missionários no campo, realizamos projetos sociais e trabalhamos para transformar vidas através do poder de Deus.'
-    },
-    team: [
-      { name: 'Marcos Silva', role: 'Coordenador de Missões', photo: 'https://ui-avatars.com/api/?name=Marcos+Silva&background=d4af37&color=000' },
-      { name: 'Juliana Costa', role: 'Ação Social', photo: 'https://ui-avatars.com/api/?name=Juliana+Costa&background=d4af37&color=000' },
-      { name: 'Roberto Lima', role: 'Apoio aos Missionários', photo: 'https://ui-avatars.com/api/?name=Roberto+Lima&background=d4af37&color=000' }
-    ],
-    missionaries: [
-      {
-        name: 'Família Oliveira',
-        country: 'Moçambique',
-        photo: 'https://ui-avatars.com/api/?name=Familia+Oliveira&background=d4af37&color=000',
-        description: 'Plantando igrejas e discipulando líderes no sul da África.',
-        yearsOnField: 5
-      },
-      {
-        name: 'Casal Mendes',
-        country: 'Índia',
-        photo: 'https://ui-avatars.com/api/?name=Casal+Mendes&background=d4af37&color=000',
-        description: 'Evangelizando e treinando pastores em regiões não alcançadas.',
-        yearsOnField: 3
-      },
-      {
-        name: 'Pastor André',
-        country: 'Peru',
-        photo: 'https://ui-avatars.com/api/?name=Pastor+Andre&background=d4af37&color=000',
-        description: 'Trabalho com comunidades indígenas na Amazônia peruana.',
-        yearsOnField: 7
-      }
-    ],
-    projects: [
-      {
-        title: 'Cestas Básicas',
-        description: 'Distribuição mensal para 100 famílias carentes',
-        icon: 'Heart',
-        impact: '1.200 cestas/ano'
-      },
-      {
-        title: 'Evangelismo de Rua',
-        description: 'Ações evangelísticas em praças e comunidades',
-        icon: 'Users',
-        impact: '500+ alcançados/mês'
-      },
-      {
-        title: 'Apoio a Missionários',
-        description: 'Sustento financeiro e espiritual de 8 missionários',
-        icon: 'Globe',
-        impact: '3 países alcançados'
-      },
-      {
-        title: 'Projeto Criança Feliz',
-        description: 'Atividades recreativas e evangelísticas para crianças',
-        icon: 'Award',
-        impact: '200 crianças atendidas'
-      }
-    ],
-    stats: [
-      { number: '8', label: 'Missionários Apoiados', icon: 'Users' },
-      { number: '3', label: 'Países Alcançados', icon: 'Globe' },
-      { number: '1.200', label: 'Famílias Assistidas/Ano', icon: 'Heart' },
-      { number: 'R$ 50k', label: 'Investido em 2024', icon: 'DollarSign' }
-    ]
-  },
-  midia: {
     hero: { 
       title: "Portal de Mídia", 
       subtitle: "Excelência técnica e criatividade a serviço do Reino de Deus", 
-      bgImage: "/midia.jpg",
-      cta: "Ver Programação"
+      image: "/midia.jpg",
+      cta: "Ver Programação",
+      verse: '"...pregai-o sobre os telhados." - Mateus 10:27'
     },
     live: { 
       title: "Culto Online - Assista Agora", 
       url: "https://www.youtube.com/embed/live_stream?channel=UCxxxxxxxxxxxx",
       description: "Acompanhe nossas transmissões ao vivo todos os domingos às 18h."
     },
+    videos: [
+      { title: 'Culto de Domingo - 24/11', url: 'https://www.youtube.com/embed/dQw4w9WgXcQ', date: '24 Nov 2024', views: '125', thumbnail: 'https://images.unsplash.com/photo-1516280440614-37939bbacd81?auto=format&fit=crop&q=80' },
+      { title: 'Palavra de Fé - Pr. Roberto', url: 'https://www.youtube.com/embed/dQw4w9WgXcQ', date: '20 Nov 2024', views: '89', thumbnail: 'https://images.unsplash.com/photo-1504052434569-7c96024f44c8?auto=format&fit=crop&q=80' }
+    ],
     team: [
       { name: "Humberto Freitas", role: "Coordenador Geral", photo: "/midia.jpg" },
       { name: "Equipe Técnica", role: "Produção & Transmissão", photo: "/midia.jpg" }

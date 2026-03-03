@@ -1,4 +1,5 @@
 import { useMinistryData } from '../hooks/useMinistryData';
+import { transformImageLink } from '../utils/imageUtils';
 
 const Ministry = ({ id, ...fallbackProps }) => {
   const [data] = useMinistryData(id || 'default');
@@ -6,12 +7,38 @@ const Ministry = ({ id, ...fallbackProps }) => {
   const title = data?.hero?.title || fallbackProps.title;
   const subtitle = data?.hero?.subtitle || fallbackProps.subtitle;
   const description = data?.mission?.text || fallbackProps.description;
+  const heroImage = data?.hero?.image || fallbackProps.image;
+
   const schedule = Array.isArray(data?.schedule)
     ? data.schedule.map(s => `${s.day || ''} ${s.time || ''} ${s.activity || ''}`)
     : fallbackProps.schedule || [];
+
+  const activities = Array.isArray(data?.activities) && data.activities.length > 0
+    ? data.activities
+    : (fallbackProps.activities || [
+      {
+        title: 'Estudo Bíblico',
+        description: 'Estudo profundo da palavra de Deus e seus princípios.',
+        icon: '📖'
+      },
+      {
+        title: 'Encontros',
+        description: 'Momentos de comunhão e fortalecimento.',
+        icon: '🤝'
+      },
+      {
+        title: 'Ação Social',
+        description: 'Projetos sociais e ações de impacto na comunidade.',
+        icon: '❤️'
+      }
+    ]);
+
   return (
     <div className="ministry-page">
-      <div className="ministry-hero">
+      <div
+        className="ministry-hero"
+        style={heroImage ? { backgroundImage: `linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)), url("${transformImageLink(heroImage)}")` } : {}}
+      >
         <h1>{title}</h1>
         <p>{subtitle}</p>
       </div>
@@ -36,21 +63,24 @@ const Ministry = ({ id, ...fallbackProps }) => {
 
         <h2 className="section-title">Nossas Atividades</h2>
         <div className="activities-grid">
-          <div className="activity-card">
-            <div className="activity-icon"></div>
-            <h3>Estudo Bíblico</h3>
-            <p>Estudo profundo da palavra de Deus e seus princípios.</p>
-          </div>
-          <div className="activity-card">
-            <div className="activity-icon"></div>
-            <h3>Encontros</h3>
-            <p>Momentos de comunhão e fortalecimento.</p>
-          </div>
-          <div className="activity-card">
-            <div className="activity-icon"></div>
-            <h3>Ação Social</h3>
-            <p>Projetos sociais e ações de impacto na comunidade.</p>
-          </div>
+          {activities.map((activity, index) => (
+            <div key={index} className="activity-card">
+              {activity.image ? (
+                <img
+                  src={transformImageLink(activity.image)}
+                  alt={activity.title}
+                  style={{ width: '100%', height: '150px', objectFit: 'cover', borderRadius: '12px', marginBottom: '1rem' }}
+                />
+              ) : (
+                <div className="activity-icon" style={{ fontSize: '2rem', marginBottom: '1rem', display: 'block', textAlign: 'center' }}>
+                  {activity.icon || '✨'}
+                </div>
+              )}
+              <h3>{activity.title}</h3>
+              <p>{activity.description}</p>
+              {activity.date && <small style={{ color: 'var(--accent-color)', fontWeight: '600' }}>{activity.date}</small>}
+            </div>
+          ))}
         </div>
 
         {/* --- Seção Aniversariantes --- */}
@@ -61,16 +91,24 @@ const Ministry = ({ id, ...fallbackProps }) => {
 
             {data.birthdays.videoUrl && (
               <div style={{ marginBottom: '3rem', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 8px 30px rgba(0,0,0,0.1)' }}>
-                <iframe
-                  width="100%"
-                  height="400"
-                  src={data.birthdays.videoUrl.replace('watch?v=', 'embed/').split('&')[0]}
-                  title="Vídeo Aniversariantes"
-                  frameBorder="0"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                  style={{ display: 'block' }}
-                ></iframe>
+                {data.birthdays.videoUrl.includes('youtube.com') || data.birthdays.videoUrl.includes('youtu.be') ? (
+                  <iframe
+                    width="100%"
+                    height="400"
+                    src={data.birthdays.videoUrl.replace('watch?v=', 'embed/').split('&')[0]}
+                    title="Vídeo Aniversariantes"
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                    style={{ display: 'block' }}
+                  ></iframe>
+                ) : (
+                  <img
+                    src={transformImageLink(data.birthdays.videoUrl)}
+                    alt="Capa Aniversariantes"
+                    style={{ width: '100%', maxHeight: '400px', objectFit: 'cover' }}
+                  />
+                )}
               </div>
             )}
 
@@ -88,7 +126,7 @@ const Ministry = ({ id, ...fallbackProps }) => {
                   onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
                 >
                   <img
-                    src={person.photo || `https://ui-avatars.com/api/?name=${encodeURIComponent(person.name)}&background=random`}
+                    src={transformImageLink(person.photo) || `https://ui-avatars.com/api/?name=${encodeURIComponent(person.name)}&background=random`}
                     alt={person.name}
                     style={{ width: '100px', height: '100px', borderRadius: '50%', objectFit: 'cover', marginBottom: '1rem', border: '3px solid var(--accent-light)' }}
                   />

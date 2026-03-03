@@ -373,6 +373,7 @@ export default function PainelAdm() {
   const [ministryLoading, setMinistryLoading] = useState(false);
   const [ministryTab, setMinistryTab] = useState('geral');
   const [homeData, setHomeData] = useState(null);
+  const [homeVideos, setHomeVideos] = useState([]);
   const [homeTab, setHomeTab] = useState('bemvindo');
   const [bars, setBars] = useState(buildBars());
   const [logs, setLogs] = useState([]);
@@ -733,8 +734,15 @@ export default function PainelAdm() {
   const loadMinistry = async (id) => {
     try {
       setMinistryLoading(true);
-      const data = await DatabaseService.getMinistry(id);
+      const [data, vids] = await Promise.all([
+        DatabaseService.getMinistry(id),
+        id === 'home' ? DatabaseService.getVideos() : Promise.resolve([])
+      ]);
       setMinistryData(data);
+      if (id === 'home') {
+        setHomeData(data);
+        setHomeVideos(vids || []);
+      }
     } finally {
       setMinistryLoading(false);
     }
@@ -749,11 +757,18 @@ export default function PainelAdm() {
   const saveMinistry = async () => {
     if (!ministryId || !ministryData) return;
     try {
-      await DatabaseService.saveMinistry(ministryId, ministryData);
-      try {
-        window.localStorage.setItem('admac_last_update', String(Date.now()));
-        window.dispatchEvent(new StorageEvent('storage', { key: `admac_ministry_${ministryId}` }));
-      } catch { void 0 }
+      if (ministryId === 'home') {
+        await Promise.all([
+          DatabaseService.saveHomeData(ministryData),
+          DatabaseService.saveVideos(homeVideos)
+        ]);
+        setHomeData(ministryData);
+        DatabaseService.broadcastUpdate('admac_home');
+        DatabaseService.broadcastUpdate('admac_videos');
+      } else {
+        await DatabaseService.saveMinistry(ministryId, ministryData);
+        DatabaseService.broadcastUpdate(`admac_ministry_${ministryId}`);
+      }
       alert('Conteúdo salvo com sucesso!');
     } catch (err) {
       if (err.name === 'QuotaExceededError' || (err.message && err.message.includes('quota'))) {
@@ -816,8 +831,13 @@ export default function PainelAdm() {
   const openConfigEditHome = async () => {
     setPageMode('home');
     setPageName('Home');
-    const hd = await DatabaseService.getHomeData();
+    const [hd, videos] = await Promise.all([
+      DatabaseService.getHomeData(),
+      DatabaseService.getVideos()
+    ]);
     setHomeData(hd);
+    setMinistryData(hd);
+    setHomeVideos(videos || []);
     setHomeTab('bemvindo');
     setPageModalOpen(true);
   };
@@ -962,8 +982,13 @@ export default function PainelAdm() {
       if (name === 'Home') {
         setPageMode('home');
         setPageName(name);
-        const hd = await DatabaseService.getHomeData();
+        const [hd, videos] = await Promise.all([
+          DatabaseService.getHomeData(),
+          DatabaseService.getVideos()
+        ]);
         setHomeData(hd);
+        setMinistryData(hd);
+        setHomeVideos(videos || []);
         setHomeTab('bemvindo');
         setPageModalOpen(true);
         return;
@@ -1035,11 +1060,13 @@ export default function PainelAdm() {
 
       if (pageMode === 'home') {
         try {
-          await DatabaseService.saveHomeData(homeData || {});
-          try {
-            window.localStorage.setItem('admac_last_update', String(Date.now()));
-            window.dispatchEvent(new StorageEvent('storage', { key: 'admac_home' }));
-          } catch { void 0 }
+          await Promise.all([
+            DatabaseService.saveHomeData(homeData || {}),
+            DatabaseService.saveVideos(homeVideos || [])
+          ]);
+          setMinistryData(homeData);
+          DatabaseService.broadcastUpdate('admac_home');
+          DatabaseService.broadcastUpdate('admac_videos');
           setHasPagesNotif(true);
           setPageModalOpen(false)
           await loadPages()
@@ -1452,9 +1479,9 @@ export default function PainelAdm() {
             </div>
             <div style={{ display: 'flex', gap: '.6rem', marginBottom: '.8rem', flexWrap: 'wrap' }}>
               {(ministryId === 'home'
-                ? ['geral', 'sliders', 'pastores', 'mensagens', 'ministérios', 'programacao', 'atividades', 'cta', 'aniversariantes']
+                ? ['geral', 'sliders', 'pastores', 'videos', 'mensagens', 'ministérios', 'programacao', 'atividades', 'cta', 'aniversariantes']
                 : ministryId === 'midia'
-                  ? ['geral', 'equipe', 'mensagens', 'programacao', 'galeria', 'bastidores', 'noticias', 'testemunhos', 'aniversariantes']
+                  ? ['geral', 'equipe', 'videos', 'mensagens', 'programacao', 'galeria', 'bastidores', 'noticias', 'testemunhos', 'aniversariantes']
                   : ['geral', 'equipe', 'programacao', 'galeria', 'testemunhos', 'aniversariantes']
               ).map(t => (
                 <button
@@ -1480,7 +1507,8 @@ export default function PainelAdm() {
                                       : t === 'aniversariantes' ? 'Aniversariantes'
                                         : t === 'bastidores' ? 'Bastidores'
                                           : t === 'noticias' ? 'Notícias'
-                                            : 'Testemunhos'}
+                                            : t === 'videos' ? 'Vídeos'
+                                              : 'Testemunhos'}
                 </button>
               ))}
             </div>
@@ -1564,14 +1592,26 @@ export default function PainelAdm() {
                         </div>
                         <div className="pm-field">
                           <label>Imagem de Fundo</label>
-                          <div className="pm-field-wrap">
-                            <span className="pm-icon">🖼</span>
-                            <input
-                              className="pm-input"
-                              value={ministryData?.hero?.image || ''}
-                              onChange={e => setMinistryData(d => ({ ...d, hero: { ...d.hero, image: e.target.value } }))}
-                              placeholder="URL da imagem"
-                            />
+                          <div className="pm-field-wrap" style={{ display: 'flex', gap: '8px' }}>
+                            <div style={{ position: 'relative', flex: 1 }}>
+                              <span className="pm-icon">🖼</span>
+                              <input
+                                className="pm-input"
+                                value={ministryData?.hero?.image || ''}
+                                onChange={e => setMinistryData(d => ({ ...d, hero: { ...d.hero, image: e.target.value } }))}
+                                placeholder="URL da imagem"
+                              />
+                            </div>
+                            <button
+                              type="button"
+                              className="pm-photo-btn"
+                              style={{ whiteSpace: 'nowrap', padding: '0 12px', height: '38px', marginTop: '0' }}
+                              onClick={() => handleFileUpload(base64 => {
+                                setMinistryData(d => ({ ...d, hero: { ...d.hero, image: base64 } }));
+                              })}
+                            >
+                              Subir Foto
+                            </button>
                           </div>
                         </div>
                         <div className="pm-field">
@@ -2058,9 +2098,21 @@ export default function PainelAdm() {
                         </div>
                         <div className="pm-field">
                           <label>Link do Vídeo (YouTube)</label>
-                          <div className="pm-field-wrap">
-                            <span className="pm-icon">▶</span>
-                            <input className="pm-input" placeholder="https://www.youtube.com/watch?v=..." value={ministryData?.birthdays?.videoUrl || ''} onChange={e => setMinistryData(d => ({ ...d, birthdays: { ...(d.birthdays || {}), videoUrl: e.target.value } }))} />
+                          <div className="pm-field-wrap" style={{ display: 'flex', gap: '8px' }}>
+                            <div style={{ position: 'relative', flex: 1 }}>
+                              <span className="pm-icon">▶</span>
+                              <input className="pm-input" placeholder="https://www.youtube.com/watch?v=..." value={ministryData?.birthdays?.videoUrl || ''} onChange={e => setMinistryData(d => ({ ...d, birthdays: { ...(d.birthdays || {}), videoUrl: e.target.value } }))} />
+                            </div>
+                            <button
+                              type="button"
+                              className="pm-photo-btn"
+                              style={{ whiteSpace: 'nowrap', padding: '0 12px', height: '38px', marginTop: '0' }}
+                              onClick={() => handleFileUpload(base64 => {
+                                setMinistryData(d => ({ ...d, birthdays: { ...(d.birthdays || {}), videoUrl: base64 } }));
+                              })}
+                            >
+                              Subir Capa
+                            </button>
                           </div>
                         </div>
 
@@ -2278,6 +2330,159 @@ export default function PainelAdm() {
                       }))}
                     >
                       + Adicionar Item
+                    </button>
+                  </div>
+                )}
+                {ministryTab === 'videos' && (
+                  <div style={{ padding: '1.2rem' }}>
+                    <div style={{ marginBottom: '1.2rem', color: palette.textMuted, fontSize: '.85rem' }}>
+                      Adicione vídeos do YouTube para exibição na galeria {ministryId === 'home' ? 'da página inicial' : 'deste ministério'}.
+                    </div>
+                    {((ministryId === 'home' ? homeVideos : ministryData?.videos) || []).map((v, idx) => (
+                      <div key={idx} className="pm-row" style={{ marginBottom: '1.5rem', paddingBottom: '1.5rem', borderBottom: `1px solid ${palette.border}` }}>
+                        <div className="pm-field" style={{ gridColumn: '1 / -1' }}>
+                          <label>Título do Vídeo</label>
+                          <div className="pm-field-wrap">
+                            <span className="pm-icon">✏️</span>
+                            <input
+                              className="pm-input"
+                              value={v.title || ''}
+                              onChange={e => {
+                                if (ministryId === 'home') {
+                                  const next = [...(homeVideos || [])];
+                                  next[idx] = { ...next[idx], title: e.target.value };
+                                  setHomeVideos(next);
+                                } else {
+                                  const next = [...(ministryData.videos || [])];
+                                  next[idx] = { ...next[idx], title: e.target.value };
+                                  setMinistryData(d => ({ ...d, videos: next }));
+                                }
+                              }}
+                            />
+                          </div>
+                        </div>
+                        <div className="pm-field">
+                          <label>URL do YouTube (Embed)</label>
+                          <div className="pm-field-wrap">
+                            <span className="pm-icon">▶</span>
+                            <input
+                              className="pm-input"
+                              value={v.url || ''}
+                              onChange={e => {
+                                let val = e.target.value;
+                                if (val.includes('watch?v=')) val = val.replace('watch?v=', 'embed/');
+                                if (val.includes('youtu.be/')) val = val.replace('youtu.be/', 'youtube.com/embed/');
+
+                                if (ministryId === 'home') {
+                                  const next = [...(homeVideos || [])];
+                                  next[idx] = { ...next[idx], url: val };
+                                  setHomeVideos(next);
+                                } else {
+                                  const next = [...(ministryData.videos || [])];
+                                  next[idx] = { ...next[idx], url: val };
+                                  setMinistryData(d => ({ ...d, videos: next }));
+                                }
+                              }}
+                              placeholder="https://www.youtube.com/embed/..."
+                            />
+                          </div>
+                        </div>
+                        <div className="pm-field">
+                          <label>Capa/Thumbnail (URL)</label>
+                          <div className="pm-field-wrap">
+                            <span className="pm-icon">🖼</span>
+                            <input
+                              className="pm-input"
+                              value={v.thumbnail || ''}
+                              onChange={e => {
+                                if (ministryId === 'home') {
+                                  const next = [...(homeVideos || [])];
+                                  next[idx] = { ...next[idx], thumbnail: e.target.value };
+                                  setHomeVideos(next);
+                                } else {
+                                  const next = [...(ministryData.videos || [])];
+                                  next[idx] = { ...next[idx], thumbnail: e.target.value };
+                                  setMinistryData(d => ({ ...d, videos: next }));
+                                }
+                              }}
+                            />
+                          </div>
+                        </div>
+                        <div className="pm-field">
+                          <label>Data/Texto Auxiliar</label>
+                          <div className="pm-field-wrap">
+                            <span className="pm-icon">📅</span>
+                            <input
+                              className="pm-input"
+                              value={v.date || ''}
+                              onChange={e => {
+                                if (ministryId === 'home') {
+                                  const next = [...(homeVideos || [])];
+                                  next[idx] = { ...next[idx], date: e.target.value };
+                                  setHomeVideos(next);
+                                } else {
+                                  const next = [...(ministryData.videos || [])];
+                                  next[idx] = { ...next[idx], date: e.target.value };
+                                  setMinistryData(d => ({ ...d, videos: next }));
+                                }
+                              }}
+                              placeholder="Ex: 2 horas atrás"
+                            />
+                          </div>
+                        </div>
+                        <div className="pm-field">
+                          <label>Visualizações (Simulado)</label>
+                          <div className="pm-field-wrap">
+                            <span className="pm-icon">👁</span>
+                            <input
+                              className="pm-input"
+                              value={v.views || ''}
+                              onChange={e => {
+                                if (ministryId === 'home') {
+                                  const next = [...(homeVideos || [])];
+                                  next[idx] = { ...next[idx], views: e.target.value };
+                                  setHomeVideos(next);
+                                } else {
+                                  const next = [...(ministryData.videos || [])];
+                                  next[idx] = { ...next[idx], views: e.target.value };
+                                  setMinistryData(d => ({ ...d, videos: next }));
+                                }
+                              }}
+                            />
+                          </div>
+                        </div>
+                        <div style={{ gridColumn: '1 / -1', display: 'flex', justifyContent: 'flex-end' }}>
+                          <button
+                            className="btn-deletar"
+                            onClick={() => {
+                              if (ministryId === 'home') {
+                                const next = [...(homeVideos || [])];
+                                next.splice(idx, 1);
+                                setHomeVideos(next);
+                              } else {
+                                const next = [...(ministryData.videos || [])];
+                                next.splice(idx, 1);
+                                setMinistryData(d => ({ ...d, videos: next }));
+                              }
+                            }}
+                          >
+                            Remover Vídeo
+                          </button>
+                        </div>
+                      </div>
+                    ))}
+                    <button
+                      className="pm-add-btn"
+                      onClick={() => {
+                        const newVid = { title: '', url: '', date: 'Recente', views: '0', thumbnail: '' };
+                        if (ministryId === 'home') {
+                          setHomeVideos(v => [...(v || []), newVid]);
+                        } else {
+                          setMinistryData(d => ({ ...d, videos: [...(d.videos || []), newVid] }));
+                        }
+                      }}
+                    >
+                      + Adicionar Novo Vídeo
                     </button>
                   </div>
                 )}
