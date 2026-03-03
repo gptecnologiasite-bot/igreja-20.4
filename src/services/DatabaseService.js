@@ -100,7 +100,7 @@ const DatabaseService = {
     if (!data.carousel || data.carousel.length === 0) data.carousel = [...INITIAL_HOME_DATA.carousel];
     if (!data.pastors || data.pastors.length === 0) data.pastors = [...INITIAL_HOME_DATA.pastors];
     
-    // Garante que "Mídia" esteja na lista de ministérios da Home
+    // Garante que "Mídia" esteja na lista de ministérios da Home mesmo com dados antigos em localStorage
     if (data.ministries) {
       const hasMidia = data.ministries.some(m => m.link === '/midia');
       if (!hasMidia) {
@@ -176,6 +176,7 @@ const DatabaseService = {
   },
 
   addPage: async (page) => {
+    // Cria uma nova página dinâmica no sistema
     const pages = await DatabaseService.getPages();
     const newPage = {
       ...page,
@@ -238,6 +239,7 @@ const DatabaseService = {
   },
 
   addLog: async (action, userEmail, details = '') => {
+    // Registra atividades do sistema para auditoria no Painel Admin
     try {
       const logs = await DatabaseService.getLogs();
       const newLog = {
@@ -248,8 +250,8 @@ const DatabaseService = {
         details,
         location: ['SP, Brasil', 'RJ, Brasil', 'DF, Brasil', 'Desconhecido'][Math.floor(Math.random() * 4)] // Simulação de local
       };
-      logs.unshift(newLog); // Adiciona no início
-      if (logs.length > 500) logs.pop(); // Mantém no máximo 500 logs
+      logs.unshift(newLog); // Adiciona no início da lista
+      if (logs.length > 500) logs.pop(); // Mantém o histórico sob controle (max 500)
       localStorage.setItem(DB_KEYS.LOGS, JSON.stringify(logs));
       return true;
     } catch {
