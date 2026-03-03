@@ -69,11 +69,11 @@ class AuthService {
             const user = users.find(u => u.email === email && u.password === password);
 
             // Conta admin hardcoded
-            if (email === 'admin@admac.com' && password === 'REDACTED_SENHA') {
+            if (email === 'admin@admin.com' && password === 'REDACTED_SENHA') {
                 const adminUser = {
                     id: 'admin',
                     name: 'Admin',
-                    email: 'admin@admac.com',
+                    email: 'admin@admin.com',
                     userType: 'admin',
                     photo: null
                 };
