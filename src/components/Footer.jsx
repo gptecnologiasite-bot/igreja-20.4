@@ -20,6 +20,7 @@ const Footer = () => {
     return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
+  // Configuração dos links rápidos no centro do rodapé
   const quickLinks = [
     { name: 'Início', path: '/' },
     { name: 'Ministérios', path: '/ministerios' },
@@ -27,6 +28,7 @@ const Footer = () => {
     { name: 'Contato', path: '/contato' }
   ];
 
+  // Atalhos diretos para os principais ministérios
   const ministries = [
     { name: 'Mídia', path: '/midia' },
     { name: 'Lares', path: '/lares' },

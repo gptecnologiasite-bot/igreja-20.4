@@ -38,7 +38,8 @@ const Home = () => {
     loadData();
   }, []);
 
-  // Carrega aniversariantes de todos os ministérios e ordena por data (DD/MM)
+  // Carrega aniversariantes de todas as áreas do site para exibir na Home
+  // ministryIds inclui 'midia' para garantir que ninguém fique de fora!
   useEffect(() => {
     const ministryIds = ['kids', 'louvor', 'jovens', 'mulheres', 'homens', 'lares', 'retiro', 'social', 'ebd', 'midia'];
     const loadBirthdays = async () => {

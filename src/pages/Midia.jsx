@@ -23,9 +23,15 @@ import {
 } from 'lucide-react';
 import { useMinistryData } from '../hooks/useMinistryData';
 import '../css/Midia.css';
-// Midia.jsx - Página de Mídia Profissional (Corrigido p/ Vercel)
+// ---------------------------------------------------------------------------------
+// Midia.jsx - Página de Mídia Profissional do ADMAC
+// Esta página utiliza lazy data via useMinistryData e framer-motion para animações.
+// ---------------------------------------------------------------------------------
 const Midia = () => {
+    // Carrega os dados específicos do ministério de mídia do banco de dados/localStorage
     const [data] = useMinistryData('midia');
+
+    // Estado para controlar a foto atual da galeria (carrossel)
     const [galleryIndex, setGalleryIndex] = useState(0);
 
     // Default data structure consistent with initialData.js
@@ -58,6 +64,7 @@ const Midia = () => {
         }
     } = data || {};
 
+    // Funções de navegação do carrossel da Galeria
     const nextPhoto = () => {
         if (!gallery || gallery.length === 0) return;
         setGalleryIndex(prev => (prev + 1) % gallery.length);
@@ -67,7 +74,7 @@ const Midia = () => {
         setGalleryIndex(prev => (prev - 1 + gallery.length) % gallery.length);
     };
 
-    // Animation variants
+    // Configurações padrão de animação para as seções (efeito de "subir" ao rolar a página)
     const fadeIn = {
         initial: { opacity: 0, y: 30 },
         whileInView: { opacity: 1, y: 0 },
@@ -320,7 +327,7 @@ const Midia = () => {
                 </div>
             </section>
 
-            {/* --- 10. FOOTER --- */}
+            {/* --- 10. FOOTER DA PÁGINA (Rodapé Interno) --- */}
             <footer className="midia-footer">
                 <div className="container">
                     <div className="footer-content">
@@ -328,6 +335,7 @@ const Midia = () => {
                             <h3>MÍDIA<span>ADMAC</span></h3>
                             <p style={{ marginTop: '10px', color: 'rgba(255,255,255,0.4)' }}>Excelência para o Reino.</p>
                         </div>
+                        {/* Links das redes sociais configurados via Painel Admin */}
                         <div className="social-links">
                             <a href="#" className="social-link"><Instagram /> {footer.social.instagram}</a>
                             <a href="#" className="social-link"><Youtube /> {footer.social.youtube}</a>
