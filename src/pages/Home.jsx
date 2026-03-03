@@ -22,6 +22,7 @@ import ActivitiesCarousel from "../components/ActivitiesCarousel";
 import PastorCarousel from "../components/PastorCarousel";
 import RecentVideos from "../components/RecentVideos";
 import DatabaseService from "../services/DatabaseService";
+import { transformImageLink } from "../utils/imageUtils";
 
 const Home = () => {
   // Estado principal com os dados da home (carrossel, welcome, agenda, etc.)
