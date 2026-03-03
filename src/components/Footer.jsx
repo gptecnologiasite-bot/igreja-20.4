@@ -33,7 +33,7 @@ const Footer = () => {
     { name: 'Louvor', path: '/louvor' },
     { name: 'Kids', path: '/kids' },
     { name: 'Jovens', path: '/jovens' },
-    { name: 'Revista', path: '/revista' }
+    { name: 'Missões', path: '/missoes' }
   ];
 
   return (
