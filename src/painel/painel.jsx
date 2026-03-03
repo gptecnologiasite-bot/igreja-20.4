@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import AnalyticsService from '../services/AnalyticsService';
 import DatabaseService from '../services/DatabaseService';
 import { INITIAL_HOME_DATA } from '../services/initialData';
+import { transformImageLink } from '../utils/imageUtils';
 
 const palette = {
   bg: '#0f1117',
@@ -390,6 +391,20 @@ export default function PainelAdm() {
     }
   });
 
+  const handleFileUpload = (callback) => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = (ev) => callback(ev.target.result);
+      reader.readAsDataURL(file);
+    };
+    input.click();
+  };
+
   const loadLogs = async () => {
     const data = await DatabaseService.getLogs();
     setLogs(data);
@@ -465,8 +480,17 @@ export default function PainelAdm() {
   }, []);
 
   const saveNavConfig = () => {
-    const payload = { main: navMain, settings: navSettings };
-    localStorage.setItem('admac_painel_nav', JSON.stringify(payload));
+    try {
+      const payload = { main: navMain, settings: navSettings };
+      localStorage.setItem('admac_painel_nav', JSON.stringify(payload));
+      alert('Configurações do menu salvas com sucesso!');
+    } catch (err) {
+      if (err.name === 'QuotaExceededError') {
+        alert('Erro: Limite de armazenamento atingido. Remova fotos pesadas ou use links externos.');
+      } else {
+        alert('Erro ao salvar configurações do menu.');
+      }
+    }
   };
 
   const loadUsers = async () => {
@@ -535,7 +559,14 @@ export default function PainelAdm() {
       if (!localUsers.find(u => u.email === userToSave.email)) {
         localUsers.push(userToSave);
       }
-      localStorage.setItem('admac_users', JSON.stringify(localUsers));
+      try {
+        localStorage.setItem('admac_users', JSON.stringify(localUsers));
+      } catch (err) {
+        if (err.name === 'QuotaExceededError') {
+          alert('Erro: Limite de armazenamento atingido. Tente usar fotos menores.');
+          return;
+        }
+      }
 
       // Tenta API
       try {
@@ -543,34 +574,45 @@ export default function PainelAdm() {
         if (r.ok) {
           setShowModal(false);
           await loadUsers();
+          alert('Usuário cadastrado com sucesso!');
           return;
         }
       } catch (err) { console.warn('API error during saveUser create'); }
 
       setShowModal(false);
       await loadUsers();
+      alert('Usuário cadastrado com sucesso (Local)!');
 
     } else if (userMode === 'edit' && editingUserId != null) {
       const idx = localUsers.findIndex(u => u.email === newUser.email || u.id === editingUserId);
       if (idx !== -1) {
         localUsers[idx] = { ...localUsers[idx], ...userToSave };
-        localStorage.setItem('admac_users', JSON.stringify(localUsers));
-      }
-
-      // Tenta API
-      try {
-        const r = await fetch(`/api/users/${editingUserId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(userToSave) });
-        if (r.ok) {
-          setShowModal(false);
-          await loadUsers();
-          return;
+        try {
+          localStorage.setItem('admac_users', JSON.stringify(localUsers));
+        } catch (err) {
+          if (err.name === 'QuotaExceededError') {
+            alert('Erro: Limite de armazenamento atingido. Tente usar fotos menores.');
+            return;
+          }
         }
-      } catch (err) { console.warn('API error during saveUser edit'); }
 
-      setShowModal(false);
-      await loadUsers();
-    } else {
-      setShowModal(false);
+        // Tenta API
+        try {
+          const r = await fetch(`/api/users/${editingUserId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(userToSave) });
+          if (r.ok) {
+            setShowModal(false);
+            await loadUsers();
+            alert('Usuário atualizado com sucesso!');
+            return;
+          }
+        } catch (err) { console.warn('API error during saveUser edit'); }
+
+        setShowModal(false);
+        await loadUsers();
+        alert('Usuário atualizado com sucesso (Local)!');
+      } else {
+        setShowModal(false);
+      }
     }
   }
 
@@ -706,11 +748,20 @@ export default function PainelAdm() {
 
   const saveMinistry = async () => {
     if (!ministryId || !ministryData) return;
-    await DatabaseService.saveMinistry(ministryId, ministryData);
     try {
-      window.localStorage.setItem('admac_last_update', String(Date.now()));
-      window.dispatchEvent(new StorageEvent('storage', { key: `admac_ministry_${ministryId}` }));
-    } catch { void 0 }
+      await DatabaseService.saveMinistry(ministryId, ministryData);
+      try {
+        window.localStorage.setItem('admac_last_update', String(Date.now()));
+        window.dispatchEvent(new StorageEvent('storage', { key: `admac_ministry_${ministryId}` }));
+      } catch { void 0 }
+      alert('Conteúdo salvo com sucesso!');
+    } catch (err) {
+      if (err.name === 'QuotaExceededError' || (err.message && err.message.includes('quota'))) {
+        alert('Erro: Limite de armazenamento atingido. Tente usar links externos em vez de fotos pesadas.');
+      } else {
+        alert('Erro ao salvar conteúdo. Tente novamente.');
+      }
+    }
   };
 
   // Gera o HTML completo de um relatório de acessos para ser aberto em nova aba ou impresso.
@@ -983,59 +1034,62 @@ export default function PainelAdm() {
       let content;
 
       if (pageMode === 'home') {
-        await DatabaseService.saveHomeData(homeData || {});
         try {
-          window.localStorage.setItem('admac_last_update', String(Date.now()));
-          window.dispatchEvent(new StorageEvent('storage', { key: 'admac_home' }));
-        } catch { void 0 }
-        setHasPagesNotif(true);
-        setPageModalOpen(false)
-        await loadPages()
-        return
+          await DatabaseService.saveHomeData(homeData || {});
+          try {
+            window.localStorage.setItem('admac_last_update', String(Date.now()));
+            window.dispatchEvent(new StorageEvent('storage', { key: 'admac_home' }));
+          } catch { void 0 }
+          setHasPagesNotif(true);
+          setPageModalOpen(false)
+          await loadPages()
+          alert('Página Home salva com sucesso!');
+          return
+        } catch (err) {
+          if (err.name === 'QuotaExceededError') {
+            alert('Erro: Limite de armazenamento atingido. Tente usar links em vez de fotos pesadas.');
+          } else {
+            alert('Erro ao salvar Home.');
+          }
+          return;
+        }
       }
 
       if (pageMode === 'ministry') {
-        await DatabaseService.saveMinistry(ministryId, ministryData || {});
         try {
-          window.localStorage.setItem('admac_last_update', String(Date.now()));
-          window.dispatchEvent(new StorageEvent('storage', { key: `admac_ministry_${ministryId}` }));
-        } catch { void 0 }
-        setHasPagesNotif(true);
-        setPageModalOpen(false)
-        await loadPages()
-        return
+          await DatabaseService.saveMinistry(ministryId, ministryData || {});
+          try {
+            window.localStorage.setItem('admac_last_update', String(Date.now()));
+            window.dispatchEvent(new StorageEvent('storage', { key: `admac_ministry_${ministryId}` }));
+          } catch { void 0 }
+          setHasPagesNotif(true);
+          setPageModalOpen(false)
+          await loadPages()
+          alert('Página de Ministério salva com sucesso!');
+          return
+        } catch (err) {
+          if (err.name === 'QuotaExceededError') {
+            alert('Erro: Limite de armazenamento atingido. Tente usar links em vez de fotos pesadas.');
+          } else {
+            alert('Erro ao salvar Ministério.');
+          }
+          return;
+        }
       }
 
-      // Modo amigável para página de contato
-      if (pageMode === 'contact') {
-        const fields = {
-          title: pageData.title || '',
-          subtitle: pageData.description || '',
-          address: pageData.address || '',
-          phone: pageData.phone || '',
-          email: pageData.email || '',
-          schedule: pageData.schedule || '',
-        }
-        content = applyContactPage(pageRawContent, fields)
-        const r = await fetch(`/api/pages/${encodeURIComponent(pageName.trim())}`, {
-          method: 'PUT',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ content }),
-        })
-        if (!r.ok) throw new Error()
-        setHasPagesNotif(true);
-      } else {
-        // Páginas dinâmicas simples (JSON)
-        content = JSON.stringify(pageData)
-        if (pageMode === 'create') {
-          const r = await fetch('/api/pages', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ name: pageName.trim(), content }),
-          })
-          if (!r.ok) throw new Error()
-          setHasPagesNotif(true);
-        } else {
+      // Feedback para outras páginas
+      try {
+        // Página de contato: usar formulário amigável
+        if (pageMode === 'contact') {
+          const fields = {
+            title: pageData.title || '',
+            subtitle: pageData.description || '',
+            address: pageData.address || '',
+            phone: pageData.phone || '',
+            email: pageData.email || '',
+            schedule: pageData.schedule || '',
+          }
+          content = applyContactPage(pageRawContent, fields)
           const r = await fetch(`/api/pages/${encodeURIComponent(pageName.trim())}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
@@ -1043,7 +1097,30 @@ export default function PainelAdm() {
           })
           if (!r.ok) throw new Error()
           setHasPagesNotif(true);
+        } else {
+          // Páginas dinâmicas simples (JSON)
+          content = JSON.stringify(pageData)
+          if (pageMode === 'create') {
+            const r = await fetch('/api/pages', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ name: pageName.trim(), content }),
+            })
+            if (!r.ok) throw new Error()
+            setHasPagesNotif(true);
+          } else {
+            const r = await fetch(`/api/pages/${encodeURIComponent(pageName.trim())}`, {
+              method: 'PUT',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ content }),
+            })
+            if (!r.ok) throw new Error()
+            setHasPagesNotif(true);
+          }
         }
+        alert('Página salva com sucesso!');
+      } catch (err) {
+        alert('Erro ao salvar a página. Verifique a conexão ou se o arquivo já existe.');
       }
 
       setPageModalOpen(false)
@@ -1526,17 +1603,32 @@ export default function PainelAdm() {
                       <div key={idx} className="pm-row" style={{ marginBottom: '.8rem' }}>
                         <div className="pm-field">
                           <label>Imagem (URL)</label>
-                          <div className="pm-field-wrap">
-                            <span className="pm-icon">🖼</span>
-                            <input
-                              className="pm-input"
-                              value={s.image || ''}
-                              onChange={e => {
+                          <div className="pm-field-wrap" style={{ display: 'flex', gap: '8px' }}>
+                            <div style={{ position: 'relative', flex: 1 }}>
+                              <span className="pm-icon">🖼</span>
+                              <input
+                                className="pm-input"
+                                value={s.image || ''}
+                                onChange={e => {
+                                  const val = transformImageLink(e.target.value);
+                                  const next = [...(ministryData.carousel || [])];
+                                  next[idx] = { ...next[idx], image: val };
+                                  setMinistryData(d => ({ ...d, carousel: next }));
+                                }}
+                              />
+                            </div>
+                            <button
+                              type="button"
+                              className="pm-photo-btn"
+                              style={{ whiteSpace: 'nowrap', padding: '0 12px', height: '38px', marginTop: '0' }}
+                              onClick={() => handleFileUpload(base64 => {
                                 const next = [...(ministryData.carousel || [])];
-                                next[idx] = { ...next[idx], image: e.target.value };
+                                next[idx] = { ...next[idx], image: base64 };
                                 setMinistryData(d => ({ ...d, carousel: next }));
-                              }}
-                            />
+                              })}
+                            >
+                              Subir Foto
+                            </button>
                           </div>
                         </div>
                         {s.image ? <img src={s.image} alt="" style={{ width: 100, height: 60, borderRadius: 8, objectFit: 'cover', border: `1px solid ${palette.border}` }} /> : null}
@@ -1629,17 +1721,32 @@ export default function PainelAdm() {
                         </div>
                         <div className="pm-field">
                           <label>Imagem (URL)</label>
-                          <div className="pm-field-wrap">
-                            <span className="pm-icon">🖼</span>
-                            <input
-                              className="pm-input"
-                              value={p.image || ''}
-                              onChange={e => {
+                          <div className="pm-field-wrap" style={{ display: 'flex', gap: '8px' }}>
+                            <div style={{ position: 'relative', flex: 1 }}>
+                              <span className="pm-icon">🖼</span>
+                              <input
+                                className="pm-input"
+                                value={p.image || ''}
+                                onChange={e => {
+                                  const val = transformImageLink(e.target.value);
+                                  const next = [...(ministryData.pastors || [])];
+                                  next[idx] = { ...next[idx], image: val };
+                                  setMinistryData(d => ({ ...d, pastors: next }));
+                                }}
+                              />
+                            </div>
+                            <button
+                              type="button"
+                              className="pm-photo-btn"
+                              style={{ whiteSpace: 'nowrap', padding: '0 12px', height: '38px', marginTop: '0' }}
+                              onClick={() => handleFileUpload(base64 => {
                                 const next = [...(ministryData.pastors || [])];
-                                next[idx] = { ...next[idx], image: e.target.value };
+                                next[idx] = { ...next[idx], image: base64 };
                                 setMinistryData(d => ({ ...d, pastors: next }));
-                              }}
-                            />
+                              })}
+                            >
+                              Subir Foto
+                            </button>
                           </div>
                         </div>
                         {p.image ? <img src={p.image} alt="" style={{ width: 48, height: 48, borderRadius: 8, objectFit: 'cover', border: `1px solid ${palette.border}` }} /> : null}
@@ -1865,17 +1972,32 @@ export default function PainelAdm() {
                         </div>
                         <div className="pm-field">
                           <label>Foto (URL)</label>
-                          <div className="pm-field-wrap">
-                            <span className="pm-icon">🖼</span>
-                            <input
-                              className="pm-input"
-                              value={m.photo || ''}
-                              onChange={e => {
+                          <div className="pm-field-wrap" style={{ display: 'flex', gap: '8px' }}>
+                            <div style={{ position: 'relative', flex: 1 }}>
+                              <span className="pm-icon">🖼</span>
+                              <input
+                                className="pm-input"
+                                value={m.photo || ''}
+                                onChange={e => {
+                                  const val = transformImageLink(e.target.value);
+                                  const next = [...(ministryData.team || [])];
+                                  next[idx] = { ...next[idx], photo: val };
+                                  setMinistryData(d => ({ ...d, team: next }));
+                                }}
+                              />
+                            </div>
+                            <button
+                              type="button"
+                              className="pm-photo-btn"
+                              style={{ whiteSpace: 'nowrap', padding: '0 12px', height: '38px', marginTop: '0' }}
+                              onClick={() => handleFileUpload(base64 => {
                                 const next = [...(ministryData.team || [])];
-                                next[idx] = { ...next[idx], photo: e.target.value };
+                                next[idx] = { ...next[idx], photo: base64 };
                                 setMinistryData(d => ({ ...d, team: next }));
-                              }}
-                            />
+                              })}
+                            >
+                              Subir Foto
+                            </button>
                           </div>
                         </div>
                         {m.photo ? <img src={m.photo} alt="" style={{ width: 48, height: 48, borderRadius: 8, objectFit: 'cover', border: `1px solid ${palette.border}` }} /> : null}
@@ -2207,17 +2329,32 @@ export default function PainelAdm() {
                         </div>
                         <div className="pm-field" style={{ gridColumn: '1 / -1' }}>
                           <label>Imagem (URL)</label>
-                          <div className="pm-field-wrap">
-                            <span className="pm-icon">🖼</span>
-                            <input
-                              className="pm-input"
-                              value={a.image || ''}
-                              onChange={e => {
+                          <div className="pm-field-wrap" style={{ display: 'flex', gap: '8px' }}>
+                            <div style={{ position: 'relative', flex: 1 }}>
+                              <span className="pm-icon">🖼</span>
+                              <input
+                                className="pm-input"
+                                value={a.image || ''}
+                                onChange={e => {
+                                  const val = transformImageLink(e.target.value);
+                                  const next = [...(ministryData.activities || [])];
+                                  next[idx] = { ...next[idx], image: val };
+                                  setMinistryData(d => ({ ...d, activities: next }));
+                                }}
+                              />
+                            </div>
+                            <button
+                              type="button"
+                              className="pm-photo-btn"
+                              style={{ whiteSpace: 'nowrap', padding: '0 12px', height: '38px', marginTop: '0' }}
+                              onClick={() => handleFileUpload(base64 => {
                                 const next = [...(ministryData.activities || [])];
-                                next[idx] = { ...next[idx], image: e.target.value };
+                                next[idx] = { ...next[idx], image: base64 };
                                 setMinistryData(d => ({ ...d, activities: next }));
-                              }}
-                            />
+                              })}
+                            >
+                              Subir Foto
+                            </button>
                           </div>
                         </div>
                         <div className="pm-field">
@@ -2322,17 +2459,32 @@ export default function PainelAdm() {
                       <div key={idx} className="pm-row" style={{ marginBottom: '.8rem' }}>
                         <div className="pm-field">
                           <label>Imagem (URL)</label>
-                          <div className="pm-field-wrap">
-                            <span className="pm-icon">🖼</span>
-                            <input
-                              className="pm-input"
-                              value={g.url || ''}
-                              onChange={e => {
+                          <div className="pm-field-wrap" style={{ display: 'flex', gap: '8px' }}>
+                            <div style={{ position: 'relative', flex: 1 }}>
+                              <span className="pm-icon">🖼</span>
+                              <input
+                                className="pm-input"
+                                value={g.url || ''}
+                                onChange={e => {
+                                  const val = transformImageLink(e.target.value);
+                                  const next = [...(ministryData.gallery || [])];
+                                  next[idx] = { ...next[idx], url: val };
+                                  setMinistryData(d => ({ ...d, gallery: next }));
+                                }}
+                              />
+                            </div>
+                            <button
+                              type="button"
+                              className="pm-photo-btn"
+                              style={{ whiteSpace: 'nowrap', padding: '0 12px', height: '38px', marginTop: '0' }}
+                              onClick={() => handleFileUpload(base64 => {
                                 const next = [...(ministryData.gallery || [])];
-                                next[idx] = { ...next[idx], url: e.target.value };
+                                next[idx] = { ...next[idx], url: base64 };
                                 setMinistryData(d => ({ ...d, gallery: next }));
-                              }}
-                            />
+                              })}
+                            >
+                              Subir Foto
+                            </button>
                           </div>
                         </div>
                         {g.url ? <img src={g.url} alt="" style={{ width: 100, height: 60, borderRadius: 8, objectFit: 'cover', border: `1px solid ${palette.border}` }} /> : null}
@@ -3210,12 +3362,20 @@ export default function PainelAdm() {
               className="pm-btn-save"
               style={{ width: '100%' }}
               onClick={async () => {
-                await DatabaseService.saveHeaderData(headerData);
                 try {
-                  window.localStorage.setItem('admac_last_update', String(Date.now()));
-                  window.dispatchEvent(new StorageEvent('storage', { key: 'admac_header' }));
-                } catch { void 0 }
-                alert("Configurações salvas com sucesso!");
+                  await DatabaseService.saveHeaderData(headerData);
+                  try {
+                    window.localStorage.setItem('admac_last_update', String(Date.now()));
+                    window.dispatchEvent(new StorageEvent('storage', { key: 'admac_header' }));
+                  } catch { void 0 }
+                  alert("Configurações salvas com sucesso!");
+                } catch (err) {
+                  if (err.name === 'QuotaExceededError') {
+                    alert('Erro: Limite de armazenamento atingido. Tente usar fotos menores.');
+                  } else {
+                    alert('Erro ao salvar configurações.');
+                  }
+                }
               }}
             >
               Salvar Configurações

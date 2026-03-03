@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { transformImageLink } from '../utils/imageUtils';
 import '../css/PastorCarousel.css';
 
 const PastorCarousel = ({ pastors }) => {
@@ -65,7 +66,7 @@ const PastorCarousel = ({ pastors }) => {
 
                 {/* Pastor Content */}
                 <div className="pastor-image">
-                    <img src={currentPastor.image} alt={currentPastor.name} />
+                    <img src={transformImageLink(currentPastor.image)} alt={currentPastor.name} />
                 </div>
                 <div className="pastor-info">
                     <h3>{currentPastor.name}</h3>

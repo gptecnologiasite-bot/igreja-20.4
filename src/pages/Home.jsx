@@ -246,7 +246,7 @@ const Home = () => {
               >
                 {/* Avatar: usa foto cadastrada ou avatar automático gerado por nome */}
                 <img
-                  src={person.photo || `https://ui-avatars.com/api/?name=${encodeURIComponent(person.name || 'A')}&background=d4af37&color=000&bold=true&size=150`}
+                  src={transformImageLink(person.photo) || `https://ui-avatars.com/api/?name=${encodeURIComponent(person.name || 'A')}&background=d4af37&color=000&bold=true&size=150`}
                   alt={person.name}
                   style={{ width: 90, height: 90, borderRadius: '50%', objectFit: 'cover', border: '3px solid #d4af37', boxShadow: '0 0 0 4px rgba(212,175,55,0.2)' }}
                 />
