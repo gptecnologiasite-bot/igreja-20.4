@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Globe, Users, Heart, MapPin, Send, Calendar, DollarSign, Play, Target, TrendingUp, Award } from 'lucide-react';
 import { useMinistryData } from '../hooks/useMinistryData';
 
+// Missoes.jsx - Página de Missões (Corrigido e Padronizado p/ Vercel)
 const Missoes = () => {
   const [donation, setDonation] = useState({
     name: '',

@@ -33,7 +33,7 @@ const Footer = () => {
     { name: 'Louvor', path: '/louvor' },
     { name: 'Kids', path: '/kids' },
     { name: 'Jovens', path: '/jovens' },
-    { name: 'Missões', path: '/missoes' }
+    { name: 'Missões', path: '/missoes' } // Adicionado link de Missões
   ];
 
   return (

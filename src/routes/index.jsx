@@ -16,7 +16,7 @@ const AdminLayout = lazy(() => import('../layouts/AdminLayout'));
 // Páginas pública carregadas dinamicamente (code splitting)
 const Home = lazy(() => import('../pages/Home'));
 const Revista = lazy(() => import('../pages/RevistaAdmac'));
-const Missoes = lazy(() => import('../pages/Missoes'));
+const Missoes = lazy(() => import('../pages/Missoes')); // Adicionado e padronizado p/ Vercel
 const Login = lazy(() => import('../pages/Login'));
 const Mulheres = lazy(() => import('../pages/Mulheres'));
 const Homens = lazy(() => import('../pages/Homens'));
@@ -29,7 +29,7 @@ const Lares = lazy(() => import('../pages/Lares'));
 const Contact = lazy(() => import('../pages/Contact'));
 const Retiro = lazy(() => import('../pages/Retiro'));
 const Sobre = lazy(() => import('../pages/Sobre'));
-const Midia = lazy(() => import('../pages/Midia'));
+const Midia = lazy(() => import('../pages/Midia')); // Corrigido p/ Vercel (PascalCase)
 // Painel administrativo completo (sincroniza pasta pages via serviços)
 const PainelApp = lazy(() => import('../painel/painel'));
 
@@ -59,7 +59,7 @@ export const routes = [
             { path: 'louvor', element: <Suspense fallback={pageLoader}><Louvor /></Suspense> },
             { path: 'lares', element: <Suspense fallback={pageLoader}><Lares /></Suspense> },
             { path: 'revista', element: <Suspense fallback={pageLoader}><Revista /></Suspense> },
-            { path: 'missoes', element: <Suspense fallback={pageLoader}><Missoes /></Suspense> },
+            { path: 'missoes', element: <Suspense fallback={pageLoader}><Missoes /></Suspense> }, // Rota de Missões ativada
             { path: 'retiro', element: <Suspense fallback={pageLoader}><Retiro /></Suspense> },
             { path: 'sobre', element: <Suspense fallback={pageLoader}><Sobre /></Suspense> },
             { path: 'midia', element: <Suspense fallback={pageLoader}><Midia /></Suspense> },
