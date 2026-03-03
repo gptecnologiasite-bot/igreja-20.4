@@ -1,7 +1,7 @@
 // ================================================================
 // Login.jsx — Página de autenticação do Painel Administrativo
 // Suporta login com usuários salvos no localStorage e com a
-// conta admin hardcoded (admin@admac.com / 123456).
+// conta admin hardcoded (admin@admin.com / 123456).
 // Também permite criar novos usuários via formulário de cadastro.
 // ================================================================
 
@@ -31,8 +31,8 @@ const Login = () => {
     const user = users.find(u => u.email === email && u.password === password);
 
     // Aceita usuário do localStorage ou a conta admin padrão
-    if (user || (email === 'admin@admac.com' && password === '123456')) {
-      const userData = user || { name: 'Admin', email: 'admin@admac.com' };
+    if (user || (email === 'admin@admin.com' && password === '123456')) {
+      const userData = user || { name: 'Admin', email: 'admin@admin.com' };
       localStorage.setItem('isAuthenticated', 'true');
       localStorage.setItem('user', JSON.stringify(userData));
       navigate('/painel');

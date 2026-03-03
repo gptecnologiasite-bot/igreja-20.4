@@ -163,7 +163,7 @@ const NAV_SETTINGS_DEFAULT = [
   { id: 'configs', label: 'Configurações', icon: '⚙️' }
 ];
 
-const CREDENTIALS = { email: 'admin@admin.com', password: '123' };
+const CREDENTIALS = { email: 'admin@admin.com', password: '123456' };
 
 // --------- Helpers para edição amigável de páginas específicas ---------
 
