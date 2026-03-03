@@ -277,6 +277,14 @@ const DatabaseService = {
 
   saveVideos: async (videos) => {
     return DatabaseService.saveItem(DB_KEYS.VIDEOS, videos);
+  },
+
+  // Dispara um evento global para notificar outros componentes/abas sobre mudanças
+  broadcastUpdate: (key) => {
+    try {
+      window.localStorage.setItem('admac_last_update', String(Date.now()));
+      window.dispatchEvent(new StorageEvent('storage', { key }));
+    } catch { /* ignore */ }
   }
 };
 
