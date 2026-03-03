@@ -470,11 +470,29 @@ export default function PainelAdm() {
   };
 
   const loadUsers = async () => {
-    const r = await fetch('/api/users')
-    if (r.ok) {
-      const j = await r.json()
-      setUsers(Array.isArray(j.items) ? j.items : [])
+    let apiUsers = [];
+    try {
+      const r = await fetch('/api/users');
+      if (r.ok) {
+        const j = await r.json();
+        apiUsers = Array.isArray(j.items) ? j.items : [];
+      }
+    } catch (err) {
+      console.warn('API /api/users não disponível, usando apenas localStorage');
     }
+
+    // Carrega também do localStorage para manter sincronia
+    const localUsers = JSON.parse(localStorage.getItem('admac_users') || '[]');
+
+    // Merge: Prioriza dados locais se houver conflito, mas mantém IDs da API se possível
+    const combined = [...apiUsers];
+    localUsers.forEach(lu => {
+      if (!combined.find(au => au.email === lu.email)) {
+        combined.push({ ...lu, id: lu.id || `local_${Date.now()}_${Math.random().toString(36).substr(2, 5)}` });
+      }
+    });
+
+    setUsers(combined);
   }
 
   // Dynamic Header Data for Configs Tab
@@ -507,29 +525,75 @@ export default function PainelAdm() {
 
   const saveUser = async (e) => {
     e.preventDefault();
+
+    // Salva no localStorage primeiro (mais garantido)
+    const localUsers = JSON.parse(localStorage.getItem('admac_users') || '[]');
+    const since = newUser.since || new Date().toLocaleDateString('pt-BR', { month: '2-digit', year: 'numeric' });
+    const userToSave = { ...newUser, since };
+
     if (userMode === 'create') {
-      const since = new Date().toLocaleDateString('pt-BR', { month: '2-digit', year: 'numeric' });
-      const r = await fetch('/api/users', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...newUser, since }) })
-      if (r.ok) {
-        setShowModal(false)
-        await loadUsers()
+      if (!localUsers.find(u => u.email === userToSave.email)) {
+        localUsers.push(userToSave);
       }
+      localStorage.setItem('admac_users', JSON.stringify(localUsers));
+
+      // Tenta API
+      try {
+        const r = await fetch('/api/users', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(userToSave) });
+        if (r.ok) {
+          setShowModal(false);
+          await loadUsers();
+          return;
+        }
+      } catch (err) { console.warn('API error during saveUser create'); }
+
+      setShowModal(false);
+      await loadUsers();
+
     } else if (userMode === 'edit' && editingUserId != null) {
-      const r = await fetch(`/api/users/${editingUserId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...newUser }) })
-      if (r.ok) {
-        setShowModal(false)
-        await loadUsers()
+      const idx = localUsers.findIndex(u => u.email === newUser.email || u.id === editingUserId);
+      if (idx !== -1) {
+        localUsers[idx] = { ...localUsers[idx], ...userToSave };
+        localStorage.setItem('admac_users', JSON.stringify(localUsers));
       }
+
+      // Tenta API
+      try {
+        const r = await fetch(`/api/users/${editingUserId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(userToSave) });
+        if (r.ok) {
+          setShowModal(false);
+          await loadUsers();
+          return;
+        }
+      } catch (err) { console.warn('API error during saveUser edit'); }
+
+      setShowModal(false);
+      await loadUsers();
     } else {
-      setShowModal(false)
+      setShowModal(false);
     }
   }
 
   const deleteUser = async (id) => {
-    const ok = window.confirm('Excluir este usuário?')
-    if (!ok) return
-    const r = await fetch(`/api/users/${id}`, { method: 'DELETE' })
-    if (r.ok) loadUsers()
+    const ok = window.confirm('Excluir este usuário?');
+    if (!ok) return;
+
+    // Remove do localStorage
+    const localUsers = JSON.parse(localStorage.getItem('admac_users') || '[]');
+    const userToDelete = users.find(u => u.id === id);
+    const nextLocal = localUsers.filter(u => u.id !== id && u.email !== userToDelete?.email);
+    localStorage.setItem('admac_users', JSON.stringify(nextLocal));
+
+    // Tenta API
+    try {
+      const r = await fetch(`/api/users/${id}`, { method: 'DELETE' });
+      if (r.ok) {
+        await loadUsers();
+        return;
+      }
+    } catch (err) { console.warn('API error during deleteUser'); }
+
+    await loadUsers();
   }
 
   const handlePhoto = (e) => {
@@ -724,15 +788,28 @@ export default function PainelAdm() {
     setLoginError('');
 
     try {
-      // 1) Tenta autenticar com usuários cadastrados via API
-      let list = users;
-      if (!list || list.length === 0) {
-        const r = await fetch('/api/users');
-        if (r.ok) {
-          const j = await r.json();
-          list = Array.isArray(j.items) ? j.items : [];
-          setUsers(list);
+      // 1) Coleta todos os usuários (API + localStorage)
+      let list = [...users];
+
+      // Se a lista estiver vazia, tenta carregar agora
+      if (list.length === 0) {
+        try {
+          const r = await fetch('/api/users');
+          if (r.ok) {
+            const j = await r.json();
+            list = Array.isArray(j.items) ? j.items : [];
+          }
+        } catch (err) {
+          console.warn('API fallback in handleLogin');
         }
+
+        const localUsers = JSON.parse(localStorage.getItem('admac_users') || '[]');
+        localUsers.forEach(lu => {
+          if (!list.find(au => au.email === lu.email)) {
+            list.push(lu);
+          }
+        });
+        setUsers(list);
       }
 
       const found = list?.find(u => u.email === loginData.email);
@@ -743,7 +820,7 @@ export default function PainelAdm() {
           localStorage.setItem('admac_current_user', JSON.stringify(found));
           setCurrentUser(found);
           setIsLogged(true);
-          await DatabaseService.addLog('LOGIN_SISTEMA', found.email, 'Autenticado via Banco de Dados');
+          await DatabaseService.addLog('LOGIN_SISTEMA', found.email, 'Autenticado via Banco de Dados/Local');
           return;
         } else {
           setLoginError('Senha incorreta.');
@@ -765,7 +842,16 @@ export default function PainelAdm() {
       setLoginError('E-mail ou senha inválidos.');
     } catch (err) {
       console.error('Erro ao autenticar no painel:', err);
-      setLoginError('Erro ao tentar fazer login. Tente novamente.');
+      // Aqui, se houver um erro de rede no fetch, ainda queremos permitir o login hardcoded
+      if (loginData.email === CREDENTIALS.email && loginData.password === CREDENTIALS.password) {
+        sessionStorage.setItem('painel_auth', '1');
+        const defaultAdmin = { id: 'admin', name: 'Administrador Principal', email: CREDENTIALS.email, role: 'Administrador', status: 'active', photo: null, location: 'SP, Brasil' };
+        localStorage.setItem('admac_current_user', JSON.stringify(defaultAdmin));
+        setCurrentUser(defaultAdmin);
+        setIsLogged(true);
+        return;
+      }
+      setLoginError('Erro ao tentar fazer login. Verifique sua conexão.');
     } finally {
       setLoginLoading(false);
     }
