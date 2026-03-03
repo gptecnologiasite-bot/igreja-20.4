@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { transformImageLink } from '../utils/imageUtils';
 import '../css/HeroCarousel.css';
 
 const HeroCarousel = ({ slides: propSlides }) => {
@@ -49,7 +50,7 @@ const HeroCarousel = ({ slides: propSlides }) => {
         <div
           key={index}
           className={`carousel-slide ${index === currentSlide ? 'active' : ''}`}
-          style={{ backgroundImage: `url("${slide.image}")` }}
+          style={{ backgroundImage: `url("${transformImageLink(slide.image)}")` }}
         >
           <div className="carousel-content">
             <h1>{slide.title}</h1>

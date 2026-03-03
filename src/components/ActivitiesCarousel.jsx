@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
+import { transformImageLink } from '../utils/imageUtils';
 import '../css/ActivitiesCarousel.css';
 
 const ActivitiesCarousel = ({ activities = [] }) => {
@@ -48,7 +49,7 @@ const ActivitiesCarousel = ({ activities = [] }) => {
   return (
     <div className="activities-carousel-container">
       <div className="activities-carousel-wrapper">
-        <div 
+        <div
           className="activities-carousel-track"
           style={{
             transform: `translateX(-${currentIndex * 100}%)`,
@@ -56,14 +57,14 @@ const ActivitiesCarousel = ({ activities = [] }) => {
           }}
         >
           {activities.map((activity, index) => (
-            <div 
-              key={index} 
+            <div
+              key={index}
               className="activity-carousel-card"
               style={{ minWidth: `${100 / itemsPerView}%` }}
             >
               <div className="activity-carousel-image-wrapper">
-                <img 
-                  src={activity.image} 
+                <img
+                  src={transformImageLink(activity.image)}
                   alt={activity.title}
                   className="activity-carousel-image"
                 />
@@ -83,15 +84,15 @@ const ActivitiesCarousel = ({ activities = [] }) => {
 
       {totalSlides > 1 && (
         <>
-          <button 
-            className="carousel-nav-btn carousel-nav-prev" 
+          <button
+            className="carousel-nav-btn carousel-nav-prev"
             onClick={prevSlide}
             aria-label="Anterior"
           >
             <ChevronLeft size={24} />
           </button>
-          <button 
-            className="carousel-nav-btn carousel-nav-next" 
+          <button
+            className="carousel-nav-btn carousel-nav-next"
             onClick={nextSlide}
             aria-label="Próximo"
           >
