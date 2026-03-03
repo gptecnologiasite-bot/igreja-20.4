@@ -23,7 +23,7 @@ import {
 } from 'lucide-react';
 import { useMinistryData } from '../hooks/useMinistryData';
 import '../css/Midia.css';
-
+// Midia.jsx - Página de Mídia Profissional (Corrigido p/ Vercel)
 const Midia = () => {
     const [data] = useMinistryData('midia');
     const [galleryIndex, setGalleryIndex] = useState(0);
