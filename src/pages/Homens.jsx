@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { transformImageLink } from '../utils/imageUtils';
 import { Shield, Calendar, Clock, Users, Camera, MessageSquare, Send, Heart, MapPin, Star, Play } from 'lucide-react';
 import { useMinistryData } from '../hooks/useMinistryData';
 import '../css/Homens.css';
@@ -37,7 +38,7 @@ const Homens = () => {
             <div
               key={index}
               className={`hero-slide ${index === currentSlide ? 'active' : ''}`}
-              style={{ backgroundImage: `url(${photo.url})` }}
+              style={{ backgroundImage: `url(${transformImageLink(photo.url)})` }}
             ></div>
           ))}
         </div>
@@ -135,7 +136,7 @@ const Homens = () => {
           <div className="team-grid">
             {data.team.map((member, index) => (
               <div key={index} className="team-card">
-                <img src={member.photo} alt={member.name} className="team-photo" />
+                <img src={transformImageLink(member.photo)} alt={member.name} className="team-photo" />
                 <h3>{member.name}</h3>
                 <p>{member.role}</p>
               </div>

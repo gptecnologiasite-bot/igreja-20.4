@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { transformImageLink } from '../utils/imageUtils';
 import { Zap, Calendar, Clock, Users, Camera, MessageSquare, Send, Heart, MapPin, Star, Music, Gamepad2 } from 'lucide-react';
 import { useMinistryData } from '../hooks/useMinistryData';
 import '../css/Jovens.css';
@@ -38,7 +39,7 @@ const Jovens = () => {
             <div
               key={index}
               className={`hero-slide ${index === currentSlide ? 'active' : ''}`}
-              style={{ backgroundImage: `url(${photo.url})` }}
+              style={{ backgroundImage: `url(${transformImageLink(photo.url)})` }}
             ></div>
           ))}
         </div>
@@ -116,7 +117,7 @@ const Jovens = () => {
           <div className="team-grid">
             {data.team.map((member, index) => (
               <div key={index} className="team-card">
-                <img src={member.photo} alt={member.name} className="team-photo" />
+                <img src={transformImageLink(member.photo)} alt={member.name} className="team-photo" />
                 <h3>{member.name}</h3>
                 <p>{member.role}</p>
               </div>
@@ -137,7 +138,7 @@ const Jovens = () => {
           <div className="gallery-grid">
             {data.gallery.map((photo, index) => (
               <div key={index} className="gallery-item">
-                <img src={photo.url} alt={photo.caption} />
+                <img src={transformImageLink(photo.url)} alt={photo.caption} />
                 <div className="gallery-overlay">
                   <span>{photo.caption}</span>
                 </div>
@@ -163,7 +164,7 @@ const Jovens = () => {
                 </div>
                 <p className="testimonial-text">"{testimonial.text}"</p>
                 <div className="testimonial-author">
-                  <img src={testimonial.photo} alt={testimonial.name} />
+                  <img src={transformImageLink(testimonial.photo)} alt={testimonial.name} />
                   <div>
                     <strong>{testimonial.name}</strong>
                     <span>{testimonial.age} anos</span>

@@ -54,14 +54,25 @@ const ContentUpdateService = {
     useEffect(() => {
       const keysArray = Array.isArray(keys) ? keys : [keys];
       
-      const handleStorage = (e) => {
-        if (keysArray.includes(e.key)) {
+      const handleUpdate = (eventKey) => {
+        if (keysArray.includes(eventKey)) {
           onUpdate();
         }
       };
 
+      // Listener para outras abas (evento nativo)
+      const handleStorage = (e) => handleUpdate(e.key);
+      
+      // Listener para a mesma aba (evento personalizado do DatabaseService)
+      const handleCustom = (e) => handleUpdate(e.detail.key);
+
       window.addEventListener('storage', handleStorage);
-      return () => window.removeEventListener('storage', handleStorage);
+      window.addEventListener('admac_db_update', handleCustom);
+      
+      return () => {
+        window.removeEventListener('storage', handleStorage);
+        window.removeEventListener('admac_db_update', handleCustom);
+      };
     }, [keys, onUpdate]);
   }
 };

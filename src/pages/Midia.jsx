@@ -87,7 +87,7 @@ const Midia = () => {
         <div className="midia-page">
 
             {/* --- 1. HERO SECTION --- */}
-            <section className="midia-hero" style={{ backgroundImage: `url(${hero.image})` }}>
+            <section className="midia-hero" style={{ backgroundImage: `url(${transformImageLink(hero.image)})` }}>
                 <motion.div className="hero-content" initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }} transition={{ duration: 1 }}>
                     <span className="hero-badge">Inovação • Comunicação • Reino</span>
                     <h1 className="hero-title">{hero.title}</h1>
@@ -139,7 +139,7 @@ const Midia = () => {
                                         onClick={() => window.open(vid.url.replace('embed/', 'watch?v='), '_blank')}
                                     >
                                         <div style={{ position: 'relative', height: '180px' }}>
-                                            <img src={vid.thumbnail} alt={vid.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                            <img src={transformImageLink(vid.thumbnail)} alt={vid.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
                                             <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.3)' }}>
                                                 <Play fill="white" size={40} />
                                             </div>
@@ -172,7 +172,7 @@ const Midia = () => {
                             <motion.div key={idx} className="testimonial-card" {...fadeIn} transition={{ delay: idx * 0.2 }}>
                                 <p>"{t.text}"</p>
                                 <div className="testimonial-author">
-                                    <img src={t.photo || `https://ui-avatars.com/api/?name=${encodeURIComponent(t.name)}`} alt={t.name} className="author-photo" />
+                                    <img src={transformImageLink(t.photo) || `https://ui-avatars.com/api/?name=${encodeURIComponent(t.name)}`} alt={t.name} className="author-photo" />
                                     <div className="author-info">
                                         <h4>{t.name}</h4>
                                         <span>{t.role}</span>
@@ -195,7 +195,7 @@ const Midia = () => {
                     {backstage && backstage.map((item, idx) => (
                         <div key={idx} className={`backstage-item ${item.layout === 'right' ? 'reverse' : ''}`}>
                             <motion.div className="backstage-image" {...fadeIn}>
-                                <img src={item.image} alt={item.title} />
+                                <img src={transformImageLink(item.image)} alt={item.title} />
                             </motion.div>
                             <motion.div className="backstage-content" {...fadeIn} transition={{ delay: 0.3 }}>
                                 <h3>{item.title}</h3>
@@ -222,7 +222,7 @@ const Midia = () => {
                             <motion.div key={idx} className={`birthday-card ${person.isToday ? 'is-today' : ''}`} {...fadeIn}>
                                 {person.isToday && <span className="today-label">Aniversariante do Dia!</span>}
                                 <div className="person-photo">
-                                    <img src={person.photo || `https://ui-avatars.com/api/?name=${encodeURIComponent(person.name)}`} alt={person.name} />
+                                    <img src={transformImageLink(person.photo) || `https://ui-avatars.com/api/?name=${encodeURIComponent(person.name)}`} alt={person.name} />
                                 </div>
                                 <h4>{person.name}</h4>
                                 <span className="birthday-date">{person.date}</span>
@@ -252,7 +252,7 @@ const Midia = () => {
                                     exit={{ opacity: 0, scale: 1.05 }}
                                     transition={{ duration: 0.6 }}
                                 >
-                                    <img src={gallery[galleryIndex].url} alt={gallery[galleryIndex].caption} />
+                                    <img src={transformImageLink(gallery[galleryIndex].url)} alt={gallery[galleryIndex].caption} />
                                     <div className="gallery-info">
                                         <p>{gallery[galleryIndex].caption}</p>
                                     </div>
@@ -274,7 +274,7 @@ const Midia = () => {
                                 className={`thumb-item ${idx === galleryIndex ? 'active' : ''}`}
                                 onClick={() => setGalleryIndex(idx)}
                             >
-                                <img src={thumb.url} alt={`Minis ${idx}`} />
+                                <img src={transformImageLink(thumb.url)} alt={`Minis ${idx}`} />
                             </div>
                         ))}
                     </div>
@@ -292,7 +292,7 @@ const Midia = () => {
                     <div className="team-grid">
                         {team && team.map((member, idx) => (
                             <motion.div key={idx} className="team-card" {...fadeIn} transition={{ delay: idx * 0.1 }}>
-                                <img src={member.photo || `https://ui-avatars.com/api/?name=${encodeURIComponent(member.name)}`} alt={member.name} />
+                                <img src={transformImageLink(member.photo) || `https://ui-avatars.com/api/?name=${encodeURIComponent(member.name)}`} alt={member.name} />
                                 <div className="team-overlay">
                                     <h3>{member.name}</h3>
                                     <span>{member.role}</span>
@@ -340,7 +340,7 @@ const Midia = () => {
                     <div className="news-grid">
                         {news && news.map((item, idx) => (
                             <motion.div key={idx} className="news-card" {...fadeIn} transition={{ delay: idx * 0.1 }}>
-                                <img src={item.image} alt={item.title} className="news-img" />
+                                <img src={transformImageLink(item.image)} alt={item.title} className="news-img" />
                                 <div className="news-body">
                                     <span className="news-date">{item.date}</span>
                                     <h4>{item.title}</h4>

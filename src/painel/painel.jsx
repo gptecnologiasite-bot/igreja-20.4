@@ -278,7 +278,7 @@ function HomeAnivEditor({ palette, ministryOptions, DatabaseService }) {
             <div key={idx} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.8rem', marginBottom: '1.2rem', padding: '1rem', background: palette.surfaceHover, borderRadius: '12px', border: `1px solid ${palette.border}` }}>
               <div style={{ gridColumn: '1 / -1', display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '0.5rem' }}>
                 <div style={{ width: 52, height: 52, borderRadius: '50%', overflow: 'hidden', border: `2px solid ${palette.accent}`, flexShrink: 0, background: palette.surface, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem' }}>
-                  {p.photo ? <img src={p.photo} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : '👤'}
+                  {p.photo ? <img src={transformImageLink(p.photo)} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : '👤'}
                 </div>
                 <label style={{ cursor: 'pointer', padding: '0.35rem 0.75rem', fontSize: '0.78rem', background: palette.accentGlow, color: palette.accentLight, borderRadius: '6px', border: `1px solid ${palette.accent}` }}>
                   Alterar Foto
@@ -1376,7 +1376,7 @@ export default function PainelAdm() {
                         <td>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
                             <div className="user-avatar-sm" style={{ width: 32, height: 32, borderRadius: 6 }}>
-                              {p.photo ? <img src={p.photo} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 6 }} /> : '📄'}
+                              {p.photo ? <img src={transformImageLink(p.photo)} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 6 }} /> : '📄'}
                             </div>
                             <div style={{ display: 'flex', flexDirection: 'column' }}>
                               <span style={{ fontWeight: 600 }}>{p.name}</span>
@@ -1671,7 +1671,7 @@ export default function PainelAdm() {
                             </button>
                           </div>
                         </div>
-                        {s.image ? <img src={s.image} alt="" style={{ width: 100, height: 60, borderRadius: 8, objectFit: 'cover', border: `1px solid ${palette.border}` }} /> : null}
+                        {s.image ? <img src={transformImageLink(s.image)} alt="" style={{ width: 100, height: 60, borderRadius: 8, objectFit: 'cover', border: `1px solid ${palette.border}` }} /> : null}
                         <div className="pm-field">
                           <label>Título</label>
                           <div className="pm-field-wrap">
@@ -1789,7 +1789,7 @@ export default function PainelAdm() {
                             </button>
                           </div>
                         </div>
-                        {p.image ? <img src={p.image} alt="" style={{ width: 48, height: 48, borderRadius: 8, objectFit: 'cover', border: `1px solid ${palette.border}` }} /> : null}
+                        {p.image ? <img src={transformImageLink(p.image)} alt="" style={{ width: 48, height: 48, borderRadius: 8, objectFit: 'cover', border: `1px solid ${palette.border}` }} /> : null}
                         <div className="pm-field" style={{ gridColumn: '1 / -1' }}>
                           <label>Versículo/Mensagem</label>
                           <div className="pm-field-wrap">
@@ -2040,7 +2040,7 @@ export default function PainelAdm() {
                             </button>
                           </div>
                         </div>
-                        {m.photo ? <img src={m.photo} alt="" style={{ width: 48, height: 48, borderRadius: 8, objectFit: 'cover', border: `1px solid ${palette.border}` }} /> : null}
+                        {m.photo ? <img src={transformImageLink(m.photo)} alt="" style={{ width: 48, height: 48, borderRadius: 8, objectFit: 'cover', border: `1px solid ${palette.border}` }} /> : null}
                         <div className="pm-field">
                           <label style={{ visibility: 'hidden' }}>x</label>
                           <button
@@ -2693,7 +2693,7 @@ export default function PainelAdm() {
                             </button>
                           </div>
                         </div>
-                        {g.url ? <img src={g.url} alt="" style={{ width: 100, height: 60, borderRadius: 8, objectFit: 'cover', border: `1px solid ${palette.border}` }} /> : null}
+                        {g.url ? <img src={transformImageLink(g.url)} alt="" style={{ width: 100, height: 60, borderRadius: 8, objectFit: 'cover', border: `1px solid ${palette.border}` }} /> : null}
                         <div className="pm-field">
                           <label>Legenda</label>
                           <div className="pm-field-wrap">
@@ -2793,7 +2793,7 @@ export default function PainelAdm() {
                             />
                           </div>
                         </div>
-                        {t.photo ? <img src={t.photo} alt="" style={{ width: 64, height: 64, borderRadius: '50%', objectFit: 'cover', border: `1px solid ${palette.border}` }} /> : null}
+                        {t.photo ? <img src={transformImageLink(t.photo)} alt="" style={{ width: 64, height: 64, borderRadius: '50%', objectFit: 'cover', border: `1px solid ${palette.border}` }} /> : null}
                         <div className="pm-field">
                           <label style={{ visibility: 'hidden' }}>x</label>
                           <button
@@ -3101,7 +3101,7 @@ export default function PainelAdm() {
                         <td>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                             <div className="user-avatar-sm" style={{ width: 40, height: 40, borderRadius: 8 }}>
-                              {p.photo ? <img src={p.photo} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 8 }} /> : '📄'}
+                              {p.photo ? <img src={transformImageLink(p.photo)} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 8 }} /> : '📄'}
                             </div>
                             <div>
                               <div style={{ fontWeight: 600, color: '#fff' }}>{p.name}</div>
@@ -4206,7 +4206,7 @@ export default function PainelAdm() {
                         <div key={idx} className="pm-row" style={{ marginBottom: '1.5rem', background: palette.surfaceHover, padding: '1rem', borderRadius: '12px', border: `1px solid ${palette.border}` }}>
                           <div className="pm-photo-wrap" style={{ gridColumn: '1 / -1', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
                             <div className="pm-photo-preview" style={{ width: 60, height: 60 }}>
-                              {p.photo ? <img src={p.photo} alt="preview" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} /> : '👤'}
+                              {p.photo ? <img src={transformImageLink(p.photo)} alt="preview" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} /> : '👤'}
                             </div>
                             <label className="pm-action-btn" style={{ cursor: 'pointer', padding: '0.4rem 0.8rem', fontSize: '0.8rem', background: palette.accentGlow, color: palette.accentLight, borderRadius: '6px' }}>
                               Alterar Foto
@@ -4431,7 +4431,7 @@ export default function PainelAdm() {
                   {/* Foto da Página */}
                   <div className="pm-photo-wrap">
                     <div className="pm-photo-preview" style={{ width: 120, height: 120, borderRadius: 12 }}>
-                      {pageData.photo ? <img src={pageData.photo} alt="preview" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 12 }} /> : <span style={{ fontSize: '2.5rem' }}>🖼️</span>}
+                      {pageData.photo ? <img src={transformImageLink(pageData.photo)} alt="preview" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 12 }} /> : <span style={{ fontSize: '2.5rem' }}>🖼️</span>}
                     </div>
                     <label className="pm-photo-btn">
                       📷 Selecionar Foto

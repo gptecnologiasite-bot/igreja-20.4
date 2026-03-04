@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { transformImageLink } from '../utils/imageUtils';
 import { Home, Users, Calendar, Camera, MessageSquare, Send, Heart, MapPin, Clock, Star, Play } from 'lucide-react';
 import { useMinistryData } from '../hooks/useMinistryData';
 import '../css/Lares.css';
@@ -79,7 +80,7 @@ const Lares = () => {
           <div className="team-grid">
             {data.team.map((member, index) => (
               <div key={index} className="team-card">
-                <img src={member.photo} alt={member.name} className="team-photo" />
+                <img src={transformImageLink(member.photo)} alt={member.name} className="team-photo" />
                 <h3>{member.name}</h3>
                 <p>{member.role}</p>
               </div>
@@ -148,7 +149,7 @@ const Lares = () => {
                 </div>
                 <p className="testimonial-text">"{testimonial.text}"</p>
                 <div className="testimonial-author">
-                  <img src={testimonial.photo} alt={testimonial.name} />
+                  <img src={transformImageLink(testimonial.photo)} alt={testimonial.name} />
                   <strong>{testimonial.name}</strong>
                 </div>
               </div>

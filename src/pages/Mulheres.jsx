@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { transformImageLink } from '../utils/imageUtils';
 import { Heart, Calendar, Clock, Users, Camera, MessageSquare, Send, Star, BookOpen, Sparkles, Crown } from 'lucide-react';
 import { useMinistryData } from '../hooks/useMinistryData';
 import '../css/Mulheres.css';
@@ -37,7 +38,7 @@ const Mulheres = () => {
             <div
               key={index}
               className={`hero-slide ${index === currentSlide ? 'active' : ''}`}
-              style={{ backgroundImage: `url(${photo.url})` }}
+              style={{ backgroundImage: `url(${transformImageLink(photo.url)})` }}
             ></div>
           ))}
         </div>
@@ -146,7 +147,7 @@ const Mulheres = () => {
           <div className="team-grid">
             {data.team.map((member, index) => (
               <div key={index} className="team-card">
-                <img src={member.photo} alt={member.name} className="team-photo" />
+                <img src={transformImageLink(member.photo)} alt={member.name} className="team-photo" />
                 <h3>{member.name}</h3>
                 <p>{member.role}</p>
               </div>
@@ -167,7 +168,7 @@ const Mulheres = () => {
           <div className="gallery-grid">
             {data.gallery.map((photo, index) => (
               <div key={index} className="gallery-item">
-                <img src={photo.url} alt={photo.caption} />
+                <img src={transformImageLink(photo.url)} alt={photo.caption} />
                 <div className="gallery-overlay">
                   <span>{photo.caption}</span>
                 </div>
@@ -193,7 +194,7 @@ const Mulheres = () => {
                 </div>
                 <p className="testimonial-text">"{testimonial.text}"</p>
                 <div className="testimonial-author">
-                  <img src={testimonial.photo} alt={testimonial.name} />
+                  <img src={transformImageLink(testimonial.photo)} alt={testimonial.name} />
                   <strong>{testimonial.name}</strong>
                 </div>
               </div>

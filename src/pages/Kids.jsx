@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { transformImageLink } from '../utils/imageUtils';
 import { Calendar, Clock, MapPin, Heart, Star, Camera, Users, BookOpen } from 'lucide-react';
 import '../css/Kids.css';
 import { useMinistryData } from '../hooks/useMinistryData';
@@ -28,8 +29,8 @@ const Kids = () => {
           ]).map((photo, index) => (
             <div
               key={index}
-              className={`hero-slide ${index === currentSlide ? 'active' : ''}`}
-              style={{ backgroundImage: `url(${photo.url})` }}
+              className={`hero - slide ${index === currentSlide ? 'active' : ''} `}
+              style={{ backgroundImage: `url(${transformImageLink(photo.url)})` }}
             ></div>
           ))}
         </div>
@@ -97,7 +98,7 @@ const Kids = () => {
           <div className="events-grid">
             {data.schedule.map((event, index) => (
               <div key={index} className="event-card">
-                <div className="event-image" style={{ backgroundImage: `url(${event.image})` }}>
+                <div className="event-image" style={{ backgroundImage: `url(${transformImageLink(event.image)})` }}>
                   <div className="event-badge">
                     <Calendar size={16} />
                     {event.date}
@@ -136,7 +137,7 @@ const Kids = () => {
           <div className="gallery-grid">
             {data.gallery.map((photo, index) => (
               <div key={index} className="gallery-item">
-                <img src={photo.url} alt={photo.caption} />
+                <img src={transformImageLink(photo.url)} alt={photo.caption} />
                 <div className="gallery-overlay">
                   <span>{photo.caption}</span>
                 </div>
@@ -162,7 +163,7 @@ const Kids = () => {
                 </div>
                 <p className="testimonial-text">"{testimonial.text}"</p>
                 <div className="testimonial-author">
-                  <img src={testimonial.photo} alt={testimonial.name} />
+                  <img src={transformImageLink(testimonial.photo)} alt={testimonial.name} />
                   <div>
                     <strong>{testimonial.name}</strong>
                     <span>{testimonial.age} anos</span>

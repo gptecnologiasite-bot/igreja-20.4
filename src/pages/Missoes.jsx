@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { transformImageLink } from '../utils/imageUtils';
 import { Globe, Users, Heart, MapPin, Send, Calendar, DollarSign, Play, Target, TrendingUp, Award } from 'lucide-react';
 import { useMinistryData } from '../hooks/useMinistryData';
 
@@ -233,7 +234,7 @@ const Missoes = () => {
           <div className="team-grid">
             {data.team.map((member, index) => (
               <div key={index} className="team-card">
-                <img src={member.photo} alt={member.name} className="team-photo" />
+                <img src={transformImageLink(member.photo)} alt={member.name} className="team-photo" />
                 <h3>{member.name}</h3>
                 <p>{member.role}</p>
               </div>

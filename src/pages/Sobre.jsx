@@ -1,4 +1,5 @@
 import React from 'react';
+import { transformImageLink } from '../utils/imageUtils';
 import { Church, Heart, Users, Book, Star, MapPin, Clock, Phone, Mail } from 'lucide-react';
 import { useMinistryData } from '../hooks/useMinistryData';
 import '../css/Sobre.css';
@@ -91,7 +92,7 @@ const Sobre = () => {
                         <div className="gallery-grid">
                             {data.gallery.map((photo, index) => (
                                 <div key={index} className="gallery-item">
-                                    <img src={photo.url} alt={photo.caption || 'Foto'} />
+                                    <img src={transformImageLink(photo.url)} alt={photo.caption || 'Foto'} />
                                     <div className="gallery-overlay">
                                         <span>{photo.caption}</span>
                                     </div>

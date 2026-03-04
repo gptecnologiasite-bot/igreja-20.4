@@ -10,6 +10,7 @@
  */
 
 import React, { useState } from 'react';
+import { transformImageLink } from '../utils/imageUtils';
 
 // Ícones utilizados nas páginas da revista
 import { BookOpen, PenTool, Sun, Calendar, Heart, Star, Users, ArrowLeft, ArrowRight } from 'lucide-react';
@@ -36,7 +37,7 @@ import '../css/Revista.css';
  * @param {Object} page - Dados da página (image, edition, title, subtitle)
  */
 const PageCover = ({ page }) => (
-  <div className="page-cover" style={{ backgroundImage: `url(${page.image})` }}>
+  <div className="page-cover" style={{ backgroundImage: `url(${transformImageLink(page.image)})` }}>
     <div className="cover-content">
       {/* Badge com o número da edição (ex: "Edição Nº 42 • Dezembro 2025") */}
       <span className="cover-badge">{page.edition}</span>
@@ -119,7 +120,7 @@ const PageArticle = ({ page }) => (
     </div>
 
     {/* Imagem do artigo (renderizada somente se existir) */}
-    {page.image && <img src={page.image} alt={page.title} className="article-image" />}
+    {page.image && <img src={transformImageLink(page.image)} alt={page.title} className="article-image" />}
 
     {/* Corpo do artigo dividido em parágrafos */}
     <div className="article-body">
@@ -154,7 +155,7 @@ const PageColumnist = ({ page }) => (
     <div className="layout-sidebar">
       {/* Sidebar do autor: foto, nome, cargo e biografia */}
       <div className="author-sidebar">
-        <img src={page.author.image} alt={page.author.name} className="author-image" />
+        <img src={transformImageLink(page.author.image)} alt={page.author.name} className="author-image" />
         <div className="author-name">{page.author.name}</div>
         <div className="author-role">{page.author.role}</div>
         <p className="author-bio">{page.author.bio}</p>
