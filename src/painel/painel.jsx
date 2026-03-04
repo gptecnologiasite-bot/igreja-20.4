@@ -1650,7 +1650,7 @@ export default function PainelAdm() {
                                 className="pm-input"
                                 value={s.image || ''}
                                 onChange={e => {
-                                  const val = transformImageLink(e.target.value);
+                                  const val = e.target.value;
                                   const next = [...(ministryData.carousel || [])];
                                   next[idx] = { ...next[idx], image: val };
                                   setMinistryData(d => ({ ...d, carousel: next }));
@@ -1768,7 +1768,7 @@ export default function PainelAdm() {
                                 className="pm-input"
                                 value={p.image || ''}
                                 onChange={e => {
-                                  const val = transformImageLink(e.target.value);
+                                  const val = e.target.value;
                                   const next = [...(ministryData.pastors || [])];
                                   next[idx] = { ...next[idx], image: val };
                                   setMinistryData(d => ({ ...d, pastors: next }));
@@ -2541,7 +2541,7 @@ export default function PainelAdm() {
                                 className="pm-input"
                                 value={a.image || ''}
                                 onChange={e => {
-                                  const val = transformImageLink(e.target.value);
+                                  const val = e.target.value;
                                   const next = [...(ministryData.activities || [])];
                                   next[idx] = { ...next[idx], image: val };
                                   setMinistryData(d => ({ ...d, activities: next }));
@@ -2562,6 +2562,7 @@ export default function PainelAdm() {
                             </button>
                           </div>
                         </div>
+                        {a.image ? <div style={{ marginBottom: '.5rem' }}><img src={transformImageLink(a.image)} alt="" style={{ width: 100, height: 60, borderRadius: 8, objectFit: 'cover', border: `1px solid ${palette.border}` }} /></div> : null}
                         <div className="pm-field">
                           <label style={{ visibility: 'hidden' }}>x</label>
                           <button
@@ -4065,19 +4066,34 @@ export default function PainelAdm() {
                           </div>
                           <div className="pm-field" style={{ gridColumn: '1 / -1' }}>
                             <label>Imagem (URL)</label>
-                            <div className="pm-field-wrap">
-                              <span className="pm-icon">🖼</span>
-                              <input
-                                className="pm-input"
-                                value={a.image || ''}
-                                onChange={e => {
+                            <div className="pm-field-wrap" style={{ display: 'flex', gap: '8px' }}>
+                              <div style={{ position: 'relative', flex: 1 }}>
+                                <span className="pm-icon">🖼</span>
+                                <input
+                                  className="pm-input"
+                                  value={a.image || ''}
+                                  onChange={e => {
+                                    const next = [...(homeData.activities || [])];
+                                    next[idx] = { ...next[idx], image: e.target.value };
+                                    setHomeData(d => ({ ...d, activities: next }));
+                                  }}
+                                />
+                              </div>
+                              <button
+                                type="button"
+                                className="pm-photo-btn"
+                                style={{ whiteSpace: 'nowrap', padding: '0 12px', height: '38px', marginTop: '0' }}
+                                onClick={() => handleFileUpload(base64 => {
                                   const next = [...(homeData.activities || [])];
-                                  next[idx] = { ...next[idx], image: e.target.value };
+                                  next[idx] = { ...next[idx], image: base64 };
                                   setHomeData(d => ({ ...d, activities: next }));
-                                }}
-                              />
+                                })}
+                              >
+                                Subir Foto
+                              </button>
                             </div>
                           </div>
+                          {a.image ? <div style={{ marginBottom: '.5rem', gridColumn: '1 / -1' }}><img src={transformImageLink(a.image)} alt="" style={{ width: 100, height: 60, borderRadius: 8, objectFit: 'cover', border: `1px solid ${palette.border}` }} /></div> : null}
                           <div className="pm-field">
                             <label style={{ visibility: 'hidden' }}>x</label>
                             <button

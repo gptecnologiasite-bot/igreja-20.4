@@ -209,7 +209,10 @@ const DatabaseService = {
   getMinistry: async (id) => {
     if (id === 'home') return await DatabaseService.getHomeData();
     const defaultData = DatabaseService.getMinistryDefault(id);
-    return await DatabaseService.fetchItem(`${DB_KEYS.MINISTRIES}${id}`, defaultData);
+    const data = await DatabaseService.fetchItem(`${DB_KEYS.MINISTRIES}${id}`, defaultData);
+    
+    // Conferir integridade: garante que novos campos do initialData sejam incorporados
+    return DatabaseService.deepMerge(defaultData, data);
   },
 
   saveMinistry: async (id, data) => {

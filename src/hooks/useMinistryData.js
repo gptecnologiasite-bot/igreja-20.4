@@ -1,27 +1,21 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import DatabaseService from '../services/DatabaseService';
+import ContentUpdateService from '../services/atualizaçao';
 
 export const useMinistryData = (ministryId) => {
     const [data, setData] = useState(DatabaseService.getMinistryDefault(ministryId));
 
-    useEffect(() => {
-        const fetchData = async () => {
-            const result = await DatabaseService.getMinistry(ministryId);
-            if (result) setData(result);
-        };
-
-        fetchData();
-
-        const handleStorageChange = (e) => {
-            // Only update if the changed key matches this ministry or if it's a general update
-            if (!e.key || e.key.includes(ministryId)) {
-                fetchData();
-            }
-        };
-
-        window.addEventListener('storage', handleStorageChange);
-        return () => window.removeEventListener('storage', handleStorageChange);
+    const fetchData = useCallback(async () => {
+        const result = await DatabaseService.getMinistry(ministryId);
+        if (result) setData(result);
     }, [ministryId]);
+
+    useEffect(() => {
+        fetchData();
+    }, [fetchData]);
+
+    // Usa o serviço de atualização para sincronização reativa
+    ContentUpdateService.usePageUpdate(`admac_ministry_${ministryId}`, fetchData);
 
     return [data, setData];
 };
