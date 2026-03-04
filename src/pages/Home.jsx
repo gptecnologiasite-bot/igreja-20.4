@@ -22,6 +22,7 @@ import ActivitiesCarousel from "../components/ActivitiesCarousel";
 import PastorCarousel from "../components/PastorCarousel";
 import RecentVideos from "../components/RecentVideos";
 import DatabaseService from "../services/DatabaseService";
+import ContentUpdateService from "../services/atualizaçao";
 import { transformImageLink } from "../utils/imageUtils";
 
 const Home = () => {
@@ -30,24 +31,18 @@ const Home = () => {
   // Lista consolidada de aniversariantes de todos os ministérios
   const [allBirthdays, setAllBirthdays] = useState([]);
 
+  const loadData = async () => {
+    const homeData = await DatabaseService.getHomeData();
+    setData(homeData);
+  };
+
   // Carrega os dados da home ao montar o componente
   useEffect(() => {
-    const loadData = async () => {
-      const homeData = await DatabaseService.getHomeData();
-      setData(homeData);
-    };
     loadData();
-
-    // Listener para atualizações em tempo real vindas do painel
-    const handleStorageChange = (e) => {
-      if (e.key === 'admac_home' || e.key === 'admac_videos') {
-        loadData();
-      }
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
+
+  // Sincronização automática via ContentUpdateService
+  ContentUpdateService.usePageUpdate(['admac_home', 'admac_videos'], loadData);
 
   // Carrega aniversariantes de todas as áreas do site para exibir na Home
   // ministryIds inclui 'midia' para garantir que ninguém fique de fora!

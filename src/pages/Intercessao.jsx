@@ -1,5 +1,6 @@
+import React, { useState } from 'react';
 import { Heart, Users, Calendar, MessageSquare, Send, Clock, Star, Play, BookOpen, Shield } from 'lucide-react';
-import { useState, useEffect } from 'react';
+import { useMinistryData } from '../hooks/useMinistryData';
 import '../css/Lares.css';
 import DatabaseService from '../services/DatabaseService';
 
@@ -13,39 +14,25 @@ const Intercessão = () => {
     isConfidential: true
   });
 
-  const [data, setData] = useState(DatabaseService.getMinistryDefault('intercessao'));
-
-  useEffect(() => {
-    DatabaseService.getMinistry('intercessao').then(ministryData => {
-      if (ministryData) setData(ministryData);
-    });
-
-    const handleStorageChange = () => {
-      DatabaseService.getMinistry('intercessao').then(ministryData => {
-        if (ministryData) setData(ministryData);
-      });
-    };
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
-  }, []);
+  const [data] = useMinistryData('intercessao');
 
   const handleSubmit = (e) => {
     e.preventDefault();
     alert('Pedido de oração enviado com sucesso! Estaremos orando por você.');
-    setPrayerRequest({ 
-      name: '', 
-      email: '', 
-      phone: '', 
-      request: '', 
-      isUrgent: false, 
-      isConfidential: true 
+    setPrayerRequest({
+      name: '',
+      email: '',
+      phone: '',
+      request: '',
+      isUrgent: false,
+      isConfidential: true
     });
   };
 
   return (
     <div className="lares-page">
       {/* Hero Section */}
-      <div className="lares-hero" style={{ 
+      <div className="lares-hero" style={{
         backgroundImage: 'url(https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=1600&q=80)',
         backgroundBlendMode: 'overlay'
       }}>
@@ -79,17 +66,17 @@ const Intercessão = () => {
             <h2>Ouça Nosso Podcast</h2>
           </div>
           <p className="section-subtitle">Mensagens de oração e intercessão</p>
-          
+
           <div className="video-wrapper">
-            <iframe 
+            <iframe
               data-testid="embed-iframe"
               style={{ borderRadius: '12px' }}
-              src="https://open.spotify.com/embed/show/2lzm9pXbj4PCoWcxsFzDtf?utm_source=generator" 
-              width="100%" 
-              height="352" 
-              frameBorder="0" 
-              allowFullScreen="" 
-              allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
+              src="https://open.spotify.com/embed/show/2lzm9pXbj4PCoWcxsFzDtf?utm_source=generator"
+              width="100%"
+              height="352"
+              frameBorder="0"
+              allowFullScreen=""
+              allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
               loading="lazy"
             ></iframe>
           </div>
@@ -105,10 +92,10 @@ const Intercessão = () => {
             <h2>Agenda de Oração</h2>
           </div>
           <p className="section-subtitle">Participe dos nossos encontros de intercessão</p>
-          
-          <div className="schedule-grid" style={{ 
-            display: 'grid', 
-            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', 
+
+          <div className="schedule-grid" style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
             gap: '2rem',
             marginTop: '3rem'
           }}>
@@ -137,7 +124,7 @@ const Intercessão = () => {
         <div className="container">
           <h2>Nossa Equipe</h2>
           <p className="section-subtitle">Conheça os líderes do ministério de intercessão</p>
-          
+
           <div className="team-grid">
             {data.team.map((member, index) => (
               <div key={index} className="team-card">
@@ -158,10 +145,10 @@ const Intercessão = () => {
             <h2>Testemunhos</h2>
           </div>
           <p className="section-subtitle">Veja o que Deus tem feito através da oração</p>
-          
-          <div className="testimonials-grid" style={{ 
-            display: 'grid', 
-            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', 
+
+          <div className="testimonials-grid" style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
             gap: '2rem',
             marginTop: '3rem'
           }}>
@@ -194,7 +181,7 @@ const Intercessão = () => {
             <h2>Envie seu Pedido de Oração</h2>
           </div>
           <p className="section-subtitle">Compartilhe sua necessidade e conte com nossa intercessão</p>
-          
+
           <form onSubmit={handleSubmit} className="registration-form">
             <div className="form-row">
               <div className="form-group">
@@ -202,17 +189,17 @@ const Intercessão = () => {
                 <input
                   type="text"
                   value={prayerRequest.name}
-                  onChange={(e) => setPrayerRequest({...prayerRequest, name: e.target.value})}
+                  onChange={(e) => setPrayerRequest({ ...prayerRequest, name: e.target.value })}
                   required
                 />
               </div>
-              
+
               <div className="form-group">
                 <label>Email</label>
                 <input
                   type="email"
                   value={prayerRequest.email}
-                  onChange={(e) => setPrayerRequest({...prayerRequest, email: e.target.value})}
+                  onChange={(e) => setPrayerRequest({ ...prayerRequest, email: e.target.value })}
                 />
               </div>
             </div>
@@ -222,7 +209,7 @@ const Intercessão = () => {
               <input
                 type="tel"
                 value={prayerRequest.phone}
-                onChange={(e) => setPrayerRequest({...prayerRequest, phone: e.target.value})}
+                onChange={(e) => setPrayerRequest({ ...prayerRequest, phone: e.target.value })}
               />
             </div>
 
@@ -231,7 +218,7 @@ const Intercessão = () => {
               <textarea
                 rows="6"
                 value={prayerRequest.request}
-                onChange={(e) => setPrayerRequest({...prayerRequest, request: e.target.value})}
+                onChange={(e) => setPrayerRequest({ ...prayerRequest, request: e.target.value })}
                 placeholder="Compartilhe sua necessidade de oração..."
                 required
               ></textarea>
@@ -243,7 +230,7 @@ const Intercessão = () => {
                   <input
                     type="checkbox"
                     checked={prayerRequest.isUrgent}
-                    onChange={(e) => setPrayerRequest({...prayerRequest, isUrgent: e.target.checked})}
+                    onChange={(e) => setPrayerRequest({ ...prayerRequest, isUrgent: e.target.checked })}
                   />
                   <Shield size={18} color="var(--primary-color)" />
                   Pedido Urgente
@@ -255,7 +242,7 @@ const Intercessão = () => {
                   <input
                     type="checkbox"
                     checked={prayerRequest.isConfidential}
-                    onChange={(e) => setPrayerRequest({...prayerRequest, isConfidential: e.target.checked})}
+                    onChange={(e) => setPrayerRequest({ ...prayerRequest, isConfidential: e.target.checked })}
                   />
                   <BookOpen size={18} color="var(--primary-color)" />
                   Manter Confidencial
