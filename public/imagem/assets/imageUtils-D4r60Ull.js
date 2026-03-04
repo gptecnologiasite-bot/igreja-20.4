@@ -1,0 +1,1 @@
+const c=t=>{if(!t||typeof t!="string")return t;if(t.includes("drive.google.com")){let e="";const i=t.match(/\/file\/d\/([a-zA-Z0-9_-]+)/);if(i&&i[1])e=i[1];else{const o=t.match(/id=([a-zA-Z0-9_-]+)/);o&&o[1]&&(e=o[1])}if(e)return`https://drive.google.com/uc?export=download&id=${e}`}return t};export{c as t};

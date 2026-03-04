@@ -7,6 +7,7 @@
 // ================================================================
 
 import React, { useState, useCallback, useMemo } from 'react';
+import { transformImageLink } from '../utils/imageUtils';
 import { Link } from 'react-router-dom';
 import {
   Instagram,
@@ -171,7 +172,7 @@ const Header = ({ theme, toggleTheme }) => {
             <div className="logo-icon">
               {/* Exibe imagem se o ícone for uma URL ou base64, senão exibe emoji */}
               {headerData?.logo?.icon && typeof headerData.logo.icon === 'string' && (headerData.logo.icon.includes('data:image') || headerData.logo.icon.includes('http') || headerData.logo.icon.startsWith('/')) ? (
-                <img src={headerData.logo.icon.trim()} alt="Logo da Igreja" />
+                <img src={transformImageLink(headerData.logo.icon.trim())} alt="Logo da Igreja" />
               ) : (
                 <span>{headerData?.logo?.icon || '⛪'}</span>
               )}

@@ -83,7 +83,7 @@ const DatabaseService = {
       return true;
     } catch (error) {
       console.error(`Error saving ${key}:`, error);
-      return false;
+      throw error; // Lança o erro para ser capturado pelo painel (QuotaExceeded, etc)
     }
   },
 
@@ -114,7 +114,9 @@ const DatabaseService = {
   },
 
   saveHomeData: async (data) => {
-    return DatabaseService.saveItem(DB_KEYS.HOME, data);
+    const success = await DatabaseService.saveItem(DB_KEYS.HOME, data);
+    if (success) DatabaseService.broadcastUpdate(DB_KEYS.HOME);
+    return success;
   },
 
   // --- Ministries List (for Home page) ---
@@ -137,7 +139,9 @@ const DatabaseService = {
   },
 
   saveMinistriesList: async (ministries) => {
-    return DatabaseService.saveItem(DB_KEYS.MINISTRIES_LIST, ministries);
+    const success = await DatabaseService.saveItem(DB_KEYS.MINISTRIES_LIST, ministries);
+    if (success) DatabaseService.broadcastUpdate(DB_KEYS.MINISTRIES_LIST);
+    return success;
   },
 
   addMinistryToList: async (ministry) => {
@@ -172,7 +176,9 @@ const DatabaseService = {
   },
 
   savePages: async (pages) => {
-    return DatabaseService.saveItem(DB_KEYS.PAGES, pages);
+    const success = await DatabaseService.saveItem(DB_KEYS.PAGES, pages);
+    if (success) DatabaseService.broadcastUpdate(DB_KEYS.PAGES);
+    return success;
   },
 
   addPage: async (page) => {
@@ -217,7 +223,10 @@ const DatabaseService = {
 
   saveMinistry: async (id, data) => {
     if (id === 'home') return DatabaseService.saveHomeData(data);
-    return DatabaseService.saveItem(`${DB_KEYS.MINISTRIES}${id}`, data);
+    const key = `${DB_KEYS.MINISTRIES}${id}`;
+    const success = await DatabaseService.saveItem(key, data);
+    if (success) DatabaseService.broadcastUpdate(key);
+    return success;
   },
 
   // --- Footer Data ---
@@ -228,7 +237,9 @@ const DatabaseService = {
   },
 
   saveFooterData: async (data) => {
-    return DatabaseService.saveItem(DB_KEYS.FOOTER, data);
+    const success = await DatabaseService.saveItem(DB_KEYS.FOOTER, data);
+    if (success) DatabaseService.broadcastUpdate(DB_KEYS.FOOTER);
+    return success;
   },
 
   // --- Logs ---
@@ -270,7 +281,9 @@ const DatabaseService = {
   },
 
   saveHeaderData: async (data) => {
-    return DatabaseService.saveItem(DB_KEYS.HEADER, data);
+    const success = await DatabaseService.saveItem(DB_KEYS.HEADER, data);
+    if (success) DatabaseService.broadcastUpdate(DB_KEYS.HEADER);
+    return success;
   },
 
   // --- Videos Data ---
@@ -279,14 +292,21 @@ const DatabaseService = {
   },
 
   saveVideos: async (videos) => {
-    return DatabaseService.saveItem(DB_KEYS.VIDEOS, videos);
+    const success = await DatabaseService.saveItem(DB_KEYS.VIDEOS, videos);
+    if (success) DatabaseService.broadcastUpdate(DB_KEYS.VIDEOS);
+    return success;
   },
 
   // Dispara um evento global para notificar outros componentes/abas sobre mudanças
   broadcastUpdate: (key) => {
     try {
-      window.localStorage.setItem('admac_last_update', String(Date.now()));
-      window.dispatchEvent(new StorageEvent('storage', { key }));
+      // Força um evento de storage que é capturado por outras abas
+      const timestamp = String(Date.now());
+      window.localStorage.setItem('admac_last_update', timestamp);
+      window.localStorage.setItem('admac_update_key', key);
+      
+      // Dispara evento local para a mesma aba
+      window.dispatchEvent(new CustomEvent('admac_db_update', { detail: { key, timestamp } }));
     } catch { /* ignore */ }
   }
 };

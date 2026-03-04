@@ -283,7 +283,7 @@ export const INITIAL_MINISTRIES_DATA = {
     hero: { 
       title: "Portal de Mídia", 
       subtitle: "Excelência técnica e criatividade a serviço do Reino de Deus", 
-      image: "/midia.jpg",
+      image: "imagem/midia.jpg",
       cta: "Ver Programação",
       verse: '"...pregai-o sobre os telhados." - Mateus 10:27'
     },
@@ -297,13 +297,13 @@ export const INITIAL_MINISTRIES_DATA = {
       { title: 'Palavra de Fé - Pr. Roberto', url: 'https://www.youtube.com/embed/dQw4w9WgXcQ', date: '20 Nov 2024', views: '89', thumbnail: 'https://images.unsplash.com/photo-1504052434569-7c96024f44c8?auto=format&fit=crop&q=80' }
     ],
     team: [
-      { name: "Humberto Freitas", role: "Coordenador Geral", photo: "/midia.jpg" },
-      { name: "Equipe Técnica", role: "Produção & Transmissão", photo: "/midia.jpg" }
+      { name: "Humberto Freitas", role: "Coordenador Geral", photo: "imagem/midia.jpg" },
+      { name: "Equipe Técnica", role: "Produção & Transmissão", photo: "imagem/midia.jpg" }
     ],
     gallery: [
-      { url: "/midia1.jpg", caption: "Equipe em Ação" },
-      { url: "/midia.jpg", caption: "Transmissão Especial" },
-      { url: "/banner2.png", caption: "Workshop de Fotografia" }
+      { url: "imagem/midia1.jpg", caption: "Equipe em Ação" },
+      { url: "imagem/midia.jpg", caption: "Transmissão Especial" },
+      { url: "imagem/banner2.png", caption: "Workshop de Fotografia" }
     ],
     backstage: [
       { 
@@ -315,7 +315,7 @@ export const INITIAL_MINISTRIES_DATA = {
       { 
         title: "Tecnologia & Fé", 
         text: "Utilizamos as melhores ferramentas digitais para expandir o alcance do Evangelho no mundo digital.",
-        image: "/midia1.jpg",
+        image: "imagem/midia1.jpg",
         layout: "right"
       }
     ],
@@ -323,7 +323,7 @@ export const INITIAL_MINISTRIES_DATA = {
       title: "Aniversariantes do Mês", 
       text: "Celebrando a vida daqueles que tornam nossa missão possível!", 
       people: [
-        { name: "Humberto Freitas", date: "02/03", photo: "/midia.jpg", isToday: true }
+        { name: "Humberto Freitas", date: "02/03", photo: "imagem/midia.jpg", isToday: true }
       ] 
     },
     testimonials: [
@@ -336,8 +336,8 @@ export const INITIAL_MINISTRIES_DATA = {
       { day: "Sábado", time: "14h", activity: "Ensaio Técnico", location: "Cabine de Som", isNext: false }
     ],
     news: [
-      { title: "Novo Equipamento de Transmissão", summary: "Chegaram as novas câmeras 4K para elevar o nível das nossas lives.", image: "/midia1.jpg", date: "28 Fev, 2024" },
-      { title: "Workshop de Mídia 2024", summary: "Treinamento intensivo para novos voluntários no próximo mês.", image: "/midia.jpg", date: "25 Fev, 2024" }
+      { title: "Novo Equipamento de Transmissão", summary: "Chegaram as novas câmeras 4K para elevar o nível das nossas lives.", image: "imagem/midia1.jpg", date: "28 Fev, 2024" },
+      { title: "Workshop de Mídia 2024", summary: "Treinamento intensivo para novos voluntários no próximo mês.", image: "imagem/midia.jpg", date: "25 Fev, 2024" }
     ],
     footer: {
       text: "ADMAC Mídia - Comunicando a Verdade com Excelência",

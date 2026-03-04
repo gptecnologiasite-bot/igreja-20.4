@@ -27,5 +27,13 @@ export const transformImageLink = (url) => {
     }
   }
 
+  // Handle local image folder paths
+  if (url.startsWith('imagem/')) {
+    const baseUrl = import.meta.env.BASE_URL || '/';
+    // Ensure we don't end up with double slashes if baseUrl ends with /
+    const cleanBase = baseUrl.endsWith('/') ? baseUrl : baseUrl + '/';
+    return cleanBase + url;
+  }
+
   return url;
 };

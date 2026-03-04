@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { transformImageLink } from '../utils/imageUtils';
 import { Heart, Calendar, Users, Camera, MessageSquare, MapPin, Clock, Send, Package, Utensils, Shirt } from 'lucide-react';
 import '../css/Social.css';
 import { useMinistryData } from '../hooks/useMinistryData';
@@ -76,7 +77,7 @@ const Social = () => {
                     eventTitle.includes('Bazar') ? Shirt : Heart;
                 return (
                   <div key={index} className="event-card">
-                    <div className="event-image" style={{ backgroundImage: `url(${event.image || 'https://images.unsplash.com/photo-1593113598332-cd288d649433?w=400&h=300&fit=crop'})` }}>
+                    <div className="event-image" style={{ backgroundImage: `url(${transformImageLink(event.image) || 'https://images.unsplash.com/photo-1593113598332-cd288d649433?w=400&h=300&fit=crop'})` }}>
                       <div className="event-icon-badge">
                         <IconComponent size={32} />
                       </div>
@@ -133,7 +134,7 @@ const Social = () => {
             {data.gallery && data.gallery.length > 0 ? (
               data.gallery.map((photo, index) => (
                 <div key={index} className="gallery-item">
-                  <img src={photo.url} alt={photo.caption || 'Foto da ação social'} />
+                  <img src={transformImageLink(photo.url)} alt={photo.caption || 'Foto da ação social'} />
                   <div className="gallery-overlay">
                     <span>{photo.caption || 'Momentos especiais'}</span>
                   </div>

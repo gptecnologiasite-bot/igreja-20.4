@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { transformImageLink } from '../utils/imageUtils';
 import { Mountain, Calendar, MapPin, Users, Camera, Send, Heart, Clock, Tent, Book, Music } from 'lucide-react';
 import { useMinistryData } from '../hooks/useMinistryData';
 import '../css/Retiro.css';
@@ -131,7 +132,7 @@ const Retiro = () => {
             {data.team && data.team.length > 0 ? (
               data.team.map((member, index) => (
                 <div key={index} className="team-card">
-                  <img src={member.photo || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(member.name || 'Membro')} alt={member.name || 'Membro'} className="team-photo" />
+                  <img src={transformImageLink(member.photo) || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(member.name || 'Membro')} alt={member.name || 'Membro'} className="team-photo" />
                   <h3>{member.name || 'Membro'}</h3>
                   <p>{member.role || ''}</p>
                 </div>
@@ -158,7 +159,7 @@ const Retiro = () => {
             {data.gallery && data.gallery.length > 0 ? (
               data.gallery.map((photo, index) => (
                 <div key={index} className="gallery-item">
-                  <img src={photo.url} alt={photo.caption || 'Foto do retiro'} />
+                  <img src={transformImageLink(photo.url)} alt={photo.caption || 'Foto do retiro'} />
                   <div className="gallery-overlay">
                     <span>{photo.caption || 'Momentos especiais'}</span>
                   </div>

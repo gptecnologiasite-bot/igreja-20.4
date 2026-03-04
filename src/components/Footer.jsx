@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Instagram, Youtube, Facebook, Phone, Music, Mail, MapPin, Clock, Heart, ChevronRight } from 'lucide-react';
 import '../css/Footer.css';
+import { transformImageLink } from '../utils/imageUtils';
 import DatabaseService from '../services/DatabaseService';
 
 const Footer = () => {
@@ -52,7 +53,7 @@ const Footer = () => {
           <div className="footer-logo">
             <div className="footer-logo-icon">
               {headerData?.logo?.icon && typeof headerData.logo.icon === 'string' && (headerData.logo.icon.startsWith('data:image') || headerData.logo.icon.startsWith('http') || headerData.logo.icon.startsWith('/')) ? (
-                <img src={headerData.logo.icon} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                <img src={transformImageLink(headerData.logo.icon)} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
               ) : (
                 headerData?.logo?.icon || footerData?.logo?.text?.substring(0, 2)
               )}

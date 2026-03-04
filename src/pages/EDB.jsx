@@ -1,4 +1,5 @@
 import { BookOpen, Users, Clock, MapPin, GraduationCap, UserCheck, Download, Camera } from 'lucide-react';
+import { transformImageLink } from '../utils/imageUtils';
 import { useMinistryData } from '../hooks/useMinistryData';
 import '../css/EDB.css';
 
@@ -118,7 +119,7 @@ const EDB = () => {
             {data.team && data.team.length > 0 ? (
               data.team.map((member, index) => (
                 <div key={index} className="team-card">
-                  <img src={member.photo || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(member.name || 'Membro')} alt={member.name || 'Membro'} className="team-photo" />
+                  <img src={transformImageLink(member.photo) || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(member.name || 'Membro')} alt={member.name || 'Membro'} className="team-photo" />
                   <h3>{member.name || 'Membro'}</h3>
                   <p>{member.role || ''}</p>
                 </div>
@@ -145,7 +146,7 @@ const EDB = () => {
             {data.gallery && data.gallery.length > 0 ? (
               data.gallery.map((photo, index) => (
                 <div key={index} className="gallery-item">
-                  <img src={photo.url} alt={photo.caption || 'Foto da EBD'} />
+                  <img src={transformImageLink(photo.url)} alt={photo.caption || 'Foto da EBD'} />
                   <div className="gallery-overlay">
                     <span>{photo.caption || 'Momentos especiais'}</span>
                   </div>
