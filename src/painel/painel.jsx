@@ -285,6 +285,10 @@ function HomeAnivEditor({ palette, ministryOptions, DatabaseService }) {
                   <input type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => {
                     const file = e.target.files[0];
                     if (!file) return;
+                    if (file.size > 1024 * 1024) {
+                      alert('A imagem é muito grande (maior que 1MB).\n\nPara não sobrecarregar o sistema, use imagens menores ou links externos.');
+                      return;
+                    }
                     const reader = new FileReader();
                     reader.onload = ev => {
                       const next = [...(bData.people || [])];
@@ -399,6 +403,10 @@ export default function PainelAdm() {
     input.onchange = (e) => {
       const file = e.target.files[0];
       if (!file) return;
+      if (file.size > 1024 * 1024) {
+        alert('O arquivo é muito grande (maior que 1MB).\n\nPara não sobrecarregar o sistema, use imagens menores ou links externos.');
+        return;
+      }
       const reader = new FileReader();
       reader.onload = (ev) => callback(ev.target.result);
       reader.readAsDataURL(file);
@@ -483,11 +491,12 @@ export default function PainelAdm() {
   const saveNavConfig = () => {
     try {
       const payload = { main: navMain, settings: navSettings };
-      localStorage.setItem('admac_painel_nav', JSON.stringify(payload));
+      DatabaseService.saveItem('admac_painel_nav', payload);
       alert('Configurações do menu salvas com sucesso!');
     } catch (err) {
-      if (err.name === 'QuotaExceededError') {
-        alert('Erro: Limite de armazenamento atingido. Remova fotos pesadas ou use links externos.');
+      if (err.message === 'QUOTA_EXCEEDED') {
+        const usage = DatabaseService.getStorageUsage();
+        alert(`Erro: Limite de memória atingido (${usage.percent.toFixed(1)}%).\n\nRemova itens desnecessários das configurações.`);
       } else {
         alert('Erro ao salvar configurações do menu.');
       }
@@ -561,10 +570,11 @@ export default function PainelAdm() {
         localUsers.push(userToSave);
       }
       try {
-        localStorage.setItem('admac_users', JSON.stringify(localUsers));
+        DatabaseService.saveItem('admac_users', localUsers);
       } catch (err) {
-        if (err.name === 'QuotaExceededError') {
-          alert('Erro: Limite de armazenamento atingido. Tente usar fotos menores.');
+        if (err.message === 'QUOTA_EXCEEDED') {
+          const usage = DatabaseService.getStorageUsage();
+          alert(`Erro: Limite de memória atingido (${usage.percent.toFixed(1)}%).\n\nReduza o tamanho da foto do usuário ou remova outros dados.`);
           return;
         }
       }
@@ -589,10 +599,11 @@ export default function PainelAdm() {
       if (idx !== -1) {
         localUsers[idx] = { ...localUsers[idx], ...userToSave };
         try {
-          localStorage.setItem('admac_users', JSON.stringify(localUsers));
+          DatabaseService.saveItem('admac_users', localUsers);
         } catch (err) {
-          if (err.name === 'QuotaExceededError') {
-            alert('Erro: Limite de armazenamento atingido. Tente usar fotos menores.');
+          if (err.message === 'QUOTA_EXCEEDED') {
+            const usage = DatabaseService.getStorageUsage();
+            alert(`Erro: Limite de memória atingido (${usage.percent.toFixed(1)}%).\n\nReduza o tamanho da foto ou libere espaço no cache.`);
             return;
           }
         }
@@ -642,6 +653,10 @@ export default function PainelAdm() {
   const handlePhoto = (e) => {
     const file = e.target.files[0];
     if (!file) return;
+    if (file.size > 1024 * 1024) {
+      alert('A foto é muito grande (limite 1MB).\n\nReduza o tamanho da imagem ou use um link externo.');
+      return;
+    }
     const reader = new FileReader();
     reader.onload = ev => setNewUser(u => ({ ...u, photo: ev.target.result }));
     reader.readAsDataURL(file);
@@ -1046,6 +1061,10 @@ export default function PainelAdm() {
   const handlePagePhoto = (e) => {
     const file = e.target.files[0];
     if (!file) return;
+    if (file.size > 1024 * 1024) {
+      alert('A imagem é muito grande (maior que 1MB).\n\nRecomendamos usar imagens otimizadas p/ web ou links externos.');
+      return;
+    }
     const reader = new FileReader();
     reader.onload = ev => setPageData(d => ({ ...d, photo: ev.target.result }));
     reader.readAsDataURL(file);
@@ -1073,8 +1092,9 @@ export default function PainelAdm() {
           alert('Página Home salva com sucesso!');
           return
         } catch (err) {
-          if (err.name === 'QuotaExceededError') {
-            alert('Erro: Limite de armazenamento atingido. Tente usar links em vez de fotos pesadas.');
+          if (err.message === 'QUOTA_EXCEEDED') {
+            const usage = DatabaseService.getStorageUsage();
+            alert(`Erro: Limite de memória atingido (${usage.percent.toFixed(1)}%).\n\nRemova fotos pesadas ou use links externos (Google Drive/YouTube) para economizar espaço.`);
           } else {
             alert('Erro ao salvar Home.');
           }
@@ -1095,8 +1115,9 @@ export default function PainelAdm() {
           alert('Página de Ministério salva com sucesso!');
           return
         } catch (err) {
-          if (err.name === 'QuotaExceededError') {
-            alert('Erro: Limite de armazenamento atingido. Tente usar links em vez de fotos pesadas.');
+          if (err.message === 'QUOTA_EXCEEDED') {
+            const usage = DatabaseService.getStorageUsage();
+            alert(`Erro: Limite de memória atingido (${usage.percent.toFixed(1)}%).\n\nFotos em Base64 ocupam muito espaço. Recomendamos usar links diretos das imagens.`);
           } else {
             alert('Erro ao salvar Ministério.');
           }
@@ -3545,6 +3566,10 @@ export default function PainelAdm() {
                       <input type="file" accept="image/*" style={{ display: 'none' }} onChange={e => {
                         const file = e.target.files[0];
                         if (!file) return;
+                        if (file.size > 512 * 1024) {
+                          alert('O logo deve ser pequeno (máx 512KB) para não afetar o carregamento do site.');
+                          return;
+                        }
                         const reader = new FileReader();
                         reader.onload = ev => setHeaderData(d => ({ ...d, logo: { ...d.logo, icon: ev.target.result } }));
                         reader.readAsDataURL(file);
@@ -3576,15 +3601,51 @@ export default function PainelAdm() {
                   } catch { void 0 }
                   alert("Configurações salvas com sucesso!");
                 } catch (err) {
-                  if (err.name === 'QuotaExceededError') {
-                    alert('Erro: Limite de armazenamento atingido. Tente usar fotos menores.');
+                  if (err.message === 'QUOTA_EXCEEDED') {
+                    const usage = DatabaseService.getStorageUsage();
+                    alert(`Erro: Limite atingido (${usage.percent.toFixed(1)}%). Reduza o tamanho do logo.`);
                   } else {
-                    alert('Erro ao salvar configurações.');
+                    alert("Erro ao salvar configurações.");
                   }
                 }
               }}
             >
-              Salvar Configurações
+              Salvar Identidade
+            </button>
+          </div>
+
+          <div className="painel-card" style={{ maxWidth: 600, marginTop: '1.2rem' }}>
+            <h3 style={{ fontSize: '.95rem', fontWeight: 600, marginBottom: '1.2rem' }}>Gerenciamento de Armazenamento</h3>
+            <div style={{ marginBottom: '1rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '.85rem', marginBottom: '6px' }}>
+                <span>Uso do Navegador (LocalStorage)</span>
+                <span style={{ fontWeight: 600, color: DatabaseService.getStorageUsage().percent > 80 ? palette.danger : palette.text }}>
+                  {DatabaseService.getStorageUsage().usedMB}MB / 5MB ({DatabaseService.getStorageUsage().percent.toFixed(1)}%)
+                </span>
+              </div>
+              <div style={{ width: '100%', height: '8px', background: palette.bg, borderRadius: '4px', overflow: 'hidden' }}>
+                <div style={{
+                  width: `${DatabaseService.getStorageUsage().percent}%`,
+                  height: '100%',
+                  background: DatabaseService.getStorageUsage().percent > 80 ? palette.danger : palette.accent,
+                  transition: 'width 0.3s ease'
+                }} />
+              </div>
+              <p style={{ fontSize: '.75rem', color: palette.textMuted, marginTop: '8px' }}>
+                O navegador limita o armazenamento em 5MB. Fotos pesadas em Base64 consomem esse limite rapidamente.
+              </p>
+            </div>
+            <button
+              className="btn-deletar"
+              style={{ width: '100%', background: 'transparent', border: `1px solid ${palette.danger}`, color: palette.danger }}
+              onClick={() => {
+                if (window.confirm('ATENÇÃO: Isso removerá TODOS os dados salvos localmente (fotos, textos não sincronizados). Deseja continuar?')) {
+                  localStorage.clear();
+                  window.location.reload();
+                }
+              }}
+            >
+              🗑️ Limpar Cache Local
             </button>
           </div>
         </div>
@@ -4213,6 +4274,10 @@ export default function PainelAdm() {
                               <input type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => {
                                 const file = e.target.files[0];
                                 if (!file) return;
+                                if (file.size > 1024 * 1024) {
+                                  alert('A imagem é muito grande (limite 1MB).\n\nEscolha uma foto menor para evitar que o site pare de salvar.');
+                                  return;
+                                }
                                 const reader = new FileReader();
                                 reader.onload = ev => {
                                   const next = [...(ministryData.birthdays.people || [])];
