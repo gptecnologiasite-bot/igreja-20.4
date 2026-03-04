@@ -34,19 +34,23 @@ const DatabaseService = {
   // Garante que campos novos do `target` (defaults) sejam preservados
   // quando o `source` (dado salvo) não os contém.
   deepMerge: (target, source) => {
+    if (!source || typeof source !== 'object') return target;
     const output = { ...target };
+    
     if (typeof target === 'object' && target !== null && typeof source === 'object' && source !== null) {
       Object.keys(source).forEach(key => {
         if (typeof source[key] === 'object' && source[key] !== null && !Array.isArray(source[key])) {
-          if (!(key in target)) {
-            // Chave não existe no alvo: copia diretamente
+          if (!(key in target) || target[key] === null) {
+            // Chave não existe no alvo ou é nula: copia diretamente
             output[key] = source[key];
           } else {
             // Chave existe em ambos: mescla recursivamente
             output[key] = DatabaseService.deepMerge(target[key], source[key]);
           }
         } else {
-          // Arrays e primitivos: o source tem prioridade
+          // Arrays e primitivos: o source tem prioridade (mesmo se for vazio ou null)
+          // Mas se o source for uma string vazia e o target tiver algo, mantemos o target?
+          // Não, o salvamento deve ser fiel.
           output[key] = source[key];
         }
       });
@@ -83,8 +87,32 @@ const DatabaseService = {
       return true;
     } catch (error) {
       console.error(`Error saving ${key}:`, error);
-      throw error; // Lança o erro para ser capturado pelo painel (QuotaExceeded, etc)
+      if (error.name === 'QuotaExceededError' || error.name === 'NS_ERROR_DOM_QUOTA_REACHED') {
+        const usage = DatabaseService.getStorageUsage();
+        console.warn(`LocalStorage quota exceeded! Current usage: ${usage.totalKB.toFixed(2)}KB`);
+        throw new Error('QUOTA_EXCEEDED');
+      }
+      throw error;
     }
+  },
+
+  // Retorna estatísticas de uso do localStorage
+  getStorageUsage: () => {
+    let total = 0;
+    const items = {};
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      const value = localStorage.getItem(key);
+      const size = (key.length + value.length) * 2; // Aproximação de bytes (UTF-16)
+      total += size;
+      items[key] = size / 1024;
+    }
+    return {
+      totalKB: total / 1024,
+      totalMB: total / (1024 * 1024),
+      percent: (total / (5 * 1024 * 1024)) * 100, // Assumindo limite de 5MB
+      items
+    };
   },
 
   // ── Dados da Home ────────────────────────────────────────────
