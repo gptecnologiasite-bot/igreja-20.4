@@ -37,6 +37,16 @@ const Header = ({ theme, toggleTheme }) => {
   const [isMinistriesFixed, setIsMinistriesFixed] = useState(false);
   const [ministriesTimeout, setMinistriesTimeout] = useState(null);
 
+  // ── Estado do dropdown de Mídia ──────────────────────────────
+  const [showMedia, setShowMedia] = useState(false);
+  const [isMediaFixed, setIsMediaFixed] = useState(false);
+  const [mediaTimeout, setMediaTimeout] = useState(null);
+
+  // ── Estado do dropdown de Social ──────────────────────────────
+  const [showSocial, setShowSocial] = useState(false);
+  const [isSocialFixed, setIsSocialFixed] = useState(false);
+  const [socialTimeout, setSocialTimeout] = useState(null);
+
   // ── Tema interno (fallback quando `theme` não é recebido via props) ──
   const [internalTheme, setInternalTheme] = useState(
     typeof document !== 'undefined'
@@ -159,6 +169,92 @@ const Header = ({ theme, toggleTheme }) => {
     }
   };
 
+  // ── Handlers do dropdown de Mídia ───────────────────────────
+
+  const handleMediaMouseEnter = () => {
+    if (mediaTimeout) {
+      clearTimeout(mediaTimeout);
+      setMediaTimeout(null);
+    }
+    setShowMedia(true);
+  };
+
+  const handleMediaMouseLeave = (e) => {
+    if (e.relatedTarget && e.relatedTarget.closest('.media-dropdown-menu')) {
+      return;
+    }
+    if (!isMediaFixed) {
+      const timeout = setTimeout(() => {
+        setShowMedia(false);
+      }, 300);
+      setMediaTimeout(timeout);
+    }
+  };
+
+  const toggleMedia = (e) => {
+    e.stopPropagation();
+    if (isMediaFixed) {
+      setIsMediaFixed(false);
+      setShowMedia(false);
+    } else {
+      setIsMediaFixed(true);
+      setShowMedia(true);
+    }
+  };
+
+  const handleMediaClick = (e) => {
+    e.stopPropagation();
+    setIsMediaFixed(false);
+    setShowMedia(false);
+    if (mediaTimeout) {
+      clearTimeout(mediaTimeout);
+      setMediaTimeout(null);
+    }
+  };
+
+  // ── Handlers do dropdown de Social ───────────────────────────
+
+  const handleSocialMouseEnter = () => {
+    if (socialTimeout) {
+      clearTimeout(socialTimeout);
+      setSocialTimeout(null);
+    }
+    setShowSocial(true);
+  };
+
+  const handleSocialMouseLeave = (e) => {
+    if (e.relatedTarget && e.relatedTarget.closest('.social-dropdown-menu')) {
+      return;
+    }
+    if (!isSocialFixed) {
+      const timeout = setTimeout(() => {
+        setShowSocial(false);
+      }, 300);
+      setSocialTimeout(timeout);
+    }
+  };
+
+  const toggleSocial = (e) => {
+    e.stopPropagation();
+    if (isSocialFixed) {
+      setIsSocialFixed(false);
+      setShowSocial(false);
+    } else {
+      setIsSocialFixed(true);
+      setShowSocial(true);
+    }
+  };
+
+  const handleSocialClick = (e) => {
+    e.stopPropagation();
+    setIsSocialFixed(false);
+    setShowSocial(false);
+    if (socialTimeout) {
+      clearTimeout(socialTimeout);
+      setSocialTimeout(null);
+    }
+  };
+
   // ── Lista estática dos ministérios para o dropdown ────────────
   const ministries = [
     { name: 'Kids', path: '/kids' },
@@ -168,10 +264,20 @@ const Header = ({ theme, toggleTheme }) => {
     { name: 'Homens', path: '/homens' },
     { name: 'Lares', path: '/lares' },
     { name: 'Retiros', path: '/retiro' },
+  ];
+
+  const socialLinks = [
     { name: 'Ação Social', path: '/social' },
     { name: 'EBD', path: '/edb' },
-    { name: 'Mídia', path: '/midia' },
     { name: 'Missões', path: '/missoes' },
+    { name: 'Intercessão', path: '/intercessao' },
+  ];
+
+  const mediaLinks = [
+    { name: 'Portal de Mídia', path: '/midia' },
+    { name: 'Revista Admac', path: '/revista' },
+    { name: 'Vídeos & Lives', path: '/midia#video' },
+    { name: 'Galeria de Fotos', path: '/midia#galeria' },
   ];
 
   return (
@@ -195,12 +301,46 @@ const Header = ({ theme, toggleTheme }) => {
 
         {/* ── Navegação Desktop ── */}
         <nav className="desktop-nav">
-          {/* Primeiro item do menu (geralmente "Início") */}
+          {/* 1. Início */}
           {headerData?.menu?.slice(0, 1).map((item, idx) => (
             <Link key={idx} to={item.path} className="nav-link">{item.name}</Link>
           ))}
 
-          {/* Dropdown de Ministérios */}
+          {/* 2. Dropdown de Mídia */}
+          <div
+            className="nav-dropdown"
+            onMouseEnter={handleMediaMouseEnter}
+            onMouseLeave={handleMediaMouseLeave}
+          >
+            <button
+              className={`dropdown-trigger ${isMediaFixed ? 'active' : ''}`}
+              onClick={toggleMedia}
+              aria-haspopup="true"
+              aria-expanded={showMedia}
+            >
+              Mídia <ChevronDown size={16} />
+            </button>
+            {showMedia && (
+              <div
+                className={`dropdown-menu ${isMediaFixed ? 'fixed' : ''} media-dropdown-menu`}
+                onMouseEnter={handleMediaMouseEnter}
+                onMouseLeave={handleMediaMouseLeave}
+              >
+                {mediaLinks.map((link, idx) => (
+                  <Link
+                    key={idx}
+                    to={link.path}
+                    className="dropdown-item"
+                    onClick={handleMediaClick}
+                  >
+                    {link.name}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* 3. Dropdown de Ministérios */}
           <div
             className="nav-dropdown"
             onMouseEnter={handleMinistriesMouseEnter}
@@ -216,7 +356,7 @@ const Header = ({ theme, toggleTheme }) => {
             </button>
             {showMinistries && (
               <div
-                className="dropdown-menu"
+                className={`dropdown-menu ${isMinistriesFixed ? 'fixed' : ''}`}
                 onMouseEnter={handleMinistriesMouseEnter}
                 onMouseLeave={handleMinistriesMouseLeave}
               >
@@ -234,7 +374,41 @@ const Header = ({ theme, toggleTheme }) => {
             )}
           </div>
 
-          {/* Demais itens dinâmicos do menu */}
+          {/* 4. Dropdown de Social */}
+          <div
+            className="nav-dropdown"
+            onMouseEnter={handleSocialMouseEnter}
+            onMouseLeave={handleSocialMouseLeave}
+          >
+            <button
+              className={`dropdown-trigger ${isSocialFixed ? 'active' : ''}`}
+              onClick={toggleSocial}
+              aria-haspopup="true"
+              aria-expanded={showSocial}
+            >
+              Social <ChevronDown size={16} />
+            </button>
+            {showSocial && (
+              <div
+                className={`dropdown-menu ${isSocialFixed ? 'fixed' : ''} social-dropdown-menu`}
+                onMouseEnter={handleSocialMouseEnter}
+                onMouseLeave={handleSocialMouseLeave}
+              >
+                {socialLinks.map((link, idx) => (
+                  <Link
+                    key={idx}
+                    to={link.path}
+                    className="dropdown-item"
+                    onClick={handleSocialClick}
+                  >
+                    {link.name}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* 5 e 6. Sobre e Contato */}
           {headerData?.menu?.slice(1).map((item, idx) => (
             <Link key={idx} to={item.path} className="nav-link">{item.name}</Link>
           ))}
@@ -297,6 +471,22 @@ const Header = ({ theme, toggleTheme }) => {
             <Link key={idx} to={item.path} onClick={toggleMenu}>{item.name}</Link>
           ))}
 
+          {/* Dropdown de Mídia Mobile */}
+          <div className="mobile-dropdown">
+            <button className="mobile-dropdown-trigger" onClick={() => setShowMedia(!showMedia)}>
+              Mídia <ChevronDown size={16} />
+            </button>
+            {showMedia && (
+              <div className="mobile-dropdown-content">
+                {mediaLinks.map((link, idx) => (
+                  <Link key={idx} to={link.path} onClick={() => { handleMediaClick({ stopPropagation: () => { } }); toggleMenu(); }}>
+                    {link.name}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+
           {/* Dropdown de ministérios mobile */}
           <div className="mobile-dropdown">
             <button className="mobile-dropdown-trigger" onClick={() => setShowMinistries(!showMinistries)}>
@@ -307,6 +497,22 @@ const Header = ({ theme, toggleTheme }) => {
                 {ministries.map((ministry, idx) => (
                   <Link key={idx} to={ministry.path} onClick={toggleMenu}>
                     {ministry.name}
+                  </Link>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Dropdown de Social Mobile */}
+          <div className="mobile-dropdown">
+            <button className="mobile-dropdown-trigger" onClick={() => setShowSocial(!showSocial)}>
+              Social <ChevronDown size={16} />
+            </button>
+            {showSocial && (
+              <div className="mobile-dropdown-content">
+                {socialLinks.map((link, idx) => (
+                  <Link key={idx} to={link.path} onClick={() => { handleSocialClick({ stopPropagation: () => { } }); toggleMenu(); }}>
+                    {link.name}
                   </Link>
                 ))}
               </div>

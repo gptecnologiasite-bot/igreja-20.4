@@ -109,7 +109,20 @@ const globalCSS = `
   .painel-filter-select{background:${palette.bg};border:1px solid ${palette.border};border-radius:8px;padding:.52rem .8rem;color:${palette.text};font-size:.85rem;outline:none}
   .painel-logout-btn{display:flex;align-items:center;gap:8px;width:100%;padding:.65rem .75rem;background:none;border:1px solid rgba(244,63,94,.2);border-radius:10px;color:${palette.danger};font-size:.87rem;font-weight:500}
   .painel-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:99}
-  @media (max-width:768px){.painel-sidebar{transform:translateX(-240px)}.painel-sidebar.open{transform:translateX(0)}.painel-topbar{left:0!important}.painel-main{margin-left:0!important}.painel-overlay.visible{display:block}}
+  @media (max-width:1024px){.painel-sidebar{width:220px}.painel-topbar{left:220px}.painel-main{margin-left:220px}}
+  @media (max-width:768px){
+    .painel-sidebar{transform:translateX(-240px);width:240px}
+    .painel-sidebar.open{transform:translateX(0)}
+    .painel-topbar{left:0!important}
+    .painel-main{margin-left:0!important;padding:1rem}
+    .painel-overlay.visible{display:block}
+    .painel-stats-grid{grid-template-columns:1fr}
+    .painel-table-bar{flex-direction:column;align-items:stretch}
+    .painel-search{width:100%}
+    .pm-modal{width:95%;margin:auto}
+    .pm-row{grid-template-columns:1fr}
+    .painel-page-header h1{font-size:1.3rem}
+  }
   .pm-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;display:flex;align-items:center;justify-content:center;padding:1rem}
   .pm-modal{background:${palette.surface};border:1px solid ${palette.border};border-radius:18px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;box-shadow:0 40px 80px rgba(0,0,0,.6)}
   .pm-header{display:flex;align-items:center;justify-content:space-between;padding:1.3rem 1.5rem 1rem;border-bottom:1px solid ${palette.border}}
