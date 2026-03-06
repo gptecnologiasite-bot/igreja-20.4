@@ -22,11 +22,26 @@ import {
     ArrowRight
 } from 'lucide-react';
 import { useMinistryData } from '../hooks/useMinistryData';
+import { transformImageLink } from '../utils/imageUtils';
 import '../css/Midia.css';
 // ---------------------------------------------------------------------------------
 // Midia.jsx - Página de Mídia Profissional do ADMAC
 // Esta página utiliza lazy data via useMinistryData e framer-motion para animações.
 // ---------------------------------------------------------------------------------
+
+// Função auxiliar para extrair o thumbnail do YouTube de forma robusta
+const getYoutubeThumbnail = (urlOrId) => {
+    if (!urlOrId) return null;
+    // Se for apenas o ID (ex: 11 caracteres sem '/')
+    if (urlOrId.length === 11 && !urlOrId.includes('/')) {
+        return `https://img.youtube.com/vi/${urlOrId}/hqdefault.jpg`;
+    }
+
+    const regex = /(?:youtu\.be\/|youtube\.com\/(?:.*v\/|.*u\/\w\/|embed\/|watch\?v=)|youtube\.com\/live\/)([a-zA-Z0-9_-]{11})/;
+    const match = urlOrId.match(regex);
+    return match ? `https://img.youtube.com/vi/${match[1]}/hqdefault.jpg` : null;
+};
+
 const Midia = () => {
     // Carrega os dados específicos do ministério de mídia do banco de dados/localStorage
     const [data] = useMinistryData('midia');
@@ -139,7 +154,20 @@ const Midia = () => {
                                         onClick={() => window.open(vid.url.replace('embed/', 'watch?v='), '_blank')}
                                     >
                                         <div style={{ position: 'relative', height: '180px' }}>
-                                            <img src={transformImageLink(vid.thumbnail)} alt={vid.title} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                                            <img
+                                                src={transformImageLink(vid.thumbnail) || getYoutubeThumbnail(vid.url) || 'https://via.placeholder.com/640x360?text=ADMAC+Video'}
+                                                alt={vid.title}
+                                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                                onError={(e) => {
+                                                    // Se falhar, tenta o thumbnail do YouTube do URL se já não for ele
+                                                    const ytThumb = getYoutubeThumbnail(vid.url);
+                                                    if (ytThumb && e.target.src !== ytThumb) {
+                                                        e.target.src = ytThumb;
+                                                    } else if (e.target.src !== 'https://via.placeholder.com/640x360?text=Video') {
+                                                        e.target.src = 'https://via.placeholder.com/640x360?text=Video';
+                                                    }
+                                                }}
+                                            />
                                             <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.3)' }}>
                                                 <Play fill="white" size={40} />
                                             </div>
@@ -365,9 +393,9 @@ const Midia = () => {
                         </div>
                         {/* Links das redes sociais configurados via Painel Admin */}
                         <div className="social-links">
-                            <a href="#" className="social-link"><Instagram /> {footer.social.instagram}</a>
-                            <a href="#" className="social-link"><Youtube /> {footer.social.youtube}</a>
-                            <a href="#" className="social-link"><Facebook /> {footer.social.facebook}</a>
+                            <a href="#" className="social-link"><Instagram /> {footer?.social?.instagram || '@admacoficial'}</a>
+                            <a href="#" className="social-link"><Youtube /> {footer?.social?.youtube || 'ADMAC TV'}</a>
+                            <a href="#" className="social-link"><Facebook /> {footer?.social?.facebook || 'ADMAC'}</a>
                         </div>
                         <div className="footer-contact">
                             <a href="mailto:contato@admac.com" className="btn-secondary" style={{ display: 'flex', alignItems: 'center', gap: '8px' }}><Mail size={18} /> Contato</a>

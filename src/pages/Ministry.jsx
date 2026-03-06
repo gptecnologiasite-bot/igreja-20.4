@@ -90,23 +90,22 @@ const Ministry = ({ id, ...fallbackProps }) => {
             <p style={{ color: 'var(--text-muted)', marginBottom: '2.5rem', fontSize: '1.1rem' }}>{data.birthdays.text}</p>
 
             {data.birthdays.videoUrl && (
-              <div style={{ marginBottom: '3rem', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 8px 30px rgba(0,0,0,0.1)' }}>
+              <div className="video-wrapper" style={{ marginBottom: '3rem' }}>
                 {data.birthdays.videoUrl.includes('youtube.com') || data.birthdays.videoUrl.includes('youtu.be') ? (
                   <iframe
                     width="100%"
-                    height="400"
+                    height="100%"
                     src={data.birthdays.videoUrl.replace('watch?v=', 'embed/').split('&')[0]}
                     title="Vídeo Aniversariantes"
                     frameBorder="0"
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowFullScreen
-                    style={{ display: 'block' }}
                   ></iframe>
                 ) : (
                   <img
                     src={transformImageLink(data.birthdays.videoUrl)}
                     alt="Capa Aniversariantes"
-                    style={{ width: '100%', maxHeight: '400px', objectFit: 'cover' }}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', top: 0, left: 0 }}
                   />
                 )}
               </div>

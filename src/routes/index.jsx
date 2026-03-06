@@ -29,7 +29,7 @@ const Lares = lazy(() => import('../pages/Lares'));
 const Contact = lazy(() => import('../pages/Contact'));
 const Retiro = lazy(() => import('../pages/Retiro'));
 const Sobre = lazy(() => import('../pages/Sobre'));
-const Midia = lazy(() => import('../pages/Midia')); // Corrigido p/ Vercel (PascalCase)
+const Midia = lazy(() => import('../pages/Midia')); // Restaurado p/ Midia.jsx
 // Painel administrativo completo (sincroniza pasta pages via serviços)
 const PainelApp = lazy(() => import('../painel/painel'));
 

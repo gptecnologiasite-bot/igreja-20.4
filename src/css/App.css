@@ -8,3 +8,38 @@
 main {
   flex: 1;
 }
+
+/* ============================================================
+   GLOBAL: Responsive Video / Iframe Wrappers
+   Applies to all pages and the admin panel
+   ============================================================ */
+
+/* Video wrapper responsivo (usado em ministrys, missões, etc) */
+.video-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 900px;
+  margin: 0 auto;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+  aspect-ratio: 16 / 9;
+  background: #000;
+}
+
+.video-wrapper iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+  display: block;
+}
+
+/* Painel admin — Spotify e YouTube embed preview */
+[data-testid="embed-iframe"] {
+  display: block;
+  width: 100%;
+  border: none;
+}

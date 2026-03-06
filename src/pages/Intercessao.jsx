@@ -3,7 +3,6 @@ import { transformImageLink } from '../utils/imageUtils';
 import { Heart, Users, Calendar, MessageSquare, Send, Clock, Star, Play, BookOpen, Shield } from 'lucide-react';
 import { useMinistryData } from '../hooks/useMinistryData';
 import '../css/Lares.css';
-import DatabaseService from '../services/DatabaseService';
 
 const Intercessão = () => {
   const [prayerRequest, setPrayerRequest] = useState({

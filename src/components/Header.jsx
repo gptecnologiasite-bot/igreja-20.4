@@ -23,7 +23,10 @@ import {
   ChevronDown
 } from 'lucide-react';
 import '../css/Header.css';
-import DatabaseService from '../services/DatabaseService';
+import { supabase } from '../lib/supabase';
+import { INITIAL_HEADER_DATA } from '../lib/constants';
+import { deepMerge } from '../lib/dbUtils';
+import { usePageUpdate } from '../hooks/usePageUpdate';
 
 const Header = ({ theme, toggleTheme }) => {
   // ── Estado do menu mobile ─────────────────────────────────────
@@ -59,29 +62,37 @@ const Header = ({ theme, toggleTheme }) => {
     setInternalTheme(next);
   }, [toggleTheme, currentTheme]);
 
-  // ── Dados dinâmicos do cabeçalho (carregados do localStorage) ──
-  const [headerData, setHeaderData] = useState(DatabaseService.getHeaderDataDefault());
+  // ── Dados dinâmicos do cabeçalho (carregados do Supabase) ──
+  const [headerData, setHeaderData] = useState(INITIAL_HEADER_DATA);
+
+  const loadHeaderData = async () => {
+    try {
+      const { data: dbData } = await supabase
+        .from('site_settings')
+        .select('data')
+        .eq('key', 'header')
+        .single();
+
+      if (dbData?.data) {
+        // Usa deepMerge para garantir que campos ausentes no Supabase 
+        // sejam preenchidos pelos valores iniciais (ex: menu)
+        setHeaderData(deepMerge(INITIAL_HEADER_DATA, dbData.data));
+      } else {
+        setHeaderData(INITIAL_HEADER_DATA);
+      }
+    } catch (err) {
+      console.error('Error loading header data:', err);
+      // Fallback para dados iniciais em caso de erro
+      setHeaderData(INITIAL_HEADER_DATA);
+    }
+  };
 
   React.useEffect(() => {
-    // Carrega os dados do cabeçalho ao montar o componente
-    DatabaseService.getHeaderData().then(setHeaderData);
-
-    // Atualiza quando outra aba ou o painel admin alterar os dados
-    const handleStorageChange = () => {
-      DatabaseService.getHeaderData().then(setHeaderData);
-    };
-
-    // Escuta alterações de outras abas
-    window.addEventListener('storage', handleStorageChange);
-    // Escuta evento customizado emitido pelo Painel na mesma aba
-    window.addEventListener('admac_header', handleStorageChange);
-
-    // Remove os listeners ao desmontar o componente
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('admac_header', handleStorageChange);
-    };
+    loadHeaderData();
   }, []);
+
+  // Sincronização automática via usePageUpdate
+  usePageUpdate(['header'], loadHeaderData);
 
   // ── Atualiza o favicon dinamicamente se o logo for uma imagem ──
   React.useEffect(() => {
@@ -160,6 +171,7 @@ const Header = ({ theme, toggleTheme }) => {
     { name: 'Ação Social', path: '/social' },
     { name: 'EBD', path: '/edb' },
     { name: 'Mídia', path: '/midia' },
+    { name: 'Missões', path: '/missoes' },
   ];
 
   return (

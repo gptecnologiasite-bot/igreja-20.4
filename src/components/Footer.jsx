@@ -3,28 +3,52 @@ import { Link } from 'react-router-dom';
 import { Instagram, Youtube, Facebook, Phone, Music, Mail, MapPin, Clock, Heart, ChevronRight } from 'lucide-react';
 import '../css/Footer.css';
 import { transformImageLink } from '../utils/imageUtils';
-import DatabaseService from '../services/DatabaseService';
+import { supabase } from '../lib/supabase';
+import { INITIAL_FOOTER_DATA, INITIAL_HEADER_DATA } from '../lib/constants';
+import { deepMerge } from '../lib/dbUtils';
+import { usePageUpdate } from '../hooks/usePageUpdate';
 
 const Footer = () => {
-  const [footerData, setFooterData] = React.useState(DatabaseService.getFooterDataDefault());
-  const [headerData, setHeaderData] = React.useState(DatabaseService.getHeaderDataDefault());
+  const [footerData, setFooterData] = React.useState(INITIAL_FOOTER_DATA);
+  const [headerData, setHeaderData] = React.useState(INITIAL_HEADER_DATA);
+
+  const loadData = async () => {
+    try {
+      const [footerRes, headerRes] = await Promise.all([
+        supabase.from('site_settings').select('data').eq('key', 'footer').single(),
+        supabase.from('site_settings').select('data').eq('key', 'header').single()
+      ]);
+
+      if (footerRes.data?.data) {
+        setFooterData(deepMerge(INITIAL_FOOTER_DATA, footerRes.data.data));
+      } else {
+        setFooterData(INITIAL_FOOTER_DATA);
+      }
+
+      if (headerRes.data?.data) {
+        setHeaderData(deepMerge(INITIAL_HEADER_DATA, headerRes.data.data));
+      } else {
+        setHeaderData(INITIAL_HEADER_DATA);
+      }
+    } catch (err) {
+      console.error('Error loading footer/header data:', err);
+      // Fallback
+      setFooterData(INITIAL_FOOTER_DATA);
+      setHeaderData(INITIAL_HEADER_DATA);
+    }
+  };
 
   React.useEffect(() => {
-    DatabaseService.getFooterData().then(setFooterData);
-    DatabaseService.getHeaderData().then(setHeaderData);
-
-    const handleStorageChange = () => {
-      DatabaseService.getFooterData().then(setFooterData);
-      DatabaseService.getHeaderData().then(setHeaderData);
-    };
-    window.addEventListener('storage', handleStorageChange);
-    return () => window.removeEventListener('storage', handleStorageChange);
+    loadData();
   }, []);
+
+  // Sincronização automática via usePageUpdate
+  usePageUpdate(['footer', 'header'], loadData);
 
   // Configuração dos links rápidos no centro do rodapé
   const quickLinks = [
     { name: 'Início', path: '/' },
-    { name: 'Ministérios', path: '/ministerios' },
+    { name: 'Ministérios', path: '/' },
     { name: 'Revista', path: '/revista' },
     { name: 'Contato', path: '/contato' }
   ];
