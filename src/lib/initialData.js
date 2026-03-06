@@ -85,7 +85,8 @@ export const INITIAL_HOME_DATA = {
     { title: "Ação Social", description: "Servindo ao próximo com amor", link: "/social", icon: "❤️", color: "#e74c3c" },
     { title: "Lares", description: "Comunhão e crescimento nos lares", link: "/lares", icon: "🏠", color: "#3498db" },
     { title: "Retiro", description: "Momentos de renovação espiritual", link: "/retiro", icon: "⛰️", color: "#27ae60" },
-    { title: "Mídia", description: "Comunicação e tecnologia a serviço do Reino", link: "/midia", icon: "🎬", color: "#d4af37" }
+    { title: "Mídia", description: "Comunicação e tecnologia a serviço do Reino", link: "/midia", icon: "🎬", color: "#d4af37" },
+    { title: "Intercessão", description: "Clamando ao Senhor em todo o tempo", link: "/intercessao", icon: "🙏", color: "#d4af37" }
   ]
 };
 
@@ -346,6 +347,28 @@ export const INITIAL_MINISTRIES_DATA = {
       social: { instagram: "@admacoficial", youtube: "ADMAC TV", facebook: "ADMAC" }
     }
   },
+  intercessao: {
+    hero: { 
+      title: 'Ministério de Intercessão', 
+      subtitle: 'Clamando ao Senhor em todo o tempo', 
+      verse: '"Orai sem cessar." - 1 Tessalonicenses 5:17',
+      image: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=1600&q=80'
+    },
+    mission: { 
+      title: 'Nossa Missão', 
+      text: 'Sustentar a igreja, seus ministérios e famílias através da oração intercessória, crendo no poder de Deus para transformar realidades.' 
+    },
+    schedule: [
+      { day: 'Segunda-feira', time: '19h00', activity: 'Reunião de Intercessão' },
+      { day: 'Quarta-feira', time: '06h00', activity: 'Oração Matutina' }
+    ],
+    team: [
+      { name: 'Equipe de Intercessão', role: 'Líderes', photo: 'https://ui-avatars.com/api/?name=Intercessao&background=random' }
+    ],
+    testimonials: [
+      { author: 'Visitante', text: 'Senti a presença de Deus e a força das orações desta igreja.' }
+    ]
+  },
   missoes: {
     hero: {
       title: 'Ministério de Missões',
@@ -511,9 +534,7 @@ export const INITIAL_MINISTRIES_DATA = {
 export const INITIAL_HEADER_DATA = {
   logo: { text: 'ADMAC', icon: '✝' },
   menu: [
-    { name: 'Home', path: '/' },
-    { name: 'Mídia', path: '/midia' },
-    { name: 'Revista', path: '/revista' },
+    { name: 'Início', path: '/' },
     { name: 'Sobre', path: '/sobre' },
     { name: 'Contato', path: '/contato' }
   ],
@@ -561,5 +582,6 @@ export const INITIAL_PAGES_DATA = [
   { id: 'ebd', name: 'EBD', path: '/ebd', status: 'online', type: 'system' },
   { id: 'midia', name: 'Midia', path: '/midia', status: 'online', type: 'system' },
   { id: 'missoes', name: 'Missões', path: '/missoes', status: 'online', type: 'system' },
+  { id: 'intercessao', name: 'Intercessão', path: '/intercessao', status: 'online', type: 'system' },
 ];
 

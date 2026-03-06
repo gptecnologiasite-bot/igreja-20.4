@@ -117,13 +117,41 @@
   color: #666;
   font-size: 0.9rem;
 }
+@media (max-width: 768px) {
+  .ministry-hero {
+    padding: 6rem 0;
+  }
+
+  .ministry-hero h1 {
+    font-size: 3rem;
+  }
+
+  .info-grid {
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+  }
+
+  .info-card {
+    padding: 2rem;
+  }
+}
+
 @media (max-width: 480px) {
   .ministry-hero h1 {
-    font-size: 2rem;
+    font-size: 2.2rem;
   }
+
+  .ministry-hero p {
+    font-size: 1rem;
+  }
+
   .info-grid,
   .activities-grid {
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-    gap: 1rem;
+    grid-template-columns: 1fr;
+    gap: 1.5rem;
+  }
+
+  .info-card {
+    padding: 1.5rem;
   }
 }

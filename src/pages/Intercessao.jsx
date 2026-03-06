@@ -4,7 +4,7 @@ import { Heart, Users, Calendar, MessageSquare, Send, Clock, Star, Play, BookOpe
 import { useMinistryData } from '../hooks/useMinistryData';
 import '../css/Lares.css';
 
-const Intercessão = () => {
+const Intercessao = () => {
   const [prayerRequest, setPrayerRequest] = useState({
     name: '',
     email: '',
@@ -33,16 +33,16 @@ const Intercessão = () => {
     <div className="lares-page">
       {/* Hero Section */}
       <div className="lares-hero" style={{
-        backgroundImage: 'url(https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=1600&q=80)',
+        backgroundImage: `url(${data?.hero?.image || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=1600&q=80'})`,
         backgroundBlendMode: 'overlay'
       }}>
         <div className="hero-overlay"></div>
         <div className="hero-content">
           <Heart size={80} className="hero-icon" />
-          <h1>{data.hero.title}</h1>
-          <p className="hero-subtitle">{data.hero.subtitle}</p>
+          <h1>{data?.hero?.title || 'Ministério de Intercessão'}</h1>
+          <p className="hero-subtitle">{data?.hero?.subtitle || 'Clamando ao Senhor em todo o tempo'}</p>
           <div className="hero-verse">
-            <p>{data.hero.verse}</p>
+            <p>{data?.hero?.verse || '"Orai sem cessar." - 1 Tessalonicenses 5:17'}</p>
           </div>
         </div>
       </div>
@@ -50,9 +50,9 @@ const Intercessão = () => {
       {/* Mission Section */}
       <section className="mission-section">
         <div className="container">
-          <h2>{data.mission.title}</h2>
+          <h2>{data?.mission?.title || 'Nossa Missão'}</h2>
           <p className="mission-text">
-            {data.mission.text}
+            {data?.mission?.text || 'Sustentar a igreja, seus ministérios e famílias através da oração intercessória.'}
           </p>
         </div>
       </section>
@@ -99,7 +99,7 @@ const Intercessão = () => {
             gap: '2rem',
             marginTop: '3rem'
           }}>
-            {data.schedule.map((item, index) => (
+            {(data?.schedule || []).map((item, index) => (
               <div key={index} className="schedule-card" style={{
                 background: 'rgba(255, 255, 255, 0.03)',
                 border: '1px solid rgba(212, 175, 55, 0.2)',
@@ -126,7 +126,7 @@ const Intercessão = () => {
           <p className="section-subtitle">Conheça os líderes do ministério de intercessão</p>
 
           <div className="team-grid">
-            {data.team.map((member, index) => (
+            {(data?.team || []).map((member, index) => (
               <div key={index} className="team-card">
                 <img src={transformImageLink(member.photo)} alt={member.name} className="team-photo" />
                 <h3>{member.name}</h3>
@@ -152,7 +152,7 @@ const Intercessão = () => {
             gap: '2rem',
             marginTop: '3rem'
           }}>
-            {data.testimonials.map((testimonial, index) => (
+            {(data?.testimonials || []).map((testimonial, index) => (
               <div key={index} className="testimonial-card" style={{
                 background: 'rgba(255, 255, 255, 0.05)',
                 border: '1px solid rgba(212, 175, 55, 0.2)',
@@ -261,4 +261,4 @@ const Intercessão = () => {
   );
 };
 
-export default Intercessão;
+export default Intercessao;
