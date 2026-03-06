@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import AnalyticsService from '../services/AnalyticsService';
-import DatabaseService from '../services/DatabaseService';
-import { INITIAL_HOME_DATA } from '../services/initialData';
-import { transformImageLink } from '../utils/imageUtils';
+import { supabase, testSupabaseConnection } from '../lib/supabase';
+import { INITIAL_HOME_DATA, INITIAL_MINISTRIES_DATA, INITIAL_FOOTER_DATA, INITIAL_HEADER_DATA } from '../lib/constants';
+import { deepMerge, transformImageLink } from '../lib/dbUtils';
+import { broadcastUpdate } from '../hooks/usePageUpdate';
 
 const palette = {
   bg: '#0f1117',
@@ -144,9 +144,13 @@ const MOCK_ACTIVITIES = [
 ];
 
 const buildBars = () => {
-  const s = AnalyticsService.getMonthlyCounts(12);
-  const max = Math.max(1, ...s.map(x => x.count));
-  return s.map(x => ({ label: x.label, h: Math.round((x.count / max) * 100) }));
+  // Mock data for analytics as AnalyticsService is being removed
+  return [
+    { label: 'Jan', h: 45 }, { label: 'Fev', h: 70 }, { label: 'Mar', h: 55 },
+    { label: 'Abr', h: 90 }, { label: 'Mai', h: 65 }, { label: 'Jun', h: 85 },
+    { label: 'Jul', h: 50 }, { label: 'Ago', h: 75 }, { label: 'Set', h: 60 },
+    { label: 'Out', h: 95 }, { label: 'Nov', h: 80 }, { label: 'Dez', h: 70 }
+  ];
 };
 
 // STATS transformados em função ou calculados dentro do componente
@@ -210,28 +214,52 @@ const applyContactPage = (content, fields) => {
 };
 
 // -------- HomeAnivEditor: Manages birthdays from the Home editor --------
-function HomeAnivEditor({ palette, ministryOptions, DatabaseService }) {
+function HomeAnivEditor({ palette, ministryOptions }) {
   const [selMin, setSelMin] = React.useState(ministryOptions[0]?.value || 'jovens');
   const [bData, setBData] = React.useState(null);
   const [saving, setSaving] = React.useState(false);
   const [msg, setMsg] = React.useState('');
 
+  const fetchMinistryBirthdays = async (id) => {
+    const { data: dbData } = await supabase
+      .from('site_settings')
+      .select('data')
+      .eq('key', `ministry_${id}`)
+      .single();
+    return dbData?.data?.birthdays || { title: '', text: '', videoUrl: '', people: [] };
+  };
+
   React.useEffect(() => {
     setBData(null);
-    DatabaseService.getMinistry(selMin).then(d => {
-      setBData(d?.birthdays || { title: '', text: '', videoUrl: '', people: [] });
-    });
-  }, [selMin, DatabaseService]);
+    fetchMinistryBirthdays(selMin).then(setBData);
+  }, [selMin]);
 
   const updatePeople = (next) => setBData(d => ({ ...d, people: next }));
 
   const handleSave = async () => {
     setSaving(true);
-    const full = await DatabaseService.getMinistry(selMin);
-    await DatabaseService.saveMinistry(selMin, { ...full, birthdays: bData });
-    setSaving(false);
-    setMsg('✅ Salvo!');
-    setTimeout(() => setMsg(''), 2000);
+    try {
+      const { data: dbData } = await supabase
+        .from('site_settings')
+        .select('data')
+        .eq('key', `ministry_${selMin}`)
+        .single();
+
+      const full = dbData?.data || {};
+      await supabase.from('site_settings').upsert({
+        key: `ministry_${selMin}`,
+        data: { ...full, birthdays: bData }
+      });
+
+      broadcastUpdate(`ministry_${selMin}`);
+      setMsg('✅ Salvo!');
+    } catch (err) {
+      console.error('Error saving birthdays:', err);
+      setMsg('❌ Erro!');
+    } finally {
+      setSaving(false);
+      setTimeout(() => setMsg(''), 2000);
+    }
   };
 
   const textareaStyle = { width: '100%', height: 80, background: palette.bg, color: palette.text, border: `1px solid ${palette.border}`, borderRadius: 10, padding: 12, fontSize: '.9rem', outline: 'none', resize: 'vertical', fontFamily: 'Inter, sans-serif', lineHeight: 1.6 };
@@ -250,9 +278,9 @@ function HomeAnivEditor({ palette, ministryOptions, DatabaseService }) {
         </select>
       </div>
 
-      {!bData && <div style={{ color: palette.textMuted, padding: '1rem' }}>Carregando...</div>}
-
-      {bData && (
+      {!bData ? (
+        <div style={{ color: palette.textMuted, padding: '1rem' }}>Carregando...</div>
+      ) : (
         <>
           <div className="pm-field">
             <label>Título da Seção</label>
@@ -347,6 +375,7 @@ function HomeAnivEditor({ palette, ministryOptions, DatabaseService }) {
 }
 
 export default function PainelAdm() {
+  const hasSupabase = Boolean(import.meta.env?.VITE_SUPABASE_URL && import.meta.env?.VITE_SUPABASE_ANON_KEY);
   const [isLogged, setIsLogged] = useState(() => sessionStorage.getItem('painel_auth') === '1');
   const [loginData, setLoginData] = useState({ email: '', password: '' });
   const [loginError, setLoginError] = useState('');
@@ -400,13 +429,39 @@ export default function PainelAdm() {
     const input = document.createElement('input');
     input.type = 'file';
     input.accept = 'image/*';
-    input.onchange = (e) => {
+    input.onchange = async (e) => {
       const file = e.target.files[0];
       if (!file) return;
-      if (file.size > 1024 * 1024) {
-        alert('O arquivo é muito grande (maior que 1MB).\n\nPara não sobrecarregar o sistema, use imagens menores ou links externos.');
+      const MAX_SIZE_MB = hasSupabase ? 5 : 1;
+      if (file.size > MAX_SIZE_MB * 1024 * 1024) {
+        alert(`A imagem é muito grande (limite ${MAX_SIZE_MB}MB).`);
         return;
       }
+
+      // Tenta enviar para Supabase Storage se disponível
+      if (hasSupabase && supabase?.storage) {
+        try {
+          const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+          const safeName = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+          const path = `uploads/${safeName}`;
+          const { error: upErr } = await supabase.storage.from('site-images').upload(path, file, {
+            upsert: true,
+            contentType: file.type || 'image/jpeg',
+            cacheControl: '3600'
+          });
+          if (!upErr) {
+            const { data } = supabase.storage.from('site-images').getPublicUrl(path);
+            if (data?.publicUrl) {
+              callback(data.publicUrl);
+              return;
+            }
+          }
+        } catch {
+          // fallback abaixo
+        }
+      }
+
+      // Fallback: base64 local (modo offline)
       const reader = new FileReader();
       reader.onload = (ev) => callback(ev.target.result);
       reader.readAsDataURL(file);
@@ -415,8 +470,16 @@ export default function PainelAdm() {
   };
 
   const loadLogs = async () => {
-    const data = await DatabaseService.getLogs();
-    setLogs(data);
+    if (!hasSupabase) {
+      setLogs([]);
+      return;
+    }
+    const { data: dbLogs } = await supabase
+      .from('site_logs')
+      .select('*')
+      .order('created_at', { ascending: false })
+      .limit(100);
+    setLogs(dbLogs || []);
   };
   const ministryOptions = [
     { id: 'home', label: 'Home' },
@@ -488,52 +551,75 @@ export default function PainelAdm() {
     }
   }, []);
 
-  const saveNavConfig = () => {
+  const saveNavConfig = async () => {
     try {
       const payload = { main: navMain, settings: navSettings };
-      DatabaseService.saveItem('admac_painel_nav', payload);
+      await supabase.from('site_settings').upsert({
+        key: 'painel_nav',
+        data: payload
+      });
       alert('Configurações do menu salvas com sucesso!');
-    } catch (err) {
-      if (err.message === 'QUOTA_EXCEEDED') {
-        const usage = DatabaseService.getStorageUsage();
-        alert(`Erro: Limite de memória atingido (${usage.percent.toFixed(1)}%).\n\nRemova itens desnecessários das configurações.`);
-      } else {
-        alert('Erro ao salvar configurações do menu.');
-      }
+    } catch {
+      alert('Erro ao salvar configurações do menu.');
     }
   };
 
   const loadUsers = async () => {
-    let apiUsers = [];
     try {
-      const r = await fetch('/api/users');
-      if (r.ok) {
-        const j = await r.json();
-        apiUsers = Array.isArray(j.items) ? j.items : [];
+      if (!hasSupabase) {
+        setUsers([]);
+        return;
       }
+      const { data: dbUsers, error } = await supabase
+        .from('site_users') // Assuming a 'site_users' table for extended profile data
+        .select('*');
+
+      if (error) {
+        // Fallback to auth users if site_users doesn't exist or is empty
+        const { data: authUsers } = await supabase.auth.admin.listUsers();
+        if (authUsers?.users) {
+          setUsers(authUsers.users.map(u => ({
+            id: u.id,
+            name: u.user_metadata?.full_name || u.email.split('@')[0],
+            email: u.email,
+            role: u.user_metadata?.role || 'Viewer',
+            status: 'active',
+            photo: u.user_metadata?.avatar_url || null
+          })));
+          return;
+        }
+      }
+      setUsers(dbUsers || []);
     } catch (err) {
-      console.warn('API /api/users não disponível, usando apenas localStorage');
+      console.warn('Error loading users:', err);
     }
-
-    // Carrega também do localStorage para manter sincronia
-    const localUsers = JSON.parse(localStorage.getItem('admac_users') || '[]');
-
-    // Merge: Prioriza dados locais se houver conflito, mas mantém IDs da API se possível
-    const combined = [...apiUsers];
-    localUsers.forEach(lu => {
-      if (!combined.find(au => au.email === lu.email)) {
-        combined.push({ ...lu, id: lu.id || `local_${Date.now()}_${Math.random().toString(36).substr(2, 5)}` });
-      }
-    });
-
-    setUsers(combined);
   }
 
-  // Dynamic Header Data for Configs Tab
-  const [headerData, setHeaderData] = useState(DatabaseService.getHeaderDataDefault());
+  // Header Data for Configs Tab
+  const [headerData, setHeaderData] = useState(INITIAL_HEADER_DATA);
 
   useEffect(() => {
-    DatabaseService.getHeaderData().then(setHeaderData);
+    const fetchHeader = async () => {
+      try {
+        const { data: dbData } = await supabase
+          .from('site_settings')
+          .select('data')
+          .eq('key', 'header')
+          .single();
+
+        if (dbData?.data) {
+          // Usa deepMerge para não perder campos do INITIAL_HEADER_DATA (como o menu)
+          // se o registro no banco estiver incompleto
+          setHeaderData(deepMerge(INITIAL_HEADER_DATA, dbData.data));
+        } else {
+          setHeaderData(INITIAL_HEADER_DATA);
+        }
+      } catch (err) {
+        console.error('Error fetching header:', err);
+        setHeaderData(INITIAL_HEADER_DATA);
+      }
+    };
+    fetchHeader();
   }, []);
 
   const openCreateUser = () => {
@@ -559,72 +645,37 @@ export default function PainelAdm() {
 
   const saveUser = async (e) => {
     e.preventDefault();
-
-    // Salva no localStorage primeiro (mais garantido)
-    const localUsers = JSON.parse(localStorage.getItem('admac_users') || '[]');
-    const since = newUser.since || new Date().toLocaleDateString('pt-BR', { month: '2-digit', year: 'numeric' });
-    const userToSave = { ...newUser, since };
-
-    if (userMode === 'create') {
-      if (!localUsers.find(u => u.email === userToSave.email)) {
-        localUsers.push(userToSave);
+    try {
+      if (userMode === 'create') {
+        const { error } = await supabase.auth.signUp({
+          email: newUser.email,
+          password: newUser.password,
+          options: {
+            data: {
+              full_name: newUser.name,
+              role: newUser.role
+            }
+          }
+        });
+        if (error) throw error;
+        alert('Usuário cadastrado com sucesso!');
+      } else {
+        // Edit mode - updating profile data
+        const { error } = await supabase.from('site_users').upsert({
+          id: editingUserId,
+          name: newUser.name,
+          email: newUser.email,
+          role: newUser.role,
+          status: newUser.status,
+          location: newUser.location
+        });
+        if (error) throw error;
+        alert('Usuário atualizado com sucesso!');
       }
-      try {
-        DatabaseService.saveItem('admac_users', localUsers);
-      } catch (err) {
-        if (err.message === 'QUOTA_EXCEEDED') {
-          const usage = DatabaseService.getStorageUsage();
-          alert(`Erro: Limite de memória atingido (${usage.percent.toFixed(1)}%).\n\nReduza o tamanho da foto do usuário ou remova outros dados.`);
-          return;
-        }
-      }
-
-      // Tenta API
-      try {
-        const r = await fetch('/api/users', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(userToSave) });
-        if (r.ok) {
-          setShowModal(false);
-          await loadUsers();
-          alert('Usuário cadastrado com sucesso!');
-          return;
-        }
-      } catch (err) { console.warn('API error during saveUser create'); }
-
       setShowModal(false);
       await loadUsers();
-      alert('Usuário cadastrado com sucesso (Local)!');
-
-    } else if (userMode === 'edit' && editingUserId != null) {
-      const idx = localUsers.findIndex(u => u.email === newUser.email || u.id === editingUserId);
-      if (idx !== -1) {
-        localUsers[idx] = { ...localUsers[idx], ...userToSave };
-        try {
-          DatabaseService.saveItem('admac_users', localUsers);
-        } catch (err) {
-          if (err.message === 'QUOTA_EXCEEDED') {
-            const usage = DatabaseService.getStorageUsage();
-            alert(`Erro: Limite de memória atingido (${usage.percent.toFixed(1)}%).\n\nReduza o tamanho da foto ou libere espaço no cache.`);
-            return;
-          }
-        }
-
-        // Tenta API
-        try {
-          const r = await fetch(`/api/users/${editingUserId}`, { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(userToSave) });
-          if (r.ok) {
-            setShowModal(false);
-            await loadUsers();
-            alert('Usuário atualizado com sucesso!');
-            return;
-          }
-        } catch (err) { console.warn('API error during saveUser edit'); }
-
-        setShowModal(false);
-        await loadUsers();
-        alert('Usuário atualizado com sucesso (Local)!');
-      } else {
-        setShowModal(false);
-      }
+    } catch (err) {
+      alert(`Erro ao salvar usuário: ${err.message}`);
     }
   }
 
@@ -632,22 +683,17 @@ export default function PainelAdm() {
     const ok = window.confirm('Excluir este usuário?');
     if (!ok) return;
 
-    // Remove do localStorage
-    const localUsers = JSON.parse(localStorage.getItem('admac_users') || '[]');
-    const userToDelete = users.find(u => u.id === id);
-    const nextLocal = localUsers.filter(u => u.id !== id && u.email !== userToDelete?.email);
-    localStorage.setItem('admac_users', JSON.stringify(nextLocal));
-
-    // Tenta API
     try {
-      const r = await fetch(`/api/users/${id}`, { method: 'DELETE' });
-      if (r.ok) {
-        await loadUsers();
-        return;
-      }
-    } catch (err) { console.warn('API error during deleteUser'); }
+      // For real projects, we might want to use a service role or a specific edge function to delete auth users
+      // For now, let's just remove from our site_users table if it exists
+      const { error } = await supabase.from('site_users').delete().eq('id', id);
+      if (error) throw error;
 
-    await loadUsers();
+      await loadUsers();
+      alert('Usuário excluído!');
+    } catch (err) {
+      alert(`Erro ao excluir usuário: ${err.message}`);
+    }
   }
 
   const handlePhoto = (e) => {
@@ -672,24 +718,8 @@ export default function PainelAdm() {
 
   useEffect(() => {
     loadUsers();
-    loadPages(); // Carregar páginas na montagem
-    loadLogs(); // Load logs on mount
-    let esUsers = null;
-    let esPages = null;
-    try {
-      if (typeof EventSource !== 'undefined') {
-        esUsers = new EventSource('/api/users/stream');
-        esUsers.onmessage = () => loadUsers();
-        esUsers.onerror = () => { try { esUsers.close(); } catch { void 0 } };
-        esPages = new EventSource('/api/pages/stream');
-        esPages.onmessage = () => { loadPages(); setHasPagesNotif(true); };
-        esPages.onerror = () => { try { esPages.close(); } catch { void 0 } };
-      }
-    } catch { void 0 }
-    return () => {
-      try { esUsers && esUsers.close(); } catch { void 0 }
-      try { esPages && esPages.close(); } catch { void 0 }
-    }
+    loadPages();
+    loadLogs();
   }, []);
 
   useEffect(() => {
@@ -703,7 +733,7 @@ export default function PainelAdm() {
   useEffect(() => {
     const loadUser = () => {
       try {
-        const u = localStorage.getItem('user');
+        const u = localStorage.getItem('admac_current_user');
         setCurrentUser(u ? JSON.parse(u) : null);
       } catch { setCurrentUser(null) }
     };
@@ -722,7 +752,7 @@ export default function PainelAdm() {
       const match = users.find(u => u.email === currentUser.email);
       if (match && match.photo) {
         const updated = { ...currentUser, photo: match.photo, name: match.name, role: match.role };
-        localStorage.setItem('user', JSON.stringify(updated));
+        localStorage.setItem('admac_current_user', JSON.stringify(updated));
         setCurrentUser(updated);
       }
     }
@@ -749,15 +779,23 @@ export default function PainelAdm() {
   const loadMinistry = async (id) => {
     try {
       setMinistryLoading(true);
-      const [data, vids] = await Promise.all([
-        DatabaseService.getMinistry(id),
-        id === 'home' ? DatabaseService.getVideos() : Promise.resolve([])
+      const key = id === 'home' ? 'home' : `ministry_${id}`;
+
+      const [settingRes, videoRes] = await Promise.all([
+        supabase.from('site_settings').select('data').eq('key', key).single(),
+        id === 'home' ? supabase.from('site_settings').select('data').eq('key', 'videos').single() : Promise.resolve({ data: null })
       ]);
+
+      const data = settingRes.data?.data || (id === 'home' ? INITIAL_HOME_DATA : INITIAL_MINISTRIES_DATA);
+      const vids = videoRes.data?.data || [];
+
       setMinistryData(data);
       if (id === 'home') {
         setHomeData(data);
-        setHomeVideos(vids || []);
+        setHomeVideos(vids);
       }
+    } catch (err) {
+      console.error('Error loading content:', err);
     } finally {
       setMinistryLoading(false);
     }
@@ -772,25 +810,42 @@ export default function PainelAdm() {
   const saveMinistry = async () => {
     if (!ministryId || !ministryData) return;
     try {
+      const key = ministryId === 'home' ? 'home' : `ministry_${ministryId}`;
+
+      const sanitizeVideos = (arr) => (arr || []).map((v) => {
+        const rest = { ...v };
+        if ('thumbnail' in rest) delete rest.thumbnail;
+        return rest;
+      });
+      const sanitizedMinistryData = {
+        ...ministryData,
+        videos: sanitizeVideos(ministryData?.videos)
+      };
+
       if (ministryId === 'home') {
-        await Promise.all([
-          DatabaseService.saveHomeData(ministryData),
-          DatabaseService.saveVideos(homeVideos)
+        const cleanHome = sanitizeVideos(homeVideos);
+        const [{ error: e1 }, { error: e2 }] = await Promise.all([
+          supabase.from('site_settings').upsert({ key: 'home', data: sanitizedMinistryData }),
+          supabase.from('site_settings').upsert({ key: 'videos', data: cleanHome })
         ]);
-        setHomeData(ministryData);
-        DatabaseService.broadcastUpdate('admac_home');
-        DatabaseService.broadcastUpdate('admac_videos');
+        if (e1 || e2) throw new Error((e1?.message || '') + ' ' + (e2?.message || ''));
+        setHomeData(sanitizedMinistryData);
+        setHomeVideos(cleanHome);
+        const { data: reload } = await supabase.from('site_settings').select('data').eq('key', 'home').single();
+        if (reload?.data) setMinistryData(reload.data);
+        broadcastUpdate('home');
+        broadcastUpdate('videos');
       } else {
-        await DatabaseService.saveMinistry(ministryId, ministryData);
-        DatabaseService.broadcastUpdate(`admac_ministry_${ministryId}`);
+        const { error } = await supabase.from('site_settings').upsert({ key, data: sanitizedMinistryData });
+        if (error) throw error;
+        const { data: reload } = await supabase.from('site_settings').select('data').eq('key', key).single();
+        if (reload?.data) setMinistryData(reload.data);
+        broadcastUpdate(key);
       }
       alert('Conteúdo salvo com sucesso!');
     } catch (err) {
-      if (err.name === 'QuotaExceededError' || (err.message && err.message.includes('quota'))) {
-        alert('Erro: Limite de armazenamento atingido. Tente usar links externos em vez de fotos pesadas.');
-      } else {
-        alert('Erro ao salvar conteúdo. Tente novamente.');
-      }
+      console.error('Error saving content:', err);
+      alert('Erro ao salvar conteúdo.');
     }
   };
 
@@ -800,10 +855,8 @@ export default function PainelAdm() {
   const buildAccessReportHTML = (days = 30) => {
     let pagesData = [];
     let peopleData = [];
-    try { pagesData = AnalyticsService.getPagesSummary(days) || []; } catch { pagesData = []; }
-    try { peopleData = AnalyticsService.getPeopleSummary() || []; } catch { peopleData = []; }
     const period = new Date(Date.now() - days * 86400000).toLocaleDateString('pt-BR') + ' a ' + new Date().toLocaleDateString('pt-BR');
-    const total = pagesData.reduce((s, x) => s + x.count, 0);
+    const total = 0;
     const style = `
       body{font-family:Arial,Helvetica,sans-serif;color:#000;padding:20px}
       .hdr{border-bottom:2px solid #000;margin-bottom:10px}
@@ -846,13 +899,41 @@ export default function PainelAdm() {
   const openConfigEditHome = async () => {
     setPageMode('home');
     setPageName('Home');
-    const [hd, videos] = await Promise.all([
-      DatabaseService.getHomeData(),
-      DatabaseService.getVideos()
-    ]);
-    setHomeData(hd);
-    setMinistryData(hd);
-    setHomeVideos(videos || []);
+    try {
+      const [{ data: dbHome }, { data: dbVideos }] = await Promise.all([
+        supabase.from('site_settings').select('data').eq('key', 'home').single(),
+        supabase.from('site_settings').select('data').eq('key', 'videos').single()
+      ]);
+
+      let hd = dbHome?.data || null;
+      let videos = dbVideos?.data || null;
+
+      // Fallback localStorage quando Supabase estiver indisponível
+      if (!hd) {
+        try {
+          const raw = localStorage.getItem('admac_site_settings:home');
+          if (raw) hd = JSON.parse(raw);
+        } catch { /* ignore */ }
+      }
+      if (!videos) {
+        try {
+          const raw = localStorage.getItem('admac_site_settings:videos');
+          if (raw) videos = JSON.parse(raw);
+        } catch { /* ignore */ }
+      }
+
+      hd = hd || INITIAL_HOME_DATA;
+      videos = videos || [];
+
+      setHomeData(hd);
+      setMinistryData(hd);
+      setHomeVideos(videos);
+    } catch (err) {
+      console.error('Error opening home config:', err);
+      setHomeData(INITIAL_HOME_DATA);
+      setMinistryData(INITIAL_HOME_DATA);
+      setHomeVideos([]);
+    }
     setHomeTab('bemvindo');
     setPageModalOpen(true);
   };
@@ -874,69 +955,56 @@ export default function PainelAdm() {
     setLoginError('');
 
     try {
-      // 1) Coleta todos os usuários (API + localStorage)
-      let list = [...users];
-
-      // Se a lista estiver vazia, tenta carregar agora
-      if (list.length === 0) {
-        try {
-          const r = await fetch('/api/users');
-          if (r.ok) {
-            const j = await r.json();
-            list = Array.isArray(j.items) ? j.items : [];
-          }
-        } catch (err) {
-          console.warn('API fallback in handleLogin');
-        }
-
-        const localUsers = JSON.parse(localStorage.getItem('admac_users') || '[]');
-        localUsers.forEach(lu => {
-          if (!list.find(au => au.email === lu.email)) {
-            list.push(lu);
-          }
-        });
-        setUsers(list);
-      }
-
-      const found = list?.find(u => u.email === loginData.email);
-
-      if (found) {
-        if (found.password === loginData.password) {
-          sessionStorage.setItem('painel_auth', '1');
-          localStorage.setItem('admac_current_user', JSON.stringify(found));
-          setCurrentUser(found);
-          setIsLogged(true);
-          await DatabaseService.addLog('LOGIN_SISTEMA', found.email, 'Autenticado via Banco de Dados/Local');
-          return;
-        } else {
-          setLoginError('Senha incorreta.');
-          return;
-        }
-      }
-
-      // 2) Autenticação Default
-      if (loginData.email === CREDENTIALS.email && loginData.password === CREDENTIALS.password) {
+      if (!hasSupabase && (loginData.email === 'admin@admin.com' && loginData.password === '123456')) {
+        const user = { id: 'offline-admin', name: 'Admin', email: 'admin@admin.com', role: 'Administrador', status: 'active', photo: null };
         sessionStorage.setItem('painel_auth', '1');
-        const defaultAdmin = { id: 'admin', name: 'Administrador Principal', email: CREDENTIALS.email, role: 'Administrador', status: 'active', photo: null, location: 'SP, Brasil' };
-        localStorage.setItem('admac_current_user', JSON.stringify(defaultAdmin));
-        setCurrentUser(defaultAdmin);
+        localStorage.setItem('admac_current_user', JSON.stringify(user));
+        setCurrentUser(user);
         setIsLogged(true);
-        await DatabaseService.addLog('LOGIN_SISTEMA', CREDENTIALS.email, 'Autenticado com a conta padrão');
-        return;
-      }
+      } else {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: loginData.email,
+          password: loginData.password,
+        });
 
-      setLoginError('E-mail ou senha inválidos.');
+        if (error) {
+          // Fallback offline se credenciais padrão forem usadas
+          if (!hasSupabase && loginData.email === 'admin@admin.com' && loginData.password === '123456') {
+            const user = { id: 'offline-admin', name: 'Admin', email: 'admin@admin.com', role: 'Administrador', status: 'active', photo: null };
+            sessionStorage.setItem('painel_auth', '1');
+            localStorage.setItem('admac_current_user', JSON.stringify(user));
+            setCurrentUser(user);
+            setIsLogged(true);
+          } else {
+            setLoginError(error.message || 'E-mail ou senha inválidos.');
+            return;
+          }
+        }
+
+        if (data?.user) {
+          const user = {
+            id: data.user.id,
+            name: data.user.user_metadata?.full_name || data.user.email.split('@')[0],
+            email: data.user.email,
+            role: data.user.user_metadata?.role || 'Administrador',
+            status: 'active',
+            photo: data.user.user_metadata?.avatar_url || null
+          };
+          sessionStorage.setItem('painel_auth', '1');
+          localStorage.setItem('admac_current_user', JSON.stringify(user));
+          setCurrentUser(user);
+          setIsLogged(true);
+
+          // Log de acesso
+          await supabase.from('site_logs').insert({
+            action: 'LOGIN_SISTEMA',
+            user_email: user.email,
+            details: 'Autenticado via Supabase Auth'
+          });
+        }
+      }
     } catch (err) {
       console.error('Erro ao autenticar no painel:', err);
-      // Aqui, se houver um erro de rede no fetch, ainda queremos permitir o login hardcoded
-      if (loginData.email === CREDENTIALS.email && loginData.password === CREDENTIALS.password) {
-        sessionStorage.setItem('painel_auth', '1');
-        const defaultAdmin = { id: 'admin', name: 'Administrador Principal', email: CREDENTIALS.email, role: 'Administrador', status: 'active', photo: null, location: 'SP, Brasil' };
-        localStorage.setItem('admac_current_user', JSON.stringify(defaultAdmin));
-        setCurrentUser(defaultAdmin);
-        setIsLogged(true);
-        return;
-      }
       setLoginError('Erro ao tentar fazer login. Verifique sua conexão.');
     } finally {
       setLoginLoading(false);
@@ -951,35 +1019,78 @@ export default function PainelAdm() {
     setIsLogged(false);
     setLoginData({ email: '', password: '' });
     setActivePage('dashboard');
-    await DatabaseService.addLog('LOGOUT_SISTEMA', userEmail, 'Sessão encerrada pelo usuário');
+    try {
+      await supabase.from('site_logs').insert({
+        action: 'LOGOUT_SISTEMA',
+        user_email: userEmail,
+        details: 'Sessão encerrada pelo usuário'
+      });
+    } catch {
+      console.error('Error logging logout');
+    }
   };
 
   const loadPages = async () => {
     try {
       setPagesLoading(true)
-      let items = []
-      try {
-        const r = await fetch('/api/pages')
-        if (r.ok) {
-          const j = await r.json()
-          items = Array.isArray(j.items) ? j.items : []
-        }
-      } catch { /* fallback below */ }
 
-      if (!items.length) {
-        try {
-          const list = await DatabaseService.getPages()
-          items = (Array.isArray(list) ? list : []).map(p => ({
-            name: p.name || p.id || '',
-            file: `${(p.name || p.id || 'page')}.jsx`,
-            active: (p.status || 'online') === 'online',
-            photo: p.photo || null
-          }))
-        } catch { items = [] }
+      let pageFiles = [];
+
+      // Tenta buscar a lista real de arquivos via API do Vite (disponível em dev)
+      try {
+        const resp = await fetch('/api/pages');
+        const data = await resp.json();
+        if (data && data.items) {
+          pageFiles = data.items.map(it => ({ name: it.name, file: it.file }));
+        }
+      } catch {
+        console.warn('Vite API not available, falling back to static list');
       }
-      setPages(items)
-    } catch {
-      setPages([])
+
+      // Fallback para lista estática se a API falhar ou não retornar itens
+      if (!pageFiles.length) {
+        pageFiles = [
+          { name: 'Home', file: 'Home.jsx' },
+          { name: 'Kids', file: 'Kids.jsx' },
+          { name: 'Louvor', file: 'Louvor.jsx' },
+          { name: 'Jovens', file: 'JovensPage.jsx' },
+          { name: 'Mulheres', file: 'Mulheres.jsx' },
+          { name: 'Homens', file: 'Homens.jsx' },
+          { name: 'Lares', file: 'Lares.jsx' },
+          { name: 'Retiro', file: 'Retiro.jsx' },
+          { name: 'Social', file: 'Social.jsx' },
+          { name: 'EDB', file: 'EDB.jsx' },
+          { name: 'Midia', file: 'Midia.jsx' },
+          { name: 'Sobre', file: 'Sobre.jsx' },
+          { name: 'Contact', file: 'Contact.jsx' },
+          { name: 'Missoes', file: 'Missoes.jsx' },
+          { name: 'Revista Admac', file: 'RevistaAdmac.jsx' },
+          { name: 'Intercessão', file: 'Intercessao.jsx' }
+        ];
+      }
+
+      const { data: dbSettings } = await supabase
+        .from('site_settings')
+        .select('key, data');
+
+      const items = pageFiles.map(pf => {
+        const id = pageToMinistry[pf.name] || pf.name.toLowerCase();
+        const settings = dbSettings?.find(s => s.key === (id === 'home' ? 'home' : `ministry_${id}`))?.data;
+
+        // Verifica se 'active' existe no JSON do banco. 
+        // Se não existir (novo ou padrão), assume-se true.
+        const isActive = settings?.active !== false;
+
+        return {
+          ...pf,
+          active: isActive,
+          photo: settings?.hero?.image || settings?.welcome?.image || null
+        };
+      });
+
+      setPages(items);
+    } catch (err) {
+      console.error('Error loading pages:', err);
     } finally {
       setPagesLoading(false)
     }
@@ -994,22 +1105,28 @@ export default function PainelAdm() {
 
   const openEditPage = async (name) => {
     try {
+      const id = pageToMinistry[name] || name.toLowerCase();
+      const key = id === 'home' ? 'home' : `ministry_${id}`;
+
       if (name === 'Home') {
         setPageMode('home');
         setPageName(name);
-        const [hd, videos] = await Promise.all([
-          DatabaseService.getHomeData(),
-          DatabaseService.getVideos()
-        ]);
+
+        const { data: dbHome } = await supabase.from('site_settings').select('data').eq('key', 'home').single();
+        const { data: dbVideos } = await supabase.from('site_settings').select('data').eq('key', 'videos').single();
+
+        const hd = dbHome?.data || INITIAL_HOME_DATA;
+        const videos = dbVideos?.data || [];
+
         setHomeData(hd);
         setMinistryData(hd);
-        setHomeVideos(videos || []);
+        setHomeVideos(videos);
         setHomeTab('bemvindo');
         setPageModalOpen(true);
         return;
       }
+
       if (pageToMinistry[name]) {
-        const id = pageToMinistry[name];
         setPageMode('ministry');
         setPageName(name);
         setMinistryId(id);
@@ -1018,17 +1135,21 @@ export default function PainelAdm() {
         setPageModalOpen(true);
         return;
       }
-      const r = await fetch(`/api/pages/${encodeURIComponent(name)}`)
-      if (!r.ok) throw new Error()
-      const j = await r.json()
-      const raw = j.content || ''
-      setPageRawContent(raw)
 
-      // Página de contato: usar formulário amigável
+      // Generic page or specialized like 'Contact'
+      const { data: dbPage } = await supabase
+        .from('site_settings')
+        .select('data')
+        .eq('key', key)
+        .single();
+
+      const raw = dbPage?.data ? (typeof dbPage.data === 'string' ? dbPage.data : JSON.stringify(dbPage.data, null, 2)) : '';
+      setPageRawContent(raw);
+
       if (name.toLowerCase() === 'contact') {
-        const parsed = parseContactPage(raw)
-        setPageMode('contact')
-        setPageName(name)
+        const parsed = parseContactPage(raw);
+        setPageMode('contact');
+        setPageName(name);
         setPageData({
           title: parsed.title,
           description: parsed.subtitle,
@@ -1036,25 +1157,24 @@ export default function PainelAdm() {
           phone: parsed.phone,
           email: parsed.email,
           schedule: parsed.schedule,
-        })
-        setPageModalOpen(true)
-        return
+        });
+        setPageModalOpen(true);
+        return;
       }
 
-      // Padrão: JSON simples ou texto bruto
-      setPageMode('edit')
-      setPageName(name)
-      let data = { title: name, description: '', photo: null }
+      setPageMode('edit');
+      setPageName(name);
+      let pageDataObj = { title: name, description: '', photo: null };
       try {
-        const parsed = JSON.parse(raw)
-        if (parsed.title) data = parsed
+        const parsed = JSON.parse(raw);
+        if (parsed.title) pageDataObj = parsed;
       } catch {
-        data.description = raw
+        pageDataObj.description = raw;
       }
-      setPageData(data)
-      setPageModalOpen(true)
-    } catch {
-      // silencioso por enquanto
+      setPageData(pageDataObj);
+      setPageModalOpen(true);
+    } catch (err) {
+      console.error('Error opening page editor:', err);
     }
   }
 
@@ -1072,127 +1192,129 @@ export default function PainelAdm() {
 
   const savePage = async () => {
     try {
-      setPageSaving(true)
-      if (!pageName.trim()) return
+      setPageSaving(true);
+      if (!pageName.trim()) return;
 
-      let content;
+      const id = pageToMinistry[pageName] || pageName.toLowerCase();
+      const key = id === 'home' ? 'home' : `ministry_${id}`;
 
       if (pageMode === 'home') {
-        try {
-          await Promise.all([
-            DatabaseService.saveHomeData(homeData || {}),
-            DatabaseService.saveVideos(homeVideos || [])
-          ]);
-          setMinistryData(homeData);
-          DatabaseService.broadcastUpdate('admac_home');
-          DatabaseService.broadcastUpdate('admac_videos');
-          setHasPagesNotif(true);
-          setPageModalOpen(false)
-          await loadPages()
-          alert('Página Home salva com sucesso!');
-          return
-        } catch (err) {
-          if (err.message === 'QUOTA_EXCEEDED') {
-            const usage = DatabaseService.getStorageUsage();
-            alert(`Erro: Limite de memória atingido (${usage.percent.toFixed(1)}%).\n\nRemova fotos pesadas ou use links externos (Google Drive/YouTube) para economizar espaço.`);
-          } else {
-            alert('Erro ao salvar Home.');
-          }
-          return;
+        const cleanHome = { ...(homeData || {}) };
+        const [r1, r2] = await Promise.all([
+          supabase.from('site_settings').upsert({ key: 'home', data: cleanHome }),
+          supabase.from('site_settings').upsert({ key: 'videos', data: homeVideos || [] })
+        ]);
+
+        // Persistência local quando Supabase estiver offline/erro
+        const e1 = r1?.error, e2 = r2?.error;
+        if (!hasSupabase || e1 || e2) {
+          try {
+            localStorage.setItem('admac_site_settings:home', JSON.stringify(cleanHome));
+            localStorage.setItem('admac_site_settings:videos', JSON.stringify(homeVideos || []));
+          } catch { /* ignore */ }
         }
+
+        setMinistryData(cleanHome);
+        broadcastUpdate('home');
+        broadcastUpdate('videos');
+        try {
+          localStorage.setItem('home', String(Date.now()));
+          localStorage.setItem('videos', String(Date.now()));
+        } catch { /* ignore */ }
+        setHasPagesNotif(true);
+        setPageModalOpen(false);
+        await loadPages();
+        if (!hasSupabase || e1 || e2) {
+          alert('Página Home salva em modo offline (navegador). Configure o Supabase para sincronizar.');
+        } else {
+          alert('Página Home salva com sucesso!');
+        }
+        return;
       }
 
       if (pageMode === 'ministry') {
-        try {
-          await DatabaseService.saveMinistry(ministryId, ministryData || {});
-          try {
-            window.localStorage.setItem('admac_last_update', String(Date.now()));
-            window.dispatchEvent(new StorageEvent('storage', { key: `admac_ministry_${ministryId}` }));
-          } catch { void 0 }
-          setHasPagesNotif(true);
-          setPageModalOpen(false)
-          await loadPages()
-          alert('Página de Ministério salva com sucesso!');
-          return
-        } catch (err) {
-          if (err.message === 'QUOTA_EXCEEDED') {
-            const usage = DatabaseService.getStorageUsage();
-            alert(`Erro: Limite de memória atingido (${usage.percent.toFixed(1)}%).\n\nFotos em Base64 ocupam muito espaço. Recomendamos usar links diretos das imagens.`);
-          } else {
-            alert('Erro ao salvar Ministério.');
-          }
-          return;
-        }
+        await supabase.from('site_settings').upsert({
+          key: `ministry_${ministryId}`,
+          data: ministryData || {}
+        });
+        broadcastUpdate(`ministry_${ministryId}`);
+        setHasPagesNotif(true);
+        setPageModalOpen(false);
+        await loadPages();
+        alert('Página de Ministério salva com sucesso!');
+        return;
       }
 
-      // Feedback para outras páginas
-      try {
-        // Página de contato: usar formulário amigável
-        if (pageMode === 'contact') {
-          const fields = {
-            title: pageData.title || '',
-            subtitle: pageData.description || '',
-            address: pageData.address || '',
-            phone: pageData.phone || '',
-            email: pageData.email || '',
-            schedule: pageData.schedule || '',
-          }
-          content = applyContactPage(pageRawContent, fields)
-          const r = await fetch(`/api/pages/${encodeURIComponent(pageName.trim())}`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ content }),
-          })
-          if (!r.ok) throw new Error()
-          setHasPagesNotif(true);
-        } else {
-          // Páginas dinâmicas simples (JSON)
-          content = JSON.stringify(pageData)
-          if (pageMode === 'create') {
-            const r = await fetch('/api/pages', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ name: pageName.trim(), content }),
-            })
-            if (!r.ok) throw new Error()
-            setHasPagesNotif(true);
-          } else {
-            const r = await fetch(`/api/pages/${encodeURIComponent(pageName.trim())}`, {
-              method: 'PUT',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ content }),
-            })
-            if (!r.ok) throw new Error()
-            setHasPagesNotif(true);
-          }
-        }
-        alert('Página salva com sucesso!');
-      } catch (err) {
-        alert('Erro ao salvar a página. Verifique a conexão ou se o arquivo já existe.');
+      let content;
+      if (pageMode === 'contact') {
+        const fields = {
+          title: pageData.title || '',
+          subtitle: pageData.description || '',
+          address: pageData.address || '',
+          phone: pageData.phone || '',
+          email: pageData.email || '',
+          schedule: pageData.schedule || '',
+        };
+        content = applyContactPage(pageRawContent, fields);
+      } else {
+        content = JSON.stringify(pageData);
       }
 
-      setPageModalOpen(false)
-      await loadPages()
+      await supabase.from('site_settings').upsert({
+        key: key,
+        data: content
+      });
+      broadcastUpdate(key);
+      setHasPagesNotif(true);
+      setPageModalOpen(false);
+      await loadPages();
+      alert('Página salva com sucesso!');
+    } catch (err) {
+      console.error('Error saving page:', err);
+      alert('Erro ao salvar a página.');
     } finally {
-      setPageSaving(false)
+      setPageSaving(false);
     }
   }
 
   const deletePage = async (name) => {
-    const ok = window.confirm('Excluir esta página?')
-    if (!ok) return
-    const r = await fetch(`/api/pages/${encodeURIComponent(name)}`, { method: 'DELETE' })
-    if (r.ok) { setHasPagesNotif(true); loadPages() }
-    else if (r.status === 403) alert('Esta é uma página do sistema e não pode ser excluída.')
+    const ok = window.confirm('Ocultar esta página das configurações?');
+    if (!ok) return;
+
+    try {
+      const id = pageToMinistry[name] || name.toLowerCase();
+      const key = id === 'home' ? 'home' : `ministry_${id}`;
+      // Instead of deleting the file, we remove the configuration entry
+      await supabase.from('site_settings').delete().eq('key', key);
+      loadPages();
+      alert('Configuração de página removida!');
+    } catch {
+      alert('Erro ao remover configuração.');
+    }
   }
 
   const togglePageStatus = async (name, currentStatus) => {
-    const r = await fetch(`/api/pages/${encodeURIComponent(name)}/status`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ active: !currentStatus })
-    })
-    if (r.ok) loadPages()
+    try {
+      const id = pageToMinistry[name] || name.toLowerCase();
+      const key = id === 'home' ? 'home' : `ministry_${id}`;
+
+      // Busca dados atuais para não sobrescrever o resto do objeto JSON
+      const { data: dbData } = await supabase.from('site_settings').select('data').eq('key', key).single();
+      const currentData = dbData?.data || {};
+      const nextData = { ...currentData, active: !currentStatus };
+
+      // Atualiza no banco
+      const { error } = await supabase.from('site_settings').upsert({ key, data: nextData });
+      if (error) throw error;
+
+      // Atualiza estado local imediatamente para feedback visual instantâneo
+      setPages(prev => prev.map(p => p.name === name ? { ...p, active: !currentStatus } : p));
+
+      broadcastUpdate(key);
+    } catch (err) {
+      console.error('Error toggling status:', err);
+      alert('Erro ao alterar status da página. Verifique sua conexão.');
+    }
   }
 
   useEffect(() => {
@@ -1260,15 +1382,6 @@ export default function PainelAdm() {
                 </div>
                 <form onSubmit={saveUser}>
                   <div className="pm-body">
-                    <div className="pm-photo-wrap">
-                      <div className="pm-photo-preview">
-                        {newUser.photo ? <img src={newUser.photo} alt="preview" /> : '👤'}
-                      </div>
-                      <label className="pm-photo-btn">
-                        Selecionar Foto
-                        <input type="file" accept="image/*" onChange={handlePhoto} style={{ display: 'none' }} />
-                      </label>
-                    </div>
                     <div className="pm-row">
                       <div className="pm-field">
                         <label>Nome</label>
@@ -1425,18 +1538,18 @@ export default function PainelAdm() {
               <h3 style={{ fontSize: '.95rem', fontWeight: 600 }}>Crescimento Mensal</h3>
               <div style={{ display: 'flex', gap: 8 }}>
                 <button className="painel-action-btn" onClick={() => {
-                  const text = AnalyticsService.getReportText();
+                  const text = `Relatório de Acessos ADMAC\nData: ${new Date().toLocaleDateString()}\nStatus: Sistema em transição para Supabase.`;
                   const blob = new Blob([`<html><body><pre>${text.replace(/&/g, '&amp;').replace(/</g, '&lt;')}</pre></body></html>`], { type: 'application/msword' });
                   const url = URL.createObjectURL(blob);
                   const a = document.createElement('a');
                   a.href = url; a.download = 'relatorio-acessos.doc'; a.click(); URL.revokeObjectURL(url);
                 }}>Relatório (.doc)</button>
                 <button className="painel-action-btn" onClick={() => {
-                  const text = encodeURIComponent(AnalyticsService.getReportText());
+                  const text = encodeURIComponent(`Relatório de Acessos ADMAC\nData: ${new Date().toLocaleDateString()}\nStatus: Sistema em transição para Supabase.`);
                   window.open(`https://wa.me/?text=${text}`, '_blank');
                 }}>WhatsApp</button>
                 <button className="painel-action-btn" onClick={() => {
-                  const text = encodeURIComponent(AnalyticsService.getReportText());
+                  const text = encodeURIComponent(`Relatório de Acessos ADMAC\nData: ${new Date().toLocaleDateString()}\nStatus: Sistema em transição para Supabase.`);
                   window.open(`https://t.me/share/url?url=${encodeURIComponent(location.origin)}&text=${text}`, '_blank');
                 }}>Telegram</button>
               </div>
@@ -1568,6 +1681,30 @@ export default function PainelAdm() {
                             onChange={e => setMinistryData(d => ({ ...d, welcome: { ...d.welcome, text2: e.target.value } }))}
                             style={{ width: '100%', height: 100, background: palette.bg, color: palette.text, border: `1px solid ${palette.border}`, borderRadius: 10, padding: 12, fontSize: '.9rem', outline: 'none', resize: 'vertical', fontFamily: 'Inter, sans-serif', lineHeight: 1.6 }}
                           />
+                        </div>
+                        <div className="pm-field">
+                          <label>Texto do Botão (Home)</label>
+                          <div className="pm-field-wrap">
+                            <span className="pm-icon">🏷️</span>
+                            <input
+                              className="pm-input"
+                              value={ministryData?.welcome?.buttonText || ''}
+                              onChange={e => setMinistryData(d => ({ ...d, welcome: { ...d.welcome, buttonText: e.target.value } }))}
+                              placeholder="Ex: Entre em Contato"
+                            />
+                          </div>
+                        </div>
+                        <div className="pm-field">
+                          <label>Link do Botão (Home)</label>
+                          <div className="pm-field-wrap">
+                            <span className="pm-icon">🔗</span>
+                            <input
+                              className="pm-input"
+                              value={ministryData?.welcome?.buttonLink || ''}
+                              onChange={e => setMinistryData(d => ({ ...d, welcome: { ...d.welcome, buttonLink: e.target.value } }))}
+                              placeholder="Ex: /contato"
+                            />
+                          </div>
                         </div>
                       </>
                     ) : (
@@ -1955,16 +2092,65 @@ export default function PainelAdm() {
                         </div>
                         <div className="pm-field">
                           <label>URL do YouTube (Embed)</label>
-                          <div className="pm-field-wrap">
-                            <span className="pm-icon">▶</span>
-                            <input
-                              className="pm-input"
-                              value={ministryData?.live?.url || ''}
-                              onChange={e => setMinistryData(d => ({ ...d, live: { ...(d.live || {}), url: e.target.value } }))}
-                              placeholder="Ex: https://www.youtube.com/embed/..."
-                            />
+                          <div className="pm-field-wrap" style={{ display: 'flex', gap: '6px' }}>
+                            <div style={{ position: 'relative', flex: 1 }}>
+                              <span className="pm-icon">▶</span>
+                              <input
+                                className="pm-input"
+                                value={ministryData?.live?.url || ''}
+                                onChange={e => {
+                                  let val = (e.target.value || '').trim();
+                                  val = val.replace(/^['"`]+|['"`]+$/g, '');
+                                  const m = val.match(/src=["'`](.+?)["'`]/i);
+                                  if (m && m[1]) val = m[1];
+                                  if (!val.includes('/embed/')) {
+                                    if (val.includes('watch?v=')) {
+                                      const vidId = (val.match(/[?&]v=([a-zA-Z0-9_-]+)/) || [])[1];
+                                      if (vidId) val = `https://www.youtube.com/embed/${vidId}`;
+                                    } else if (val.includes('youtu.be/')) {
+                                      const vidId = (val.match(/youtu\.be\/([a-zA-Z0-9_-]+)/) || [])[1];
+                                      if (vidId) val = `https://www.youtube.com/embed/${vidId}`;
+                                    } else if (val.match(/youtube\.com\/live\/([a-zA-Z0-9_-]+)/)) {
+                                      const vidId = (val.match(/youtube\.com\/live\/([a-zA-Z0-9_-]+)/) || [])[1];
+                                      if (vidId) val = `https://www.youtube.com/embed/${vidId}`;
+                                    } else if (val.includes('youtube.com/live')) {
+                                      const vidId = (val.match(/[?&]v=([a-zA-Z0-9_-]+)/) || [])[1];
+                                      if (vidId) val = `https://www.youtube.com/embed/${vidId}`;
+                                    }
+                                  }
+                                  setMinistryData(d => ({ ...d, live: { ...(d.live || {}), url: val } }));
+                                }}
+                                placeholder="Ex: https://www.youtube.com/embed/..."
+                              />
+                            </div>
+                            {ministryData?.live?.url && (
+                              <button
+                                type="button"
+                                onClick={() => setMinistryData(d => ({ ...d, live: { ...(d.live || {}), url: '' } }))}
+                                title="Limpar URL"
+                                style={{ background: 'rgba(244,63,94,.15)', border: '1px solid rgba(244,63,94,.3)', color: '#f43f5e', borderRadius: 8, padding: '0 12px', fontSize: '1rem', cursor: 'pointer', whiteSpace: 'nowrap', height: 38 }}
+                              >
+                                × Limpar
+                              </button>
+                            )}
+                          </div>
+                          <div style={{ fontSize: '.75rem', color: palette.textMuted, marginTop: 4 }}>
+                            Cole qualquer link do YouTube: watch?v=, youtu.be/, youtube.com/live/ ou embed/
                           </div>
                         </div>
+                        {ministryData?.live?.url && !ministryData.live.url.includes('UCxxxxxxxxxxxx') && !ministryData.live.url.includes('live_stream?channel') && (
+                          <div style={{ marginTop: '1rem', borderRadius: 10, overflow: 'hidden', border: `1px solid ${palette.border}` }}>
+                            <iframe
+                              src={ministryData.live.url}
+                              title={ministryData?.live?.title || 'Preview'}
+                              width="100%"
+                              height="250"
+                              frameBorder="0"
+                              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                              allowFullScreen
+                            />
+                          </div>
+                        )}
                       </>
                     ) : (
                       <>
@@ -2101,7 +2287,6 @@ export default function PainelAdm() {
                         <HomeAnivEditor
                           palette={palette}
                           ministryOptions={MINISTRY_OPTIONS}
-                          DatabaseService={DatabaseService}
                         />
                       );
                     })() : (
@@ -2390,9 +2575,14 @@ export default function PainelAdm() {
                               className="pm-input"
                               value={v.url || ''}
                               onChange={e => {
-                                let val = e.target.value;
-                                if (val.includes('watch?v=')) val = val.replace('watch?v=', 'embed/');
-                                if (val.includes('youtu.be/')) val = val.replace('youtu.be/', 'youtube.com/embed/');
+                                let val = (e.target.value || '').trim();
+                                if (!val.includes('/embed/')) {
+                                  const wMatch = val.match(/[?&]v=([a-zA-Z0-9_-]+)/);
+                                  const yMatch = val.match(/youtu\.be\/([a-zA-Z0-9_-]+)/);
+                                  const lMatch = val.match(/youtube\.com\/live\/([a-zA-Z0-9_-]+)/);
+                                  const vidId = (wMatch || yMatch || lMatch || [])[1];
+                                  if (vidId) val = `https://www.youtube.com/embed/${vidId}`;
+                                }
 
                                 if (ministryId === 'home') {
                                   const next = [...(homeVideos || [])];
@@ -2408,27 +2598,7 @@ export default function PainelAdm() {
                             />
                           </div>
                         </div>
-                        <div className="pm-field">
-                          <label>Capa/Thumbnail (URL)</label>
-                          <div className="pm-field-wrap">
-                            <span className="pm-icon">🖼</span>
-                            <input
-                              className="pm-input"
-                              value={v.thumbnail || ''}
-                              onChange={e => {
-                                if (ministryId === 'home') {
-                                  const next = [...(homeVideos || [])];
-                                  next[idx] = { ...next[idx], thumbnail: e.target.value };
-                                  setHomeVideos(next);
-                                } else {
-                                  const next = [...(ministryData.videos || [])];
-                                  next[idx] = { ...next[idx], thumbnail: e.target.value };
-                                  setMinistryData(d => ({ ...d, videos: next }));
-                                }
-                              }}
-                            />
-                          </div>
-                        </div>
+                        {/* Campo de thumbnail removido intencionalmente para evitar travamentos */}
                         <div className="pm-field">
                           <label>Data/Texto Auxiliar</label>
                           <div className="pm-field-wrap">
@@ -2495,7 +2665,7 @@ export default function PainelAdm() {
                     <button
                       className="pm-add-btn"
                       onClick={() => {
-                        const newVid = { title: '', url: '', date: 'Recente', views: '0', thumbnail: '' };
+                        const newVid = { title: '', url: '', date: 'Recente', views: '0' };
                         if (ministryId === 'home') {
                           setHomeVideos(v => [...(v || []), newVid]);
                         } else {
@@ -3188,13 +3358,7 @@ export default function PainelAdm() {
     }
     if (activePage === 'relatorios') {
       let people = [];
-      let reportText = '';
-      try {
-        people = AnalyticsService.getPeopleSummary() || [];
-      } catch { people = []; }
-      try {
-        reportText = AnalyticsService.getPeopleReportText() || '';
-      } catch { reportText = 'Relatório de Acessos — sem dados disponíveis.'; }
+      let reportText = 'Relatório de Acessos — Sistema em transição.';
       return (
         <div>
           <div className="painel-card" style={{ marginBottom: '1.2rem' }}>
@@ -3243,7 +3407,7 @@ export default function PainelAdm() {
                 <button
                   className="painel-action-btn"
                   onClick={() => {
-                    const text = encodeURIComponent(reportText || AnalyticsService.getPeopleReportText());
+                    const text = encodeURIComponent(reportText);
                     window.open(`https://wa.me/?text=${text}`, '_blank');
                   }}
                 >
@@ -3252,7 +3416,7 @@ export default function PainelAdm() {
                 <button
                   className="painel-action-btn"
                   onClick={() => {
-                    const text = encodeURIComponent(reportText || AnalyticsService.getPeopleReportText());
+                    const text = encodeURIComponent(reportText);
                     window.open(`https://t.me/share/url?url=${encodeURIComponent(location.origin)}&text=${text}`, '_blank');
                   }}
                 >
@@ -3594,19 +3758,13 @@ export default function PainelAdm() {
               style={{ width: '100%' }}
               onClick={async () => {
                 try {
-                  await DatabaseService.saveHeaderData(headerData);
-                  try {
-                    window.localStorage.setItem('admac_last_update', String(Date.now()));
-                    window.dispatchEvent(new StorageEvent('storage', { key: 'admac_header' }));
-                  } catch { void 0 }
+                  const { error } = await supabase.from('site_settings').upsert({ key: 'header', data: headerData });
+                  if (error) throw error;
+                  broadcastUpdate('header');
                   alert("Configurações salvas com sucesso!");
                 } catch (err) {
-                  if (err.message === 'QUOTA_EXCEEDED') {
-                    const usage = DatabaseService.getStorageUsage();
-                    alert(`Erro: Limite atingido (${usage.percent.toFixed(1)}%). Reduza o tamanho do logo.`);
-                  } else {
-                    alert("Erro ao salvar configurações.");
-                  }
+                  console.error('Error saving header:', err);
+                  alert("Erro ao salvar configurações.");
                 }
               }}
             >
@@ -3615,31 +3773,17 @@ export default function PainelAdm() {
           </div>
 
           <div className="painel-card" style={{ maxWidth: 600, marginTop: '1.2rem' }}>
-            <h3 style={{ fontSize: '.95rem', fontWeight: 600, marginBottom: '1.2rem' }}>Gerenciamento de Armazenamento</h3>
+            <h3 style={{ fontSize: '.95rem', fontWeight: 600, marginBottom: '1.2rem' }}>Gerenciamento de Cache</h3>
             <div style={{ marginBottom: '1rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '.85rem', marginBottom: '6px' }}>
-                <span>Uso do Navegador (LocalStorage)</span>
-                <span style={{ fontWeight: 600, color: DatabaseService.getStorageUsage().percent > 80 ? palette.danger : palette.text }}>
-                  {DatabaseService.getStorageUsage().usedMB}MB / 5MB ({DatabaseService.getStorageUsage().percent.toFixed(1)}%)
-                </span>
-              </div>
-              <div style={{ width: '100%', height: '8px', background: palette.bg, borderRadius: '4px', overflow: 'hidden' }}>
-                <div style={{
-                  width: `${DatabaseService.getStorageUsage().percent}%`,
-                  height: '100%',
-                  background: DatabaseService.getStorageUsage().percent > 80 ? palette.danger : palette.accent,
-                  transition: 'width 0.3s ease'
-                }} />
-              </div>
-              <p style={{ fontSize: '.75rem', color: palette.textMuted, marginTop: '8px' }}>
-                O navegador limita o armazenamento em 5MB. Fotos pesadas em Base64 consomem esse limite rapidamente.
+              <p style={{ fontSize: '.85rem', color: palette.textMuted, marginTop: '8px' }}>
+                O sistema agora utiliza Supabase para armazenamento persistente. Se você encontrar dados antigos ou comportamentos inesperados, pode limpar o cache local do navegador.
               </p>
             </div>
             <button
               className="btn-deletar"
               style={{ width: '100%', background: 'transparent', border: `1px solid ${palette.danger}`, color: palette.danger }}
               onClick={() => {
-                if (window.confirm('ATENÇÃO: Isso removerá TODOS os dados salvos localmente (fotos, textos não sincronizados). Deseja continuar?')) {
+                if (window.confirm('ATENÇÃO: Deseja limpar o cache local? Isso recarregará a página.')) {
                   localStorage.clear();
                   window.location.reload();
                 }
@@ -3710,6 +3854,44 @@ export default function PainelAdm() {
             <div className="painel-breadcrumb">Você está em <strong>{currentLabel}</strong></div>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '.8rem', position: 'relative' }}>
+            <div
+              title={hasSupabase ? 'Conectado ao Supabase' : 'Modo offline (navegador)'}
+              style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: 8,
+                padding: '4px 10px',
+                borderRadius: 8,
+                border: `1px solid ${palette.border}`,
+                background: hasSupabase ? 'rgba(34,197,94,0.1)' : 'rgba(245,158,11,0.1)',
+                color: hasSupabase ? '#22c55e' : '#f59e0b',
+                fontSize: '.8rem',
+                fontWeight: 600
+              }}
+            >
+              <span style={{
+                width: 8,
+                height: 8,
+                borderRadius: 999,
+                background: hasSupabase ? '#22c55e' : '#f59e0b'
+              }} />
+              <span>{hasSupabase ? 'Supabase' : 'Offline'}</span>
+            </div>
+            <button
+              className="painel-badge-btn"
+              title="Testar conexão"
+              onClick={async () => {
+                const res = await testSupabaseConnection();
+                const msgs = [
+                  `Env: ${res.env ? 'OK' : 'FALHA'}`,
+                  `DB: ${res.db ? 'OK' : 'FALHA'}`,
+                  `Storage: ${res.storage ? 'OK' : 'FALHA'}`
+                ];
+                alert(`Teste de Conexão\n${msgs.join('\n')}`);
+              }}
+            >
+              ✅
+            </button>
             <button
               className="painel-badge-btn"
               title={hasPagesNotif ? 'Há novas notificações' : 'Sem novas notificações'}
@@ -4144,9 +4326,9 @@ export default function PainelAdm() {
                                 type="button"
                                 className="pm-photo-btn"
                                 style={{ whiteSpace: 'nowrap', padding: '0 12px', height: '38px', marginTop: '0' }}
-                                onClick={() => handleFileUpload(base64 => {
+                                onClick={() => handleFileUpload(url => {
                                   const next = [...(homeData.activities || [])];
-                                  next[idx] = { ...next[idx], image: base64 };
+                                  next[idx] = { ...next[idx], image: url };
                                   setHomeData(d => ({ ...d, activities: next }));
                                 })}
                               >
@@ -4154,7 +4336,7 @@ export default function PainelAdm() {
                               </button>
                             </div>
                           </div>
-                          {a.image ? <div style={{ marginBottom: '.5rem', gridColumn: '1 / -1' }}><img src={transformImageLink(a.image)} alt="" style={{ width: 100, height: 60, borderRadius: 8, objectFit: 'cover', border: `1px solid ${palette.border}` }} /></div> : null}
+                          {a.image ? <div style={{ marginBottom: '.5rem', gridColumn: '1 / -1' }}><img src={transformImageLink(a.image)} alt="" style={{ width: 120, height: 72, borderRadius: 8, objectFit: 'cover', border: `1px solid ${palette.border}` }} /></div> : null}
                           <div className="pm-field">
                             <label style={{ visibility: 'hidden' }}>x</label>
                             <button

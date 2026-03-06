@@ -17,7 +17,7 @@
   min-height: 100vh;
   background: var(--midia-bg);
   color: var(--midia-text);
-  font-family: 'Inter', sans-serif;
+  font-family: "Inter", sans-serif;
   overflow-x: hidden;
 }
 
@@ -75,10 +75,14 @@ section {
 }
 
 .midia-hero::after {
-  content: '';
+  content: "";
   position: absolute;
   inset: 0;
-  background: linear-gradient(to bottom, rgba(10,10,11,0.4), rgba(10,10,11,0.95));
+  background: linear-gradient(
+    to bottom,
+    rgba(10, 10, 11, 0.4),
+    rgba(10, 10, 11, 0.95)
+  );
 }
 
 .hero-content {
@@ -203,9 +207,18 @@ section {
 }
 
 @keyframes pulse {
-  0% { transform: scale(1); opacity: 1; }
-  50% { transform: scale(1.3); opacity: 0.5; }
-  100% { transform: scale(1); opacity: 1; }
+  0% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.3);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
 .video-container {
@@ -214,7 +227,18 @@ section {
   border-radius: 24px;
   overflow: hidden;
   background: #000;
-  box-shadow: 0 30px 60px rgba(0,0,0,0.6);
+  box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
+  position: relative;
+}
+
+.video-container iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border: none;
+  border-radius: 24px;
 }
 
 .live-footer {
@@ -250,7 +274,7 @@ section {
   line-height: 1.7;
   font-style: italic;
   margin-bottom: 2.5rem;
-  color: rgba(255,255,255,0.9);
+  color: rgba(255, 255, 255, 0.9);
 }
 
 .testimonial-author {
@@ -337,8 +361,11 @@ section {
 
 .birthday-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 2.5rem;
+  justify-content: center;
+  max-width: 1200px;
+  margin: 0 auto;
 }
 
 .birthday-card {
@@ -425,7 +452,7 @@ section {
   left: 0;
   right: 0;
   padding: 5rem 4rem 4rem;
-  background: linear-gradient(transparent, rgba(0,0,0,0.9));
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.9));
 }
 
 .gallery-info p {
@@ -457,8 +484,12 @@ section {
   transform: translateY(-50%) scale(1.1);
 }
 
-.carousel-btn.prev { left: 2rem; }
-.carousel-btn.next { right: 2rem; }
+.carousel-btn.prev {
+  left: 2rem;
+}
+.carousel-btn.next {
+  right: 2rem;
+}
 
 .thumb-grid {
   display: flex;
@@ -520,7 +551,7 @@ section {
 .team-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(to top, rgba(0,0,0,0.9) 10%, transparent 60%);
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 10%, transparent 60%);
   display: flex;
   flex-direction: column;
   justify-content: flex-end;
@@ -610,31 +641,42 @@ section {
 /* --- 9. NEWS --- */
 .news-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(400px, 1fr));
-  gap: 3rem;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.5rem;
+  align-items: start;
 }
 
 .news-card {
   background: var(--midia-surface);
-  border-radius: 32px;
+  border-radius: 20px;
   overflow: hidden;
   border: 1px solid var(--midia-border);
-  transition: all 0.4s ease;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  display: flex;
+  flex-direction: column;
 }
 
 .news-card:hover {
   transform: translateY(-10px);
-  border-color: rgba(255,255,255,0.15);
+  border-color: rgba(255, 255, 255, 0.15);
 }
 
 .news-img {
-  height: 250px;
+  aspect-ratio: 3/4;
   width: 100%;
   object-fit: cover;
+  border-bottom: 2px solid var(--midia-gold);
+  filter: brightness(0.9);
+  transition: filter 0.3s ease;
+}
+
+.news-card:hover .news-img {
+  filter: brightness(1.1);
 }
 
 .news-body {
-  padding: 2.5rem;
+  padding: 1.2rem;
+  flex: 1;
 }
 
 .news-date {
@@ -647,15 +689,28 @@ section {
 }
 
 .news-body h4 {
-  font-size: 1.5rem;
+  font-size: 1.3rem;
   font-weight: 800;
-  margin-bottom: 1rem;
+  margin-bottom: 0.8rem;
   line-height: 1.3;
+  color: var(--midia-gold);
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  line-clamp: 2;
+  overflow: hidden;
 }
 
 .news-body p {
   color: var(--midia-text-muted);
   line-height: 1.6;
+  font-size: 0.85rem;
+  margin-bottom: 1.2rem;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  line-clamp: 4;
+  overflow: hidden;
 }
 
 /* --- 10. FOOTER --- */
@@ -669,6 +724,8 @@ section {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  flex-wrap: wrap;
+  gap: 2.5rem;
   margin-bottom: 60px;
 }
 
@@ -684,7 +741,9 @@ section {
 
 .social-links {
   display: flex;
-  gap: 2.5rem;
+  gap: 2rem;
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 .social-link {
@@ -702,12 +761,17 @@ section {
   color: var(--midia-gold);
 }
 
+.footer-contact {
+  display: flex;
+  justify-content: center;
+}
+
 .footer-bottom {
   padding-top: 40px;
   border-top: 1px solid var(--midia-border);
   display: flex;
   justify-content: space-between;
-  color: rgba(255,255,255,0.2);
+  color: rgba(255, 255, 255, 0.2);
   font-size: 0.9rem;
 }
 
@@ -725,16 +789,41 @@ section {
 
 /* RESPONSIVE */
 @media (max-width: 1024px) {
-  .backstage-item { grid-template-columns: 1fr; gap: 3rem; }
-  .backstage-image { height: 400px; }
-  .dual-grid { grid-template-columns: 1fr; }
-  .schedule-card { grid-template-columns: 1fr; text-align: center; justify-items: center; gap: 1.5rem; }
+  .backstage-item {
+    grid-template-columns: 1fr;
+    gap: 3rem;
+  }
+  .backstage-image {
+    height: 400px;
+  }
+  .dual-grid {
+    grid-template-columns: 1fr;
+  }
+  .schedule-card {
+    grid-template-columns: 1fr;
+    text-align: center;
+    justify-items: center;
+    gap: 1.5rem;
+  }
 }
 
 @media (max-width: 768px) {
-  .hero-actions { flex-direction: column; gap: 1rem; }
-  .gallery-main { height: 450px; }
-  .footer-content { flex-direction: column; gap: 3rem; text-align: center; }
-  .testimonial-grid { grid-template-columns: 1fr; }
-  .news-grid { grid-template-columns: 1fr; }
+  .hero-actions {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  .gallery-main {
+    height: 450px;
+  }
+  .footer-content {
+    flex-direction: column;
+    gap: 3rem;
+    text-align: center;
+  }
+  .testimonial-grid {
+    grid-template-columns: 1fr;
+  }
+  .news-grid {
+    grid-template-columns: 1fr;
+  }
 }

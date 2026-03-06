@@ -1,7 +1,11 @@
 import React, { useState } from 'react';
 import { transformImageLink } from '../utils/imageUtils';
-import { Globe, Users, Heart, MapPin, Send, Calendar, DollarSign, Play, Target, TrendingUp, Award } from 'lucide-react';
+import { Globe, Users, Heart, MapPin, Send, Calendar, DollarSign, Play, Target, TrendingUp, Award, Droplets, Book } from 'lucide-react';
 import { useMinistryData } from '../hooks/useMinistryData';
+
+const IconMap = {
+  Globe, Users, Heart, MapPin, Send, Calendar, DollarSign, Play, Target, TrendingUp, Award, Droplets, Book
+};
 
 // Missoes.jsx - Página de Missões (Corrigido e Padronizado p/ Vercel)
 const Missoes = () => {
@@ -15,6 +19,16 @@ const Missoes = () => {
   });
 
   const [data] = useMinistryData('missoes');
+
+  // Destructuring with defaults for safety
+  const {
+    hero = { title: '', subtitle: '', verse: '', image: '', videoUrl: '' },
+    mission = { title: '', text: '' },
+    stats = [],
+    missionaries = [],
+    projects = [],
+    team = []
+  } = data || {};
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -39,10 +53,10 @@ const Missoes = () => {
         <div className="hero-overlay"></div>
         <div className="hero-content">
           <Globe size={80} className="hero-icon" />
-          <h1>{data.hero.title}</h1>
-          <p className="hero-subtitle">{data.hero.subtitle}</p>
+          <h1>{hero.title}</h1>
+          <p className="hero-subtitle">{hero.subtitle}</p>
           <div className="hero-verse">
-            <p>{data.hero.verse}</p>
+            <p>{hero.verse}</p>
           </div>
         </div>
       </div>
@@ -50,9 +64,9 @@ const Missoes = () => {
       {/* Mission Section */}
       <section className="mission-section">
         <div className="container">
-          <h2>{data.mission.title}</h2>
+          <h2>{mission.title}</h2>
           <p className="mission-text">
-            {data.mission.text}
+            {mission.text}
           </p>
         </div>
       </section>
@@ -65,24 +79,27 @@ const Missoes = () => {
             gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
             gap: '2rem'
           }}>
-            {data.stats.map((stat, index) => (
-              <div key={index} className="stat-card" style={{
-                textAlign: 'center',
-                padding: '2rem',
-                background: 'rgba(255, 255, 255, 0.03)',
-                border: '1px solid rgba(212, 175, 55, 0.2)',
-                borderRadius: '12px',
-                transition: 'transform 0.3s ease'
-              }}>
-                <stat.icon size={48} color="var(--primary-color)" style={{ marginBottom: '1rem' }} />
-                <div style={{ fontSize: '3rem', fontWeight: 'bold', color: 'var(--primary-color)', marginBottom: '0.5rem' }}>
-                  {stat.number}
+            {stats.map((stat, index) => {
+              const Icon = IconMap[stat.icon] || Globe;
+              return (
+                <div key={index} className="stat-card" style={{
+                  textAlign: 'center',
+                  padding: '2rem',
+                  background: 'rgba(255, 255, 255, 0.03)',
+                  border: '1px solid rgba(212, 175, 55, 0.2)',
+                  borderRadius: '12px',
+                  transition: 'transform 0.3s ease'
+                }}>
+                  <Icon size={48} color="var(--primary-color)" style={{ marginBottom: '1rem' }} />
+                  <div style={{ fontSize: '3rem', fontWeight: 'bold', color: 'var(--primary-color)', marginBottom: '0.5rem' }}>
+                    {stat.number}
+                  </div>
+                  <div style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.9rem' }}>
+                    {stat.label}
+                  </div>
                 </div>
-                <div style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '0.9rem' }}>
-                  {stat.label}
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
@@ -101,7 +118,7 @@ const Missoes = () => {
               <iframe
                 width="100%"
                 height="500"
-                src={data.hero.videoUrl}
+                src={hero.videoUrl}
                 title="Ministério de Missões"
                 frameBorder="0"
                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
@@ -127,7 +144,7 @@ const Missoes = () => {
             gap: '2rem',
             marginTop: '3rem'
           }}>
-            {data.missionaries.map((missionary, index) => (
+            {missionaries.map((missionary, index) => (
               <div key={index} className="missionary-card" style={{
                 background: 'rgba(255, 255, 255, 0.03)',
                 border: '1px solid rgba(212, 175, 55, 0.2)',
@@ -137,14 +154,15 @@ const Missoes = () => {
                 transition: 'transform 0.3s ease'
               }}>
                 <img
-                  src={missionary.photo}
+                  src={transformImageLink(missionary.photo)}
                   alt={missionary.name}
                   style={{
                     width: '120px',
                     height: '120px',
                     borderRadius: '50%',
                     border: '3px solid var(--primary-color)',
-                    marginBottom: '1.5rem'
+                    marginBottom: '1.5rem',
+                    objectFit: 'cover'
                   }}
                 />
                 <h3 style={{ marginBottom: '0.5rem' }}>{missionary.name}</h3>
@@ -193,34 +211,37 @@ const Missoes = () => {
             gap: '2rem',
             marginTop: '3rem'
           }}>
-            {data.projects.map((project, index) => (
-              <div key={index} className="project-card" style={{
-                background: 'rgba(255, 255, 255, 0.03)',
-                border: '1px solid rgba(212, 175, 55, 0.2)',
-                borderRadius: '12px',
-                padding: '2rem',
-                transition: 'all 0.3s ease'
-              }}>
-                <project.icon size={40} color="var(--primary-color)" style={{ marginBottom: '1rem' }} />
-                <h3 style={{ marginBottom: '1rem' }}>{project.title}</h3>
-                <p style={{ color: 'rgba(255, 255, 255, 0.7)', marginBottom: '1.5rem' }}>
-                  {project.description}
-                </p>
-                <div style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.5rem',
-                  padding: '0.75rem',
-                  background: 'rgba(212, 175, 55, 0.1)',
-                  borderRadius: '8px'
+            {projects.map((project, index) => {
+              const Icon = IconMap[project.icon] || Target;
+              return (
+                <div key={index} className="project-card" style={{
+                  background: 'rgba(255, 255, 255, 0.03)',
+                  border: '1px solid rgba(212, 175, 55, 0.2)',
+                  borderRadius: '12px',
+                  padding: '2rem',
+                  transition: 'all 0.3s ease'
                 }}>
-                  <TrendingUp size={18} color="var(--primary-color)" />
-                  <span style={{ fontSize: '0.9rem', fontWeight: 'bold', color: 'var(--primary-color)' }}>
-                    {project.impact}
-                  </span>
+                  <Icon size={40} color="var(--primary-color)" style={{ marginBottom: '1rem' }} />
+                  <h3 style={{ marginBottom: '1rem' }}>{project.title}</h3>
+                  <p style={{ color: 'rgba(255, 255, 255, 0.7)', marginBottom: '1.5rem' }}>
+                    {project.description}
+                  </p>
+                  <div style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '0.5rem',
+                    padding: '0.75rem',
+                    background: 'rgba(212, 175, 55, 0.1)',
+                    borderRadius: '8px'
+                  }}>
+                    <TrendingUp size={18} color="var(--primary-color)" />
+                    <span style={{ fontSize: '0.9rem', fontWeight: 'bold', color: 'var(--primary-color)' }}>
+                      {project.impact}
+                    </span>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
@@ -232,9 +253,9 @@ const Missoes = () => {
           <p className="section-subtitle">Conheça os líderes do ministério de missões</p>
 
           <div className="team-grid">
-            {data.team.map((member, index) => (
+            {team.map((member, index) => (
               <div key={index} className="team-card">
-                <img src={transformImageLink(member.photo)} alt={member.name} className="team-photo" />
+                <img src={transformImageLink(member.photo)} alt={member.name} className="team-photo" style={{ objectFit: 'cover' }} />
                 <h3>{member.name}</h3>
                 <p>{member.role}</p>
               </div>

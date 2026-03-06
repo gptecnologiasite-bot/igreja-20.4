@@ -2,28 +2,48 @@ import React from 'react';
 import { Outlet, useLocation } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import { supabase } from '../lib/supabase';
 
 const PublicLayout = () => {
     const location = useLocation();
-    const [pages, setPages] = React.useState([]);
+    const [isActive, setIsActive] = React.useState(true);
     const [loading, setLoading] = React.useState(true);
 
     React.useEffect(() => {
-        fetch('/api/pages')
-            .then(r => r.json())
-            .then(data => {
-                setPages(data.items || []);
+        const checkStatus = async () => {
+            setLoading(true);
+            try {
+                const rawPath = location.pathname === '/' ? 'home' : location.pathname.split('/').filter(Boolean)[0].toLowerCase();
+
+                // Mapeamento simples para chaves de ministério
+                const keysMap = {
+                    'revista': 'revista',
+                    'contato': 'contact',
+                    'home': 'home'
+                };
+
+                const id = keysMap[rawPath] || rawPath;
+                const key = id === 'home' ? 'home' : `ministry_${id}`;
+
+                const { data } = await supabase.from('site_settings').select('data').eq('key', key).single();
+
+                if (data?.data) {
+                    setIsActive(data.data.active !== false);
+                } else {
+                    setIsActive(true); // Ativo por padrão
+                }
+            } catch (err) {
+                console.error('Error checking page status:', err);
+                setIsActive(true);
+            } finally {
                 setLoading(false);
-            })
-            .catch(() => setLoading(false));
-    }, []);
+            }
+        };
 
-    const normalize = (str) => str?.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-    const currentPageName = location.pathname === '/' ? 'Home' : location.pathname.split('/').filter(Boolean)[0];
-    const currentPage = pages.find(p => normalize(p.name) === normalize(currentPageName));
-    const isInactive = currentPage && currentPage.active === false;
+        checkStatus();
+    }, [location.pathname]);
 
-    if (loading) return null;
+    const isInactive = !loading && isActive === false;
 
     if (isInactive) {
         return (
@@ -37,7 +57,7 @@ const PublicLayout = () => {
                 </main>
                 <Footer />
             </>
-        )
+        );
     }
 
     return (

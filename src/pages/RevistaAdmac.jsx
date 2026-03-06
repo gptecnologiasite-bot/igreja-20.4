@@ -18,7 +18,7 @@ import { BookOpen, PenTool, Sun, Calendar, Heart, Star, Users, ArrowLeft, ArrowR
 // Framer Motion para animações de transição entre páginas
 import { motion, AnimatePresence } from 'framer-motion';
 
-// Hook personalizado para buscar dados do ministério (revista) via DatabaseService
+// Hook personalizado para buscar dados do ministério (revista) via Supabase
 import { useMinistryData } from '../hooks/useMinistryData';
 
 // Estilos específicos da página da revista

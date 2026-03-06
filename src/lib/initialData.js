@@ -39,7 +39,9 @@ export const INITIAL_HOME_DATA = {
   welcome: {
     title: 'Bem-vindo à ADMAC',
     text1: 'Somos uma igreja que ama a Deus e as pessoas. Nossa missão é proclamar o evangelho de Jesus Cristo, fazer discípulos e transformar vidas através do amor e da palavra de Deus.',
-    text2: 'Venha fazer parte da nossa família! Aqui você encontrará um lugar de acolhimento, crescimento espiritual e comunhão genuína.'
+    text2: 'Venha fazer parte da nossa família! Aqui você encontrará um lugar de acolhimento, crescimento espiritual e comunhão genuína.',
+    buttonText: 'Entre em Contato',
+    buttonLink: '/contato'
   },
   schedule: [
     { day: 'Domingo', time: '9h', event: 'EBD - Escola Bíblica', iconType: 'Book' },
@@ -289,7 +291,7 @@ export const INITIAL_MINISTRIES_DATA = {
     },
     live: { 
       title: "Culto Online - Assista Agora", 
-      url: "https://www.youtube.com/embed/live_stream?channel=UCxxxxxxxxxxxx",
+      url: "https://www.youtube.com/embed/3W6qi38SntU?si=4vC2GYojoOU2IfWY",
       description: "Acompanhe nossas transmissões ao vivo todos os domingos às 18h."
     },
     videos: [
@@ -343,6 +345,49 @@ export const INITIAL_MINISTRIES_DATA = {
       text: "ADMAC Mídia - Comunicando a Verdade com Excelência",
       social: { instagram: "@admacoficial", youtube: "ADMAC TV", facebook: "ADMAC" }
     }
+  },
+  missoes: {
+    hero: {
+      title: 'Ministério de Missões',
+      subtitle: 'Levando o Evangelho a todas as nações',
+      verse: '"Ide por todo o mundo e pregai o evangelho a toda criatura." - Marcos 16:15',
+      image: 'https://images.unsplash.com/photo-1488521787991-ed7bbaae773c?auto=format&fit=crop&w=1600&q=80',
+      videoUrl: 'https://www.youtube.com/embed/dQw4w9WgXcQ'
+    },
+    mission: {
+      title: 'Nossa Missão',
+      text: 'O Ministério de Missões da ADMAC tem como propósito cumprir o IDE de Jesus, apoiando missionários no campo e realizando ações sociais que demonstram o amor de Deus na prática.'
+    },
+    stats: [
+      { icon: 'Globe', number: '12', label: 'Nações Alcançadas' },
+      { icon: 'Users', number: '24', label: 'Missionários' },
+      { icon: 'Heart', number: '500+', label: 'Vidas Impactadas' },
+      { icon: 'Award', number: '15', label: 'Projetos Sociais' }
+    ],
+    missionaries: [
+      {
+        name: 'Família Oliveira',
+        country: 'Moçambique',
+        description: 'Trabalho com crianças e plantação de igrejas no interior de Moçambique.',
+        photo: 'https://ui-avatars.com/api/?name=Familia+Oliveira&background=random',
+        yearsOnField: 8
+      },
+      {
+        name: 'Casal Mendes',
+        country: 'Índia',
+        description: 'Treinamento de líderes locais e apoio a comunidades rurais.',
+        photo: 'https://ui-avatars.com/api/?name=Casal+Mendes&background=random',
+        yearsOnField: 5
+      }
+    ],
+    projects: [
+      { icon: 'Water', title: 'Água Viva', description: 'Construção de poços artesianos em comunidades carentes.', impact: '5 poços construídos em 2023' },
+      { icon: 'Book', title: 'Educar para o Reino', description: 'Apoio escolar e material didático para crianças órfãs.', impact: '120 crianças atendidas' }
+    ],
+    team: [
+      { name: 'Pr. André Santos', role: 'Diretor de Missões', photo: 'https://ui-avatars.com/api/?name=Andre+Santos&background=random' },
+      { name: 'Letícia Lima', role: 'Secretária', photo: 'https://ui-avatars.com/api/?name=Leticia+Lima&background=random' }
+    ]
   },
   revista: {
     hero: { title: 'Revista Admac', subtitle: 'Nossa revista mensal' },
@@ -515,5 +560,6 @@ export const INITIAL_PAGES_DATA = [
   { id: 'social', name: 'Ação Social', path: '/social', status: 'online', type: 'system' },
   { id: 'ebd', name: 'EBD', path: '/ebd', status: 'online', type: 'system' },
   { id: 'midia', name: 'Midia', path: '/midia', status: 'online', type: 'system' },
+  { id: 'missoes', name: 'Missões', path: '/missoes', status: 'online', type: 'system' },
 ];
 

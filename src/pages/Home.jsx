@@ -3,7 +3,7 @@
 // Exibe: carrossel hero, seção de boas-vindas com pastores,
 // podcast Spotify, vídeos recentes, programação semanal,
 // cards de ministérios, aniversariantes e atividades em destaque.
-// Todos os dados são carregados dinamicamente do DatabaseService.
+// Todos os dados são carregados dinamicamente via Supabase.
 // ================================================================
 
 import React, { useState, useEffect } from "react";
@@ -18,41 +18,77 @@ import {
 import { Link } from "react-router-dom";
 import "../css/Home.css";
 import HeroCarousel from "../components/HeroCarousel";
-import ActivitiesCarousel from "../components/ActivitiesCarousel";
 import PastorCarousel from "../components/PastorCarousel";
 import RecentVideos from "../components/RecentVideos";
-import DatabaseService from "../services/DatabaseService";
-import ContentUpdateService from "../services/atualizaçao";
-import { transformImageLink } from "../utils/imageUtils";
+import { supabase } from "../lib/supabase";
+import { INITIAL_HOME_DATA } from "../lib/constants";
+import { deepMerge, transformImageLink } from "../lib/dbUtils";
+import { usePageUpdate } from "../hooks/usePageUpdate";
 
 const Home = () => {
   // Estado principal com os dados da home (carrossel, welcome, agenda, etc.)
-  const [data, setData] = useState(DatabaseService.getHomeDataDefault());
+  const [data, setData] = useState(INITIAL_HOME_DATA);
   // Lista consolidada de aniversariantes de todos os ministérios
   const [allBirthdays, setAllBirthdays] = useState([]);
 
   const loadData = async () => {
-    const homeData = await DatabaseService.getHomeData();
-    setData(homeData);
+    try {
+      const { data: dbData, error } = await supabase
+        .from('site_settings')
+        .select('data')
+        .eq('key', 'home')
+        .single();
+
+      if (dbData && dbData.data) {
+        setData(deepMerge(INITIAL_HOME_DATA, dbData.data));
+        return;
+      }
+
+      // Fallback 1: erro do Supabase (inclui modo OFFLINE)
+      if (error) {
+        const raw = localStorage.getItem('admac_site_settings:home');
+        if (raw) {
+          try {
+            const local = JSON.parse(raw);
+            setData(deepMerge(INITIAL_HOME_DATA, local));
+            return;
+          } catch {
+            // se inválido, segue para fallback padrão
+          }
+        }
+      }
+
+      // Fallback 2: dados iniciais
+      setData(INITIAL_HOME_DATA);
+    } catch (error) {
+      console.error('Error fetching home data:', error);
+    }
   };
 
   // Carrega os dados da home ao montar o componente
   useEffect(() => {
-    loadData();
+    setTimeout(() => {
+      loadData();
+    }, 0);
   }, []);
 
-  // Sincronização automática via ContentUpdateService
-  ContentUpdateService.usePageUpdate(['admac_home', 'admac_videos'], loadData);
+  // Sincronização automática via usePageUpdate
+  usePageUpdate(['home', 'videos'], loadData);
 
   // Carrega aniversariantes de todas as áreas do site para exibir na Home
-  // ministryIds inclui 'midia' para garantir que ninguém fique de fora!
   useEffect(() => {
     const ministryIds = ['kids', 'louvor', 'jovens', 'mulheres', 'homens', 'lares', 'retiro', 'social', 'ebd', 'midia'];
     const loadBirthdays = async () => {
       const results = [];
       for (const id of ministryIds) {
         try {
-          const d = await DatabaseService.getMinistry(id);
+          const { data: dbData } = await supabase
+            .from('site_settings')
+            .select('data')
+            .eq('key', `ministry_${id}`)
+            .single();
+
+          const d = dbData?.data;
           // Adiciona aniversariantes encontrados junto com o nome do ministério
           if (d?.birthdays?.people && d.birthdays.people.length > 0) {
             d.birthdays.people.forEach(person => {
@@ -91,8 +127,8 @@ const Home = () => {
               <h2>{data.welcome.title}</h2>
               <p>{data.welcome.text1}</p>
               <p>{data.welcome.text2}</p>
-              <Link to="/contato" className="welcome-btn">
-                <Phone size={18} /> Entre em Contato
+              <Link to={data.welcome.buttonLink || "/contato"} className="welcome-btn">
+                <Phone size={18} /> {data.welcome.buttonText || "Entre em Contato"}
               </Link>
             </div>
           </div>
@@ -203,7 +239,6 @@ const Home = () => {
       </section>
 
       {/* ── Seção de Aniversariantes — sempre visível ── */}
-      {/* CORREÇÃO: removido o wrapper desnecessário {( ... )} ao redor da section */}
       <section className="birthdays-home-section" style={{
         padding: '4rem 0',
         background: 'linear-gradient(135deg, var(--primary-dark, #0d0d1a) 0%, var(--surface-color, #1a1a2e) 100%)'
@@ -284,14 +319,33 @@ const Home = () => {
       </section>
 
       {/* ── Atividades em Destaque ── */}
-      <section className="activities-home-section">
+      <section className="activities-home-section" style={{ padding: '4rem 0', background: 'linear-gradient(180deg, #141414 0%, #0f0f0f 100%)' }}>
         <div className="container">
-          <h2>Atividades em Destaque</h2>
-          <p className="section-subtitle">
-            Veja o que está acontecendo na igreja
-          </p>
-          {/* Carrossel de atividades configurável pelo painel admin */}
-          <ActivitiesCarousel activities={data.activities} />
+          <h2 style={{ marginBottom: '.5rem' }}>Atividades em Destaque</h2>
+          <p className="section-subtitle">Veja o que está acontecendo na igreja</p>
+          <div className="card-group" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1.5rem', marginTop: '1.5rem' }}>
+            {(data.activities || []).map((a, idx) => (
+              <div key={idx} className="card" style={{ border: '1px solid rgba(212,175,55,0.25)', borderRadius: 16, overflow: 'hidden', background: 'rgba(255,255,255,0.03)' }}>
+                <img
+                  className="card-img-top"
+                  src={transformImageLink(a.image) || '/imagem/admac.png'}
+                  alt={a.title || 'Atividade'}
+                  style={{ width: '100%', aspectRatio: '16 / 9', objectFit: 'contain', background: '#0b0b0b', display: 'block' }}
+                  onError={(e) => { e.currentTarget.src = '/imagem/admac.png'; }}
+                />
+                <div className="card-body" style={{ padding: '1rem' }}>
+                  <h5 className="card-title" style={{ marginBottom: '.5rem' }}>{a.title || 'Atividade'}</h5>
+                  {a.description ? <p className="card-text" style={{ color: 'var(--text-muted)' }}>{a.description}</p> : null}
+                  {a.date ? <p className="card-text"><small className="text-muted">{a.date}</small></p> : null}
+                </div>
+              </div>
+            ))}
+          </div>
+          {(data.activities || []).length === 0 && (
+            <div style={{ textAlign: 'center', color: 'var(--text-muted)', marginTop: '1rem' }}>
+              Nenhuma atividade cadastrada
+            </div>
+          )}
         </div>
       </section>
 
