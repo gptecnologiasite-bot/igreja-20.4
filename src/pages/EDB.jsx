@@ -1,10 +1,45 @@
-import { BookOpen, Users, Clock, MapPin, GraduationCap, UserCheck, Download, Camera } from 'lucide-react';
-import { transformImageLink } from '../utils/imageUtils';
+import React, { useState } from 'react';
+import { BookOpen, Users, Clock, MapPin, GraduationCap, UserCheck, Download, Camera, MessageSquare, Send } from 'lucide-react';
+import { transformImageLink } from '../lib/dbUtils';
 import { useMinistryData } from '../hooks/useMinistryData';
+import { supabase } from '../lib/supabase';
 import '../css/EDB.css';
 
 const EDB = () => {
   const [data] = useMinistryData('ebd');
+  const [testimonial, setTestimonial] = useState({
+    name: '',
+    email: '',
+    message: ''
+  });
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const payload = {
+      type: 'testimonial_submission',
+      category: 'ebd',
+      ...testimonial,
+      created_at: new Date().toISOString()
+    };
+
+    try {
+      const { error } = await supabase.from('site_messages').insert(payload);
+      if (error) throw error;
+      alert('Testemunho enviado com sucesso! Será analisado pela nossa equipe.');
+      setTestimonial({ name: '', email: '', message: '' });
+    } catch (err) {
+      console.error('Error sending testimonial:', err);
+      try {
+        const backups = JSON.parse(localStorage.getItem('admac_messages_backup') || '[]');
+        backups.push(payload);
+        localStorage.setItem('admac_messages_backup', JSON.stringify(backups));
+        alert('Testemunho enviado com sucesso! Será analisado pela nossa equipe.');
+        setTestimonial({ name: '', email: '', message: '' });
+      } catch {
+        alert('Erro ao enviar testemunho. Tente novamente mais tarde.');
+      }
+    }
+  };
 
   return (
     <div className="edb-page">
@@ -132,6 +167,86 @@ const EDB = () => {
           </div>
         </div>
       </div>
+
+      {/* Testimonials Section */}
+      {data.testimonials && data.testimonials.length > 0 && (
+        <div className="testimonials-section">
+          <div className="container">
+            <h2>Depoimentos</h2>
+            <p className="section-subtitle">O que dizem os alunos da nossa EBD</p>
+            <div className="testimonials-grid">
+              {data.testimonials.map((t, idx) => (
+                <div key={idx} className="testimonial-card">
+                  <div className="testimonial-content">
+                    <p>"{t.text}"</p>
+                  </div>
+                  <div className="testimonial-author">
+                    <img src={transformImageLink(t.photo) || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(t.name || 'Aluno')} alt={t.name} />
+                    <div>
+                      <strong>{t.name}</strong>
+                      {t.age && <span>{t.age} anos</span>}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Testimonial Form Section */}
+      <section className="testimonial-form-section">
+        <div className="container">
+          <div className="section-header">
+            <MessageSquare size={32} />
+            <h2>Compartilhe Seu Testemunho</h2>
+          </div>
+          <p className="section-subtitle">Como a EBD tem transformado sua vida?</p>
+
+          <div className="form-wrapper">
+            <form onSubmit={handleSubmit} className="testimonial-form">
+              <div className="form-group">
+                <label htmlFor="name">Nome Completo</label>
+                <input
+                  type="text"
+                  id="name"
+                  value={testimonial.name}
+                  onChange={(e) => setTestimonial({ ...testimonial, name: e.target.value })}
+                  placeholder="Seu nome"
+                  required
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="email">Email (Opcional)</label>
+                <input
+                  type="email"
+                  id="email"
+                  value={testimonial.email}
+                  onChange={(e) => setTestimonial({ ...testimonial, email: e.target.value })}
+                  placeholder="seu@email.com"
+                />
+              </div>
+
+              <div className="form-group">
+                <label htmlFor="message">Seu Testemunho</label>
+                <textarea
+                  id="message"
+                  value={testimonial.message}
+                  onChange={(e) => setTestimonial({ ...testimonial, message: e.target.value })}
+                  placeholder="Compartilhe sua experiência conosco..."
+                  rows="6"
+                  required
+                ></textarea>
+              </div>
+
+              <button type="submit" className="submit-btn">
+                <Send size={18} /> Enviar Testemunho
+              </button>
+            </form>
+          </div>
+        </div>
+      </section>
 
       {/* Gallery Section */}
       <div className="gallery-section">

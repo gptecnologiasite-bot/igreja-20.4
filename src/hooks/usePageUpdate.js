@@ -16,7 +16,16 @@ export const usePageUpdate = (keys, onUpdate) => {
     };
 
     // Listener para outras abas (evento nativo)
-    const handleStorage = (e) => handleUpdate(e.key);
+    const handleStorage = (e) => {
+      if (e.key === 'admac_db_signal' && e.newValue) {
+        try {
+          const { key } = JSON.parse(e.newValue);
+          handleUpdate(key);
+        } catch { /* ignore */ }
+      } else {
+        handleUpdate(e.key);
+      }
+    };
     
     // Listener para a mesma aba (evento personalizado)
     const handleCustom = (e) => {
@@ -40,6 +49,10 @@ export const usePageUpdate = (keys, onUpdate) => {
  */
 export const broadcastUpdate = (key) => {
   try {
+    // Mesma aba
     window.dispatchEvent(new CustomEvent('admac_db_update', { detail: { key, timestamp: Date.now() } }));
+    
+    // Outras abas (via evento 'storage')
+    localStorage.setItem('admac_db_signal', JSON.stringify({ key, timestamp: Date.now() }));
   } catch { /* ignore */ }
 };

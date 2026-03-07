@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { Youtube } from 'lucide-react';
 import '../css/RecentVideos.css';
 import { supabase } from '../lib/supabase';
+import { parseSafeJson } from '../lib/dbUtils';
 
 const RecentVideos = ({ limit = 2, category = null }) => {
     const [remoteVideos, setRemoteVideos] = useState(null);
@@ -42,7 +43,8 @@ const RecentVideos = ({ limit = 2, category = null }) => {
                     .select('data')
                     .eq('key', 'videos')
                     .single();
-                let vids = Array.isArray(data?.data) ? data.data : [];
+                const parsed = parseSafeJson(data?.data);
+                let vids = Array.isArray(parsed) ? parsed : [];
                 // Fallback para localStorage legado
                 if (vids.length === 0) {
                     const saved = localStorage.getItem('admac_videos');

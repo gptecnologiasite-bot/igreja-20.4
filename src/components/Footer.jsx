@@ -19,22 +19,52 @@ const Footer = () => {
         supabase.from('site_settings').select('data').eq('key', 'header').single()
       ]);
 
-      if (footerRes.data?.data) {
-        setFooterData(deepMerge(INITIAL_FOOTER_DATA, footerRes.data.data));
+      const footerFromDb = footerRes.data?.data;
+      if (footerFromDb) {
+        const parsedFooter = typeof footerFromDb === 'string' ? JSON.parse(footerFromDb) : footerFromDb;
+        setFooterData(deepMerge(INITIAL_FOOTER_DATA, parsedFooter));
       } else {
-        setFooterData(INITIAL_FOOTER_DATA);
+        try {
+          const cached = localStorage.getItem('admac_site_settings:footer');
+          if (cached) {
+            const parsed = JSON.parse(cached);
+            setFooterData(deepMerge(INITIAL_FOOTER_DATA, parsed));
+          } else {
+            setFooterData(INITIAL_FOOTER_DATA);
+          }
+        } catch {
+          setFooterData(INITIAL_FOOTER_DATA);
+        }
       }
 
-      if (headerRes.data?.data) {
-        setHeaderData(deepMerge(INITIAL_HEADER_DATA, headerRes.data.data));
+      const headerFromDb = headerRes.data?.data;
+      if (headerFromDb) {
+        const parsedHeader = typeof headerFromDb === 'string' ? JSON.parse(headerFromDb) : headerFromDb;
+        setHeaderData(deepMerge(INITIAL_HEADER_DATA, parsedHeader));
       } else {
-        setHeaderData(INITIAL_HEADER_DATA);
+        try {
+          const cached = localStorage.getItem('admac_site_settings:header');
+          if (cached) {
+            const parsed = JSON.parse(cached);
+            setHeaderData(deepMerge(INITIAL_HEADER_DATA, parsed));
+          } else {
+            setHeaderData(INITIAL_HEADER_DATA);
+          }
+        } catch {
+          setHeaderData(INITIAL_HEADER_DATA);
+        }
       }
     } catch (err) {
       console.error('Error loading footer/header data:', err);
-      // Fallback
-      setFooterData(INITIAL_FOOTER_DATA);
-      setHeaderData(INITIAL_HEADER_DATA);
+      try {
+        const fCached = localStorage.getItem('admac_site_settings:footer');
+        const hCached = localStorage.getItem('admac_site_settings:header');
+        setFooterData(fCached ? deepMerge(INITIAL_FOOTER_DATA, JSON.parse(fCached)) : INITIAL_FOOTER_DATA);
+        setHeaderData(hCached ? deepMerge(INITIAL_HEADER_DATA, JSON.parse(hCached)) : INITIAL_HEADER_DATA);
+      } catch {
+        setFooterData(INITIAL_FOOTER_DATA);
+        setHeaderData(INITIAL_HEADER_DATA);
+      }
     }
   };
 

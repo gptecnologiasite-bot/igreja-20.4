@@ -1,11 +1,13 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '../lib/supabase';
 import { INITIAL_MINISTRIES_DATA } from '../lib/constants';
-import { deepMerge } from '../lib/dbUtils';
+import { deepMerge, parseSafeJson } from '../lib/dbUtils';
 import { usePageUpdate } from '../hooks/usePageUpdate';
 
 export const useMinistryData = (ministryId) => {
-    const defaultData = INITIAL_MINISTRIES_DATA[ministryId] || { hero: { title: '', subtitle: '' }, mission: { title: '', text: '' } };
+    const defaultData = useMemo(() => 
+        INITIAL_MINISTRIES_DATA[ministryId] || { hero: { title: '', subtitle: '' }, mission: { title: '', text: '' } },
+    [ministryId]);
     const [data, setData] = useState(defaultData);
 
     useEffect(() => {
@@ -21,7 +23,7 @@ export const useMinistryData = (ministryId) => {
                 if (!active) return;
 
                 if (dbData && dbData.data) {
-                    setData(deepMerge(defaultData, dbData.data));
+                    setData(deepMerge(defaultData, parseSafeJson(dbData.data)));
                 } else {
                     setData(defaultData);
                 }
@@ -45,7 +47,7 @@ export const useMinistryData = (ministryId) => {
                     .eq('key', `ministry_${ministryId}`)
                     .single();
                 if (!active) return;
-                setData(deepMerge(defaultData, dbData?.data || defaultData));
+                setData(deepMerge(defaultData, parseSafeJson(dbData?.data) || defaultData));
             } catch {
                 if (!active) return;
                 setData(defaultData);

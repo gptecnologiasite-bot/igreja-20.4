@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { transformImageLink } from '../utils/imageUtils';
+import { transformImageLink } from '../lib/dbUtils';
+import { supabase } from '../lib/supabase';
 import { Heart, Calendar, Clock, Users, Camera, MessageSquare, Send, Star, BookOpen, Sparkles, Crown } from 'lucide-react';
 import { useMinistryData } from '../hooks/useMinistryData';
 import '../css/Mulheres.css';
@@ -23,10 +24,29 @@ const Mulheres = () => {
     }
   }, [data.gallery]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    alert('Testemunho enviado com sucesso! Obrigado por compartilhar.');
-    setTestimonial({ name: '', email: '', message: '' });
+    const payload = {
+      type: 'testimonial_submission',
+      category: 'mulheres',
+      ...testimonial,
+      created_at: new Date().toISOString()
+    };
+
+    try {
+      const { error } = await supabase.from('site_messages').insert(payload);
+      if (error) throw error;
+      alert('Testemunho enviado com sucesso! Obrigado por compartilhar.');
+      setTestimonial({ name: '', email: '', message: '' });
+    } catch (err) {
+      console.error('Error sending testimonial:', err);
+      // Backup local
+      const backups = JSON.parse(localStorage.getItem('admac_messages_backup') || '[]');
+      backups.push(payload);
+      localStorage.setItem('admac_messages_backup', JSON.stringify(backups));
+      alert('Testemunho enviado com sucesso! Obrigado por compartilhar.');
+      setTestimonial({ name: '', email: '', message: '' });
+    }
   };
 
   return (

@@ -32,6 +32,22 @@ export const deepMerge = (target, source) => {
 };
 
 /**
+ * Tenta fazer o parse de uma string JSON com segurança.
+ * Se o dado não for string (já for um objeto), ele retorna o próprio dado.
+ * Útil para tratar respostas do Supabase que podem vir stringificadas dependendo do save original.
+ */
+export const parseSafeJson = (data) => {
+  if (typeof data === 'string') {
+    try {
+      return JSON.parse(data);
+    } catch {
+      return null;
+    }
+  }
+  return data;
+};
+
+/**
  * Transform standard Google Drive sharing links into direct image links
  * format: https://drive.google.com/uc?export=download&id=FILE_ID
  */

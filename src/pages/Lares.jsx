@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { transformImageLink } from '../utils/imageUtils';
+import { transformImageLink } from '../lib/dbUtils';
 import { Home, Users, Calendar, Camera, MessageSquare, Send, Heart, MapPin, Clock, Star, Play } from 'lucide-react';
 import { useMinistryData } from '../hooks/useMinistryData';
 import '../css/Lares.css';

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { transformImageLink } from '../utils/imageUtils';
+import { transformImageLink } from '../lib/dbUtils';
+// Removed unused supabase import
 import { Mountain, Calendar, MapPin, Users, Camera, Send, Heart, Clock, Tent, Book, Music } from 'lucide-react';
 import { useMinistryData } from '../hooks/useMinistryData';
 import '../css/Retiro.css';

@@ -172,7 +172,8 @@ const buildBars = () => {
 const NAV_ITEMS_DEFAULT = [
   { id: 'dashboard', label: 'Dashboard', icon: '⊞' },
   { id: 'paginas', label: 'Páginas', icon: '📄' },
-  { id: 'conteudo', label: 'Conteúdo', icon: '📝' }
+  { id: 'conteudo', label: 'Conteúdo', icon: '📝' },
+  { id: 'mensagens', label: 'Mensagens', icon: '📩' }
 ];
 
 const NAV_SETTINGS_DEFAULT = [
@@ -194,14 +195,7 @@ const getBetween = (source, startMarker, endMarker, fallback = '') => {
   return source.slice(from, end).trim();
 };
 
-const replaceBetween = (source, startMarker, endMarker, value) => {
-  const start = source.indexOf(startMarker);
-  if (start === -1) return source;
-  const from = start + startMarker.length;
-  const end = source.indexOf(endMarker, from);
-  if (end === -1) return source;
-  return source.slice(0, from) + `\n          ${value}\n          ` + source.slice(end);
-};
+// Removed unused replaceBetween function
 
 // Remove chaves e espaços extras de qualquer lado do texto capturado
 const cleanField = (value) => value.replace(/[{}]/g, '').trim();
@@ -215,16 +209,7 @@ const parseContactPage = (content) => ({
   schedule: cleanField(getBetween(content, '/* CMS_CONTACT_SCHEDULE_START */', '/* CMS_CONTACT_SCHEDULE_END */', '')),
 });
 
-const applyContactPage = (content, fields) => {
-  let next = content;
-  next = replaceBetween(next, '/* CMS_CONTACT_TITLE_START */', '/* CMS_CONTACT_TITLE_END */', fields.title);
-  next = replaceBetween(next, '/* CMS_CONTACT_SUBTITLE_START */', '/* CMS_CONTACT_SUBTITLE_END */', fields.subtitle);
-  next = replaceBetween(next, '/* CMS_CONTACT_ADDRESS_START */', '/* CMS_CONTACT_ADDRESS_END */', fields.address);
-  next = replaceBetween(next, '/* CMS_CONTACT_PHONE_START */', '/* CMS_CONTACT_PHONE_END */', fields.phone);
-  next = replaceBetween(next, '/* CMS_CONTACT_EMAIL_START */', '/* CMS_CONTACT_EMAIL_END */', fields.email);
-  next = replaceBetween(next, '/* CMS_CONTACT_SCHEDULE_START */', '/* CMS_CONTACT_SCHEDULE_END */', fields.schedule);
-  return next;
-};
+// Removed unused applyContactPage function
 
 // -------- HomeAnivEditor: Manages birthdays from the Home editor --------
 function HomeAnivEditor({ palette, ministryOptions }) {
@@ -411,7 +396,7 @@ export default function PainelAdm() {
   const [pageName, setPageName] = useState('');
   const [pageData, setPageData] = useState({ title: '', description: '', photo: null });
   const [pageSaving, setPageSaving] = useState(false);
-  const [pageRawContent, setPageRawContent] = useState('');
+
   const [navMain, setNavMain] = useState(NAV_ITEMS_DEFAULT);
   const [navSettings, setNavSettings] = useState(NAV_SETTINGS_DEFAULT);
   const [ministryId, setMinistryId] = useState('jovens');
@@ -427,6 +412,8 @@ export default function PainelAdm() {
   const [notifications, setNotifications] = useState([
     { id: 1, title: 'Bem-vindo ao Painel', text: 'Você agora pode ler avisos e alertas aqui no sino.', time: '01m atrás', read: false }
   ]);
+  const [siteMessages, setSiteMessages] = useState([]);
+  const [messagesLoading, setMessagesLoading] = useState(false);
   const [showNotifBox, setShowNotifBox] = useState(false);
   const [selectedNotif, setSelectedNotif] = useState(null);
   const [currentUser, setCurrentUser] = useState(() => {
@@ -505,29 +492,37 @@ export default function PainelAdm() {
     { id: 'lares', label: 'Lares' },
     { id: 'social', label: 'Ação Social' },
     { id: 'retiro', label: 'Retiro' },
-    { id: 'sobre', label: 'Sobre' },
+    { id: 'intercessao', label: 'Intercessão' },
+    { id: 'missoes', label: 'Missões' },
     { id: 'midia', label: 'Mídia' },
+    { id: 'revista', label: 'Revista' },
+    { id: 'sobre', label: 'Sobre' },
   ];
   const pageToMinistry = {
-    Home: 'home',
-    HomePage: 'home',
-    JovensPage: 'jovens',
-    Jovens: 'jovens',
-    Mulheres: 'mulheres',
-    Homens: 'homens',
-    Louvor: 'louvor',
-    Kids: 'kids',
-    EDB: 'ebd',
-    Lares: 'lares',
-    Social: 'social',
-    Sobre: 'sobre',
-    Retiro: 'retiro',
-    Intercessão: 'intercessao',
-    Intercessao: 'intercessao',
-    missoes: 'missoes',
-    Missoes: 'missoes',
-    Midia: 'midia',
-    midia: 'midia',
+    'Home': 'home',
+    'HomePage': 'home',
+    'Min. Kids': 'kids',
+    'Kids': 'kids',
+    'Min. Louvor': 'louvor',
+    'Louvor': 'louvor',
+    'Min. Jovens': 'jovens',
+    'Jovens': 'jovens',
+    'Min. Mulheres': 'mulheres',
+    'Mulheres': 'mulheres',
+    'Min. Homens': 'homens',
+    'Homens': 'homens',
+    'Min. Lares': 'lares',
+    'Lares': 'lares',
+    'Ação Social': 'social',
+    'Social': 'social',
+    'EBD': 'ebd',
+    'Retiros': 'retiro',
+    'Retiro': 'retiro',
+    'Intercessão': 'intercessao',
+    'Missões': 'missoes',
+    'Midia': 'midia',
+    'Revista': 'revista',
+    'Sobre': 'sobre'
   };
 
   // Carrega configurações do menu do painel (se existirem)
@@ -584,55 +579,127 @@ export default function PainelAdm() {
         return;
       }
       const { data: dbUsers, error } = await supabase
-        .from('site_users') // Assuming a 'site_users' table for extended profile data
+        .from('site_users')
         .select('*');
 
       if (error) {
-        // Fallback to auth users if site_users doesn't exist or is empty
         const { data: authUsers } = await supabase.auth.admin.listUsers();
-        if (authUsers?.users) {
-          setUsers(authUsers.users.map(u => ({
-            id: u.id,
-            name: u.user_metadata?.full_name || u.email.split('@')[0],
-            email: u.email,
-            role: u.user_metadata?.role || 'Viewer',
-            status: 'active',
-            photo: u.user_metadata?.avatar_url || null
-          })));
-          return;
-        }
+        setUsers(authUsers?.users || []);
+        return;
       }
       setUsers(dbUsers || []);
     } catch (err) {
       console.warn('Error loading users:', err);
     }
-  }
+  };
 
-  // Header Data for Configs Tab
-  const [headerData, setHeaderData] = useState(INITIAL_HEADER_DATA);
+  const loadSiteMessages = async () => {
+    setMessagesLoading(true);
+    try {
+      const { data: msgs } = await supabase
+        .from('site_messages')
+        .select('*')
+        .order('created_at', { ascending: false });
+      setSiteMessages(msgs || []);
+    } catch (err) {
+      console.error('Error loading messages:', err);
+    } finally {
+      setMessagesLoading(false);
+    }
+  };
+
+  const approveTestimonial = async (msg) => {
+    try {
+      const key = `ministry_${msg.category}`;
+      const { data: dbData } = await supabase
+        .from('site_settings')
+        .select('data')
+        .eq('key', key)
+        .single();
+
+      const mData = dbData?.data || {};
+      const testimonials = mData.testimonials || [];
+
+      const newTestimonial = {
+        name: msg.name,
+        text: msg.message,
+        photo: '',
+        age: ''
+      };
+
+      const updated = {
+        ...mData,
+        testimonials: [...testimonials, newTestimonial]
+      };
+
+      const { error } = await supabase.from('site_settings').upsert({ key, data: updated });
+      if (error) throw error;
+
+      await supabase.from('site_messages').update({ type: 'testimonial_approved' }).eq('id', msg.id);
+
+      broadcastUpdate(key);
+      alert('Testemunho aprovado com sucesso!');
+      loadSiteMessages();
+    } catch (err) {
+      console.error('Err:', err);
+      alert('Erro ao aprovar.');
+    }
+  };
 
   useEffect(() => {
-    const fetchHeader = async () => {
-      try {
-        const { data: dbData } = await supabase
-          .from('site_settings')
-          .select('data')
-          .eq('key', 'header')
-          .single();
+    if (activePage === 'mensagens') loadSiteMessages();
+  }, [activePage]);
 
-        if (dbData?.data) {
-          // Usa deepMerge para não perder campos do INITIAL_HEADER_DATA (como o menu)
-          // se o registro no banco estiver incompleto
-          setHeaderData(deepMerge(INITIAL_HEADER_DATA, dbData.data));
+  // Header and Footer Data for Configs Tab
+  const [headerData, setHeaderData] = useState(INITIAL_HEADER_DATA);
+  const [footerData, setFooterData] = useState(INITIAL_FOOTER_DATA);
+
+  useEffect(() => {
+    const fetchHeaderFooter = async () => {
+      try {
+        const [headerRes, footerRes] = await Promise.all([
+          supabase.from('site_settings').select('data').eq('key', 'header').single(),
+          supabase.from('site_settings').select('data').eq('key', 'footer').single()
+        ]);
+
+        if (headerRes.data?.data) {
+          const parsedHeader = typeof headerRes.data.data === 'string' ? JSON.parse(headerRes.data.data) : headerRes.data.data;
+          setHeaderData(deepMerge(INITIAL_HEADER_DATA, parsedHeader));
         } else {
-          setHeaderData(INITIAL_HEADER_DATA);
+          try {
+            const cached = localStorage.getItem('admac_site_settings:header');
+            if (cached) {
+              setHeaderData(deepMerge(INITIAL_HEADER_DATA, JSON.parse(cached)));
+            } else {
+              setHeaderData(INITIAL_HEADER_DATA);
+            }
+          } catch {
+            setHeaderData(INITIAL_HEADER_DATA);
+          }
+        }
+
+        if (footerRes.data?.data) {
+          const parsedFooter = typeof footerRes.data.data === 'string' ? JSON.parse(footerRes.data.data) : footerRes.data.data;
+          setFooterData(deepMerge(INITIAL_FOOTER_DATA, parsedFooter));
+        } else {
+          try {
+            const cached = localStorage.getItem('admac_site_settings:footer');
+            if (cached) {
+              setFooterData(deepMerge(INITIAL_FOOTER_DATA, JSON.parse(cached)));
+            } else {
+              setFooterData(INITIAL_FOOTER_DATA);
+            }
+          } catch {
+            setFooterData(INITIAL_FOOTER_DATA);
+          }
         }
       } catch (err) {
-        console.error('Error fetching header:', err);
+        console.error('Error fetching header/footer:', err);
         setHeaderData(INITIAL_HEADER_DATA);
+        setFooterData(INITIAL_FOOTER_DATA);
       }
     };
-    fetchHeader();
+    fetchHeaderFooter();
   }, []);
 
   const openCreateUser = () => {
@@ -733,6 +800,7 @@ export default function PainelAdm() {
     loadUsers();
     loadPages();
     loadLogs();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   useEffect(() => {
@@ -799,7 +867,9 @@ export default function PainelAdm() {
         id === 'home' ? supabase.from('site_settings').select('data').eq('key', 'videos').single() : Promise.resolve({ data: null })
       ]);
 
-      const data = settingRes.data?.data || (id === 'home' ? INITIAL_HOME_DATA : INITIAL_MINISTRIES_DATA);
+      const rawData = settingRes.data?.data;
+      const defaultData = id === 'home' ? INITIAL_HOME_DATA : INITIAL_MINISTRIES_DATA[id];
+      const data = rawData ? deepMerge(defaultData, rawData) : defaultData;
       const vids = videoRes.data?.data || [];
 
       setMinistryData(data);
@@ -845,14 +915,19 @@ export default function PainelAdm() {
         setHomeData(sanitizedMinistryData);
         setHomeVideos(cleanHome);
         const { data: reload } = await supabase.from('site_settings').select('data').eq('key', 'home').single();
-        if (reload?.data) setMinistryData(reload.data);
+        if (reload?.data) {
+          setMinistryData(deepMerge(INITIAL_HOME_DATA, reload.data));
+        }
         broadcastUpdate('home');
         broadcastUpdate('videos');
       } else {
         const { error } = await supabase.from('site_settings').upsert({ key, data: sanitizedMinistryData });
         if (error) throw error;
         const { data: reload } = await supabase.from('site_settings').select('data').eq('key', key).single();
-        if (reload?.data) setMinistryData(reload.data);
+        if (reload?.data) {
+          const defaultData = INITIAL_MINISTRIES_DATA[ministryId] || {};
+          setMinistryData(deepMerge(defaultData, reload.data));
+        }
         broadcastUpdate(key);
       }
       alert('Conteúdo salvo com sucesso!');
@@ -1157,19 +1232,24 @@ export default function PainelAdm() {
         .single();
 
       const raw = dbPage?.data ? (typeof dbPage.data === 'string' ? dbPage.data : JSON.stringify(dbPage.data, null, 2)) : '';
-      setPageRawContent(raw);
+
 
       if (name.toLowerCase() === 'contact') {
-        const parsed = parseContactPage(raw);
+        let parsed = {};
+        try {
+          parsed = JSON.parse(raw);
+        } catch {
+          parsed = parseContactPage(raw);
+        }
         setPageMode('contact');
         setPageName(name);
         setPageData({
-          title: parsed.title,
-          description: parsed.subtitle,
-          address: parsed.address,
-          phone: parsed.phone,
-          email: parsed.email,
-          schedule: parsed.schedule,
+          title: parsed.title || 'Entre em Contato',
+          description: parsed.subtitle || parsed.description || '',
+          address: parsed.address || '',
+          phone: parsed.phone || '',
+          email: parsed.email || '',
+          schedule: parsed.schedule || '',
         });
         setPageModalOpen(true);
         return;
@@ -1268,7 +1348,7 @@ export default function PainelAdm() {
           email: pageData.email || '',
           schedule: pageData.schedule || '',
         };
-        content = applyContactPage(pageRawContent, fields);
+        content = JSON.stringify(fields);
       } else {
         content = JSON.stringify(pageData);
       }
@@ -1287,22 +1367,6 @@ export default function PainelAdm() {
       alert('Erro ao salvar a página.');
     } finally {
       setPageSaving(false);
-    }
-  }
-
-  const deletePage = async (name) => {
-    const ok = window.confirm('Ocultar esta página das configurações?');
-    if (!ok) return;
-
-    try {
-      const id = pageToMinistry[name] || name.toLowerCase();
-      const key = id === 'home' ? 'home' : `ministry_${id}`;
-      // Instead of deleting the file, we remove the configuration entry
-      await supabase.from('site_settings').delete().eq('key', key);
-      loadPages();
-      alert('Configuração de página removida!');
-    } catch {
-      alert('Erro ao remover configuração.');
     }
   }
 
@@ -1330,8 +1394,32 @@ export default function PainelAdm() {
     }
   }
 
+  const deletePage = async (name) => {
+    const isProtected = ['Home', 'Login', 'Dashboard', 'PainelAdm', 'PainelApp'].some(p => p.toLowerCase() === name.toLowerCase());
+    if (isProtected) {
+      alert('Esta é uma página protegida do sistema. Você não pode excluí-la.');
+      return;
+    }
+
+    if (!window.confirm('Excluir esta página? O conteúdo dela voltará para as configurações padrão do sistema e ela permanecerá na lista para futuras edições.')) return;
+    try {
+      const id = pageToMinistry[name] || name.toLowerCase();
+      const key = id === 'home' ? 'home' : `ministry_${id}`;
+
+      const { error } = await supabase.from('site_settings').delete().eq('key', key);
+      if (error) throw error;
+
+      alert('Conteúdo da página restaurado para o padrão do sistema!');
+      await loadPages();
+    } catch (err) {
+      console.error('Error deleting page:', err);
+      alert('Erro ao excluir a página. Verifique sua conexão.');
+    }
+  };
+
   useEffect(() => {
     if (activePage === 'paginas') loadPages()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activePage])
 
   if (!isLogged) {
@@ -1598,6 +1686,68 @@ export default function PainelAdm() {
         </div>
       );
     }
+
+    if (activePage === 'mensagens') {
+      return (
+        <div className="painel-card">
+          <div className="painel-table-bar">
+            <h3 style={{ fontSize: '.95rem', fontWeight: 600 }}>Mensagens & Testemunhos Recebidos Boris</h3>
+            <button className="painel-action-btn" onClick={loadSiteMessages}>🔄 Atualizar</button>
+          </div>
+
+          {messagesLoading ? (
+            <div style={{ color: palette.textMuted, padding: '1rem' }}>Carregando mensagens...</div>
+          ) : (
+            <div className="painel-table-wrap">
+              <table className="painel-table">
+                <thead>
+                  <tr>
+                    <th>Data</th>
+                    <th>Remetente</th>
+                    <th>Categoria</th>
+                    <th>Mensagem</th>
+                    <th>Ações</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {(siteMessages || []).map(m => (
+                    <tr key={m.id}>
+                      <td style={{ fontSize: '.75rem', whiteSpace: 'nowrap' }}>{new Date(m.created_at).toLocaleDateString()}</td>
+                      <td>
+                        <div style={{ fontWeight: 600 }}>{m.name || 'Anônimo'}</div>
+                        <div style={{ fontSize: '.7rem', color: palette.textMuted }}>{m.email}</div>
+                      </td>
+                      <td>
+                        <span className="status-pill active" style={{ fontSize: '.65rem', textTransform: 'uppercase' }}>{m.category}</span>
+                      </td>
+                      <td style={{ maxWidth: 300, fontSize: '.8rem', lineHeight: 1.4 }}>{m.message}</td>
+                      <td>
+                        <div style={{ display: 'flex', gap: 6 }}>
+                          {m.type === 'testimonial_submission' && (
+                            <button className="btn-ver" onClick={() => approveTestimonial(m)} style={{ padding: '4px 8px' }}>✅ Aprovar Testemunho</button>
+                          )}
+                          <button className="btn-deletar" style={{ padding: '4px 8px' }} onClick={async () => {
+                            if (window.confirm('Excluir esta mensagem?')) {
+                              await supabase.from('site_messages').delete().eq('id', m.id);
+                              loadSiteMessages();
+                            }
+                          }}>🗑️ Excluir</button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                  {(!siteMessages || siteMessages.length === 0) && (
+                    <tr><td colSpan="5" style={{ textAlign: 'center', padding: '2rem', color: palette.textMuted }}>Nenhuma mensagem encontrada.</td></tr>
+                  )}
+                </tbody>
+              </table>
+            </div>
+          )
+          }
+        </div >
+      );
+    }
+
     if (activePage === 'conteudo') {
       return (
         <div>
@@ -1608,19 +1758,22 @@ export default function PainelAdm() {
                 <select className="pm-select" value={ministryId} onChange={e => setMinistryId(e.target.value)}>
                   {ministryOptions.map(o => <option key={o.id} value={o.id}>{o.label}</option>)}
                 </select>
-                {ministryId === 'home' && (
-                  <button
-                    className="painel-action-btn"
-                    onClick={() => {
-                      if (window.confirm('Deseja resetar todos os dados da Home para o padrão original?')) {
-                        setMinistryData(INITIAL_HOME_DATA);
+                <button
+                  className="painel-action-btn"
+                  onClick={() => {
+                    const label = ministryOptions.find(o => o.id === ministryId)?.label || ministryId;
+                    if (window.confirm(`Deseja resetar todos os dados de "${label}" para o padrão original?`)) {
+                      const defaultData = ministryId === 'home' ? INITIAL_HOME_DATA : INITIAL_MINISTRIES_DATA[ministryId];
+                      if (defaultData) {
+                        setMinistryData(defaultData);
+                        if (ministryId === 'home') setHomeData(defaultData);
                       }
-                    }}
-                    style={{ borderColor: palette.danger, color: palette.danger }}
-                  >
-                    Resetar Padrão
-                  </button>
-                )}
+                    }
+                  }}
+                  style={{ borderColor: palette.danger, color: palette.danger }}
+                >
+                  Resetar Padrão
+                </button>
                 <button className="pm-add-btn" onClick={saveMinistry}>Salvar</button>
               </div>
             </div>
@@ -1629,7 +1782,9 @@ export default function PainelAdm() {
                 ? ['geral', 'sliders', 'pastores', 'videos', 'mensagens', 'ministérios', 'programacao', 'atividades', 'cta', 'aniversariantes']
                 : ministryId === 'midia'
                   ? ['geral', 'equipe', 'videos', 'mensagens', 'programacao', 'galeria', 'bastidores', 'noticias', 'testemunhos', 'aniversariantes']
-                  : ['geral', 'equipe', 'programacao', 'galeria', 'testemunhos', 'aniversariantes']
+                  : (ministryId === 'intercessao' || ministryId === 'missoes' || ministryId === 'social' || ministryId === 'retiro')
+                    ? ['geral', 'equipe', 'programacao', 'galeria', 'testemunhos']
+                    : ['geral', 'equipe', 'programacao', 'galeria', 'testemunhos', 'aniversariantes']
               ).map(t => (
                 <button
                   key={t}
@@ -1804,6 +1959,46 @@ export default function PainelAdm() {
                             style={{ width: '100%', height: 140, background: palette.bg, color: palette.text, border: `1px solid ${palette.border}`, borderRadius: 10, padding: 12, fontSize: '.9rem', outline: 'none', resize: 'vertical', fontFamily: 'Inter, sans-serif', lineHeight: 1.6 }}
                           />
                         </div>
+                        {ministryId === 'ebd' && (
+                          <>
+                            <div className="pm-field">
+                              <label>Horário da EBD</label>
+                              <div className="pm-field-wrap">
+                                <span className="pm-icon">⏰</span>
+                                <input
+                                  className="pm-input"
+                                  value={ministryData?.info?.time || ''}
+                                  onChange={e => setMinistryData(d => ({ ...d, info: { ...(d.info || {}), time: e.target.value } }))}
+                                  placeholder="Ex: Domingos, 9h"
+                                />
+                              </div>
+                            </div>
+                            <div className="pm-field">
+                              <label>Local da EBD</label>
+                              <div className="pm-field-wrap">
+                                <span className="pm-icon">📍</span>
+                                <input
+                                  className="pm-input"
+                                  value={ministryData?.info?.location || ''}
+                                  onChange={e => setMinistryData(d => ({ ...d, info: { ...(d.info || {}), location: e.target.value } }))}
+                                  placeholder="Ex: ADMAC - Sala 1"
+                                />
+                              </div>
+                            </div>
+                            <div className="pm-field">
+                              <label>Público Alvo</label>
+                              <div className="pm-field-wrap">
+                                <span className="pm-icon">👥</span>
+                                <input
+                                  className="pm-input"
+                                  value={ministryData?.info?.audience || ''}
+                                  onChange={e => setMinistryData(d => ({ ...d, info: { ...(d.info || {}), audience: e.target.value } }))}
+                                  placeholder="Ex: Todas as idades"
+                                />
+                              </div>
+                            </div>
+                          </>
+                        )}
                       </>
                     )}
                   </div>
@@ -2453,65 +2648,93 @@ export default function PainelAdm() {
                         ) : (
                           <>
                             <div className="pm-field">
-                              <label>Atividade</label>
+                              <label>{ministryId === 'ebd' ? 'Classe' : 'Atividade'}</label>
                               <div className="pm-field-wrap">
                                 <span className="pm-icon">📌</span>
                                 <input
                                   className="pm-input"
-                                  value={s.activity || s.title || ''}
+                                  value={ministryId === 'ebd' ? (s.class || s.title || '') : (s.activity || s.title || '')}
                                   onChange={e => {
                                     const next = [...(ministryData.schedule || [])];
-                                    next[idx] = { ...next[idx], activity: e.target.value };
+                                    if (ministryId === 'ebd') {
+                                      next[idx] = { ...next[idx], class: e.target.value };
+                                    } else {
+                                      next[idx] = { ...next[idx], activity: e.target.value };
+                                    }
                                     setMinistryData(d => ({ ...d, schedule: next }));
                                   }}
                                 />
                               </div>
                             </div>
                             <div className="pm-field">
-                              <label>Dia</label>
+                              <label>{ministryId === 'ebd' ? 'Professor(a)' : 'Dia'}</label>
                               <div className="pm-field-wrap">
-                                <span className="pm-icon">🗓</span>
+                                <span className="pm-icon">{ministryId === 'ebd' ? '👤' : '🗓'}</span>
                                 <input
                                   className="pm-input"
-                                  value={s.day || s.date || ''}
+                                  value={ministryId === 'ebd' ? (s.teacher || '') : (s.day || s.date || '')}
                                   onChange={e => {
                                     const next = [...(ministryData.schedule || [])];
-                                    next[idx] = { ...next[idx], day: e.target.value };
+                                    if (ministryId === 'ebd') {
+                                      next[idx] = { ...next[idx], teacher: e.target.value };
+                                    } else {
+                                      next[idx] = { ...next[idx], day: e.target.value };
+                                    }
                                     setMinistryData(d => ({ ...d, schedule: next }));
                                   }}
                                 />
                               </div>
                             </div>
-                            <div className="pm-field">
-                              <label>Hora</label>
-                              <div className="pm-field-wrap">
-                                <span className="pm-icon">⏰</span>
-                                <input
-                                  className="pm-input"
-                                  value={s.time || ''}
-                                  onChange={e => {
-                                    const next = [...(ministryData.schedule || [])];
-                                    next[idx] = { ...next[idx], time: e.target.value };
-                                    setMinistryData(d => ({ ...d, schedule: next }));
-                                  }}
-                                />
+                            {ministryId === 'ebd' ? (
+                              <div className="pm-field">
+                                <label>Sala</label>
+                                <div className="pm-field-wrap">
+                                  <span className="pm-icon">🚪</span>
+                                  <input
+                                    className="pm-input"
+                                    value={s.room || s.location || ''}
+                                    onChange={e => {
+                                      const next = [...(ministryData.schedule || [])];
+                                      next[idx] = { ...next[idx], room: e.target.value };
+                                      setMinistryData(d => ({ ...d, schedule: next }));
+                                    }}
+                                  />
+                                </div>
                               </div>
-                            </div>
-                            <div className="pm-field">
-                              <label>Local</label>
-                              <div className="pm-field-wrap">
-                                <span className="pm-icon">📍</span>
-                                <input
-                                  className="pm-input"
-                                  value={s.location || ''}
-                                  onChange={e => {
-                                    const next = [...(ministryData.schedule || [])];
-                                    next[idx] = { ...next[idx], location: e.target.value };
-                                    setMinistryData(d => ({ ...d, schedule: next }));
-                                  }}
-                                />
-                              </div>
-                            </div>
+                            ) : (
+                              <>
+                                <div className="pm-field">
+                                  <label>Hora</label>
+                                  <div className="pm-field-wrap">
+                                    <span className="pm-icon">⏰</span>
+                                    <input
+                                      className="pm-input"
+                                      value={s.time || ''}
+                                      onChange={e => {
+                                        const next = [...(ministryData.schedule || [])];
+                                        next[idx] = { ...next[idx], time: e.target.value };
+                                        setMinistryData(d => ({ ...d, schedule: next }));
+                                      }}
+                                    />
+                                  </div>
+                                </div>
+                                <div className="pm-field">
+                                  <label>Local</label>
+                                  <div className="pm-field-wrap">
+                                    <span className="pm-icon">📍</span>
+                                    <input
+                                      className="pm-input"
+                                      value={s.location || ''}
+                                      onChange={e => {
+                                        const next = [...(ministryData.schedule || [])];
+                                        next[idx] = { ...next[idx], location: e.target.value };
+                                        setMinistryData(d => ({ ...d, schedule: next }));
+                                      }}
+                                    />
+                                  </div>
+                                </div>
+                              </>
+                            )}
                             <div className="pm-field" style={{ gridColumn: '1 / -1' }}>
                               <label>Descrição</label>
                               <textarea
@@ -3772,9 +3995,13 @@ export default function PainelAdm() {
               onClick={async () => {
                 try {
                   const { error } = await supabase.from('site_settings').upsert({ key: 'header', data: headerData });
-                  if (error) throw error;
+                  if (error || !hasSupabase) {
+                    try {
+                      localStorage.setItem('admac_site_settings:header', JSON.stringify(headerData));
+                    } catch { /* ignore */ }
+                  }
                   broadcastUpdate('header');
-                  alert("Configurações salvas com sucesso!");
+                  alert(error || !hasSupabase ? "Configurações salvas no navegador (offline)." : "Configurações salvas com sucesso!");
                 } catch (err) {
                   console.error('Error saving header:', err);
                   alert("Erro ao salvar configurações.");
@@ -3782,6 +4009,106 @@ export default function PainelAdm() {
               }}
             >
               Salvar Identidade
+            </button>
+          </div>
+
+          <div className="painel-card" style={{ maxWidth: 600, marginTop: '1.2rem' }}>
+            <h3 style={{ fontSize: '.95rem', fontWeight: 600, marginBottom: '1.2rem' }}>Informações de Contato (Rodapé)</h3>
+            <div className="pm-field" style={{ marginBottom: '1.5rem' }}>
+              <label>Endereço</label>
+              <div className="pm-field-wrap">
+                <span className="pm-icon">📍</span>
+                <input
+                  className="pm-input"
+                  value={footerData?.contact?.address || ''}
+                  onChange={e => setFooterData(d => ({ ...d, contact: { ...d.contact, address: e.target.value } }))}
+                />
+              </div>
+            </div>
+            <div className="pm-field" style={{ marginBottom: '1.5rem' }}>
+              <label>Telefone / WhatsApp</label>
+              <div className="pm-field-wrap">
+                <span className="pm-icon">📞</span>
+                <input
+                  className="pm-input"
+                  value={footerData?.contact?.phone || ''}
+                  onChange={e => setFooterData(d => ({ ...d, contact: { ...d.contact, phone: e.target.value } }))}
+                />
+              </div>
+            </div>
+            <div className="pm-field" style={{ marginBottom: '1.5rem' }}>
+              <label>E-mail</label>
+              <div className="pm-field-wrap">
+                <span className="pm-icon">✉️</span>
+                <input
+                  className="pm-input"
+                  value={footerData?.contact?.email || ''}
+                  onChange={e => setFooterData(d => ({ ...d, contact: { ...d.contact, email: e.target.value } }))}
+                />
+              </div>
+            </div>
+            <div className="pm-field" style={{ marginBottom: '1.5rem' }}>
+              <label>Horário dos Cultos</label>
+              <div className="pm-field-wrap">
+                <span className="pm-icon">⏰</span>
+                <input
+                  className="pm-input"
+                  value={footerData?.contact?.cultos || ''}
+                  onChange={e => setFooterData(d => ({ ...d, contact: { ...d.contact, cultos: e.target.value } }))}
+                />
+              </div>
+            </div>
+
+            <h3 style={{ fontSize: '.95rem', fontWeight: 600, marginBottom: '1.2rem', marginTop: '1.5rem' }}>Redes Sociais</h3>
+            <div className="pm-field" style={{ marginBottom: '1.5rem' }}>
+              <label>Facebook (Link)</label>
+              <div className="pm-field-wrap">
+                <span className="pm-icon">🔗</span>
+                <input className="pm-input" value={footerData?.social?.facebook || ''} onChange={e => setFooterData(d => ({ ...d, social: { ...d.social, facebook: e.target.value } }))} />
+              </div>
+            </div>
+            <div className="pm-field" style={{ marginBottom: '1.5rem' }}>
+              <label>Instagram (Link)</label>
+              <div className="pm-field-wrap">
+                <span className="pm-icon">🔗</span>
+                <input className="pm-input" value={footerData?.social?.instagram || ''} onChange={e => setFooterData(d => ({ ...d, social: { ...d.social, instagram: e.target.value } }))} />
+              </div>
+            </div>
+            <div className="pm-field" style={{ marginBottom: '1.5rem' }}>
+              <label>YouTube (Link)</label>
+              <div className="pm-field-wrap">
+                <span className="pm-icon">🔗</span>
+                <input className="pm-input" value={footerData?.social?.youtube || ''} onChange={e => setFooterData(d => ({ ...d, social: { ...d.social, youtube: e.target.value } }))} />
+              </div>
+            </div>
+            <div className="pm-field" style={{ marginBottom: '1.5rem' }}>
+              <label>Spotify (Link)</label>
+              <div className="pm-field-wrap">
+                <span className="pm-icon">🔗</span>
+                <input className="pm-input" value={footerData?.social?.spotify || ''} onChange={e => setFooterData(d => ({ ...d, social: { ...d.social, spotify: e.target.value } }))} />
+              </div>
+            </div>
+
+            <button
+              className="pm-btn-save"
+              style={{ width: '100%' }}
+              onClick={async () => {
+                try {
+                  const { error } = await supabase.from('site_settings').upsert({ key: 'footer', data: footerData });
+                  if (error || !hasSupabase) {
+                    try {
+                      localStorage.setItem('admac_site_settings:footer', JSON.stringify(footerData));
+                    } catch { /* ignore */ }
+                  }
+                  broadcastUpdate('footer');
+                  alert(error || !hasSupabase ? "Rodapé salvo no navegador (offline)." : "Rodapé e contatos salvos com sucesso!");
+                } catch (err) {
+                  console.error('Error saving footer:', err);
+                  alert("Erro ao salvar contatos/rodapé.");
+                }
+              }}
+            >
+              Salvar Contatos e Rodapé
             </button>
           </div>
 
