@@ -22,7 +22,7 @@ import PastorCarousel from "../components/PastorCarousel";
 import RecentVideos from "../components/RecentVideos";
 import { supabase } from "../lib/supabase";
 import { INITIAL_HOME_DATA } from "../lib/constants";
-import { deepMerge, transformImageLink } from "../lib/dbUtils";
+import { deepMerge, transformImageLink, parseSafeJson } from "../lib/dbUtils";
 import { usePageUpdate } from "../hooks/usePageUpdate";
 
 const Home = () => {
@@ -40,7 +40,7 @@ const Home = () => {
         .single();
 
       if (dbData && dbData.data) {
-        setData(deepMerge(INITIAL_HOME_DATA, dbData.data));
+        setData(deepMerge(INITIAL_HOME_DATA, parseSafeJson(dbData.data)));
         return;
       }
 
@@ -77,7 +77,7 @@ const Home = () => {
 
   // Carrega aniversariantes de todas as áreas do site para exibir na Home
   useEffect(() => {
-    const ministryIds = ['kids', 'louvor', 'jovens', 'mulheres', 'homens', 'lares', 'retiro', 'social', 'ebd', 'midia'];
+    const ministryIds = ['kids', 'louvor', 'jovens', 'mulheres', 'homens', 'lares', 'retiro', 'social', 'ebd', 'midia', 'intercessao', 'missoes', 'revista'];
     const loadBirthdays = async () => {
       const results = [];
       for (const id of ministryIds) {
@@ -88,7 +88,8 @@ const Home = () => {
             .eq('key', `ministry_${id}`)
             .single();
 
-          const d = dbData?.data;
+          const raw = dbData?.data;
+          const d = parseSafeJson(raw);
           // Adiciona aniversariantes encontrados junto com o nome do ministério
           if (d?.birthdays?.people && d.birthdays.people.length > 0) {
             d.birthdays.people.forEach(person => {
@@ -361,8 +362,13 @@ const Home = () => {
             <Link to={data.cta?.primaryLink || "/contato"} className="cta-home-btn primary">
               {data.cta?.primaryBtn || 'Quero Visitar'}
             </Link>
-            {/* Botão secundário: telefone configurável */}
-            <a href={data.cta?.secondaryLink || "tel:+5561993241084"} className="cta-home-btn secondary">
+            <a
+              href={
+                !data.cta?.secondaryLink ? "tel:+5561993241084" :
+                  (data.cta.secondaryLink.match(/^(http|tel:|mailto:|\/)/) ? data.cta.secondaryLink : `tel:+55${data.cta.secondaryLink.replace(/\D/g, '')}`)
+              }
+              className="cta-home-btn secondary"
+            >
               <Phone size={18} /> {data.cta?.secondaryBtn || 'Ligar Agora'}
             </a>
           </div>

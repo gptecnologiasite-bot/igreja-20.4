@@ -25,7 +25,7 @@ import {
 import '../css/Header.css';
 import { supabase } from '../lib/supabase';
 import { INITIAL_HEADER_DATA } from '../lib/constants';
-import { deepMerge } from '../lib/dbUtils';
+import { deepMerge, parseSafeJson } from '../lib/dbUtils';
 import { usePageUpdate } from '../hooks/usePageUpdate';
 
 const Header = ({ theme, toggleTheme }) => {
@@ -86,7 +86,7 @@ const Header = ({ theme, toggleTheme }) => {
       if (dbData?.data) {
         // Usa deepMerge para garantir que campos ausentes no Supabase 
         // sejam preenchidos pelos valores iniciais (ex: menu)
-        setHeaderData(deepMerge(INITIAL_HEADER_DATA, dbData.data));
+        setHeaderData(deepMerge(INITIAL_HEADER_DATA, parseSafeJson(dbData.data)));
       } else {
         setHeaderData(INITIAL_HEADER_DATA);
       }

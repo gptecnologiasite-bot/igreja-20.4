@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { transformImageLink } from '../utils/imageUtils';
+import { transformImageLink } from '../lib/dbUtils';
 import { Calendar, Clock, MapPin, Heart, Star, Camera, Users, BookOpen } from 'lucide-react';
 import '../css/Kids.css';
 import { useMinistryData } from '../hooks/useMinistryData';
@@ -29,7 +29,7 @@ const Kids = () => {
           ]).map((photo, index) => (
             <div
               key={index}
-              className={`hero - slide ${index === currentSlide ? 'active' : ''} `}
+              className={`hero-slide ${index === currentSlide ? 'active' : ''} `}
               style={{ backgroundImage: `url(${transformImageLink(photo.url)})` }}
             ></div>
           ))}

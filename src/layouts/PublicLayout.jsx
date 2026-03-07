@@ -3,6 +3,7 @@ import { Outlet, useLocation } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { supabase } from '../lib/supabase';
+import { parseSafeJson } from '../lib/dbUtils';
 
 const PublicLayout = () => {
     const location = useLocation();
@@ -27,8 +28,9 @@ const PublicLayout = () => {
 
                 const { data } = await supabase.from('site_settings').select('data').eq('key', key).single();
 
-                if (data?.data) {
-                    setIsActive(data.data.active !== false);
+                const parsed = parseSafeJson(data?.data);
+                if (parsed) {
+                    setIsActive(parsed.active !== false);
                 } else {
                     setIsActive(true); // Ativo por padrão
                 }

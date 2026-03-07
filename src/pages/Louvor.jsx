@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { transformImageLink } from '../utils/imageUtils';
+import { transformImageLink } from '../lib/dbUtils';
 import { Music, Calendar, Clock, Users, MessageSquare, Send, Mic, Guitar, Headphones, Heart } from 'lucide-react';
 import { useMinistryData } from '../hooks/useMinistryData';
 import '../css/Louvor.css';

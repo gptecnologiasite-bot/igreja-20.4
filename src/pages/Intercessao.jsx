@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { transformImageLink } from '../utils/imageUtils';
+import { transformImageLink } from '../lib/dbUtils';
+import { supabase } from '../lib/supabase';
 import { Heart, Users, Calendar, MessageSquare, Send, Clock, Star, Play, BookOpen, Shield } from 'lucide-react';
 import { useMinistryData } from '../hooks/useMinistryData';
 import '../css/Lares.css';
@@ -16,17 +17,35 @@ const Intercessao = () => {
 
   const [data] = useMinistryData('intercessao');
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    alert('Pedido de oração enviado com sucesso! Estaremos orando por você.');
-    setPrayerRequest({
-      name: '',
-      email: '',
-      phone: '',
-      request: '',
-      isUrgent: false,
-      isConfidential: true
-    });
+    const payload = {
+      type: 'prayer_request',
+      ...prayerRequest,
+      created_at: new Date().toISOString()
+    };
+
+    try {
+      const { error } = await supabase.from('site_messages').insert(payload);
+      if (error) throw error;
+      alert('Pedido de oração enviado com sucesso! Estaremos orando por você.');
+      setPrayerRequest({
+        name: '',
+        email: '',
+        phone: '',
+        request: '',
+        isUrgent: false,
+        isConfidential: true
+      });
+    } catch (err) {
+      console.error('Error sending prayer request:', err);
+      // Backup local
+      const backups = JSON.parse(localStorage.getItem('admac_messages_backup') || '[]');
+      backups.push(payload);
+      localStorage.setItem('admac_messages_backup', JSON.stringify(backups));
+      alert('Pedido de oração enviado (Protocolo Offline)! Estaremos orando por você.');
+      setPrayerRequest({ name: '', email: '', phone: '', request: '', isUrgent: false, isConfidential: true });
+    }
   };
 
   return (
