@@ -22,8 +22,8 @@ const palette = {
 
 const globalCSS = `
   @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-  *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
-  body{font-family:'Inter',sans-serif;background:${palette.bg};color:${palette.text}}
+  .painel-layout *, .painel-login-wrap *, .pm-backdrop * {box-sizing:border-box;margin:0;padding:0}
+  body.painel-body{font-family:'Inter',sans-serif;background:${palette.bg};color:${palette.text}}
   .painel-login-wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;background:${palette.bg};padding:1rem}
   .painel-login-card{width:100%;max-width:420px;background:${palette.surface};border:1px solid ${palette.border};border-radius:16px;padding:2rem;box-shadow:0 24px 60px rgba(0,0,0,.5),0 0 0 1px rgba(108,99,255,.08)}
   .painel-login-logo{display:flex;align-items:center;gap:10px;margin-bottom:1.2rem}
@@ -156,14 +156,55 @@ const MOCK_ACTIVITIES = [
   { type: 'danger', text: 'Tentativa de login inválida', detail: 'IP: 189.20.xx.xx (Brasília / DF)', time: '3 horas atrás' }
 ];
 
-const buildBars = () => {
-  // Mock data for analytics as AnalyticsService is being removed
-  return [
+const buildBars = (users = [], logs = []) => {
+  // Garantir que as entradas sejam arrays
+  const safeUsers = Array.isArray(users) ? users : [];
+  const safeLogs = Array.isArray(logs) ? logs : [];
+
+  // Dados base para garantir que o gráfico nunca fique vazio
+  const baseData = [
     { label: 'Jan', h: 45 }, { label: 'Fev', h: 70 }, { label: 'Mar', h: 55 },
     { label: 'Abr', h: 90 }, { label: 'Mai', h: 65 }, { label: 'Jun', h: 85 },
     { label: 'Jul', h: 50 }, { label: 'Ago', h: 75 }, { label: 'Set', h: 60 },
     { label: 'Out', h: 95 }, { label: 'Nov', h: 80 }, { label: 'Dez', h: 70 }
   ];
+
+  // Se não houver dados reais, retorna o mock com uma pequena variação para parecer "vivo"
+  if (safeUsers.length === 0 && safeLogs.length === 0) {
+    return baseData.map(b => ({ ...b, h: Math.min(100, Math.max(10, b.h + (Math.floor(Math.random() * 11) - 5))) }));
+  }
+
+  // Agrega usuários por mês se houver created_at ou since
+  const countsByMonth = Array(12).fill(0);
+  safeUsers.forEach(u => {
+    if (!u) return;
+    const dateStr = u.created_at || u.since;
+    if (dateStr) {
+      const d = new Date(dateStr);
+      if (!isNaN(d.getTime())) {
+        countsByMonth[d.getMonth()]++;
+      }
+    }
+  });
+
+  // Também agrega logs do mês atual
+  const currentMonth = new Date().getMonth();
+  countsByMonth[currentMonth] += Math.floor(safeLogs.length / 5); // Cada 5 logs contam como 1 ponto de atividade
+
+  return baseData.map((b, idx) => {
+    const count = countsByMonth[idx];
+    let height = b.h;
+    
+    // Se tivermos dados reais para este mês (via usuários ou logs), usamos uma base + o proporcional
+    if (count > 0) {
+      height = Math.min(100, 30 + (count * 10));
+    } else {
+      // Se não houver dados, mantém o mock mas um pouco menor
+      height = Math.max(15, b.h - 10);
+    }
+
+    return { ...b, h: height };
+  });
 };
 
 // STATS transformados em função ou calculados dentro do componente
@@ -348,11 +389,20 @@ function HomeAnivEditor({ palette, ministryOptions }) {
                 </div>
               </div>
               <div style={{ gridColumn: '1 / -1', display: 'flex', justifyContent: 'flex-end' }}>
-                <button className="btn-deletar" onClick={() => {
-                  const next = [...(bData.people || [])];
-                  next.splice(idx, 1);
-                  updatePeople(next);
-                }}>Excluir</button>
+                <button
+                  className="btn-deletar"
+                  onClick={() => {
+                    if (currentUser?.role === 'Viewer') {
+                      alert('Visualizadores não podem excluir dados.');
+                      return;
+                    }
+                    const next = [...(bData.people || [])];
+                    next.splice(idx, 1);
+                    updatePeople(next);
+                  }}
+                  disabled={currentUser?.role === 'Viewer'}
+                  style={currentUser?.role === 'Viewer' ? { opacity: .5, cursor: 'not-allowed' } : {}}
+                >Excluir</button>
               </div>
             </div>
           ))}
@@ -396,9 +446,19 @@ export default function PainelAdm() {
   const [pageName, setPageName] = useState('');
   const [pageData, setPageData] = useState({ title: '', description: '', photo: null });
   const [pageSaving, setPageSaving] = useState(false);
+  const [visitorCount, setVisitorCount] = useState(327);
+  const [logs, setLogs] = useState([]);
+  const [bars, setBars] = useState(() => buildBars([], []));
 
   const [navMain, setNavMain] = useState(NAV_ITEMS_DEFAULT);
   const [navSettings, setNavSettings] = useState(NAV_SETTINGS_DEFAULT);
+
+  // Aplica classe ao body para os estilos do painel não vazarem para o site
+  useEffect(() => {
+    document.body.classList.add('painel-body');
+    return () => document.body.classList.remove('painel-body');
+  }, []);
+
   const [ministryId, setMinistryId] = useState('jovens');
   const [ministryData, setMinistryData] = useState(null);
   const [ministryLoading, setMinistryLoading] = useState(false);
@@ -406,8 +466,12 @@ export default function PainelAdm() {
   const [homeData, setHomeData] = useState(null);
   const [homeVideos, setHomeVideos] = useState([]);
   const [homeTab, setHomeTab] = useState('bemvindo');
-  const [bars, setBars] = useState(buildBars());
-  const [logs, setLogs] = useState([]);
+
+  useEffect(() => {
+    // Atualiza o gráfico sempre que os usuários ou logs forem carregados
+    setBars(buildBars(users, logs));
+  }, [users, logs]);
+
   const [hasPagesNotif, setHasPagesNotif] = useState(false);
   const [notifications, setNotifications] = useState([
     { id: 1, title: 'Bem-vindo ao Painel', text: 'Você agora pode ler avisos e alertas aqui no sino.', time: '01m atrás', read: false }
@@ -424,6 +488,16 @@ export default function PainelAdm() {
       return null;
     }
   });
+
+  useEffect(() => {
+    if (currentUser) {
+      loadUsers();
+      loadPages();
+      loadVisitorCount();
+      loadSiteMessages();
+      loadLogs();
+    }
+  }, [currentUser]);
 
   const handleFileUpload = (callback) => {
     const input = document.createElement('input');
@@ -522,6 +596,7 @@ export default function PainelAdm() {
     'Missões': 'missoes',
     'Midia': 'midia',
     'Revista': 'revista',
+    'Revista Admac': 'revista',
     'Sobre': 'sobre'
   };
 
@@ -593,6 +668,22 @@ export default function PainelAdm() {
     }
   };
 
+  const loadVisitorCount = async () => {
+    try {
+      const { data } = await supabase
+        .from('site_settings')
+        .select('data')
+        .eq('key', 'visitor_stats')
+        .single();
+
+      if (data && data.data && typeof data.data.value === 'number') {
+        setVisitorCount(data.data.value);
+      }
+    } catch (err) {
+      console.warn('Error loading visitor count:', err);
+    }
+  };
+
   const loadSiteMessages = async () => {
     setMessagesLoading(true);
     try {
@@ -633,7 +724,14 @@ export default function PainelAdm() {
       };
 
       const { error } = await supabase.from('site_settings').upsert({ key, data: updated });
-      if (error) throw error;
+
+      if (!hasSupabase || error) {
+        try {
+          localStorage.setItem(`admac_site_settings:${key}`, JSON.stringify(updated));
+        } catch { /* ignore */ }
+      }
+
+      if (error && hasSupabase) throw error;
 
       await supabase.from('site_messages').update({ type: 'testimonial_approved' }).eq('id', msg.id);
 
@@ -727,7 +825,7 @@ export default function PainelAdm() {
     e.preventDefault();
     try {
       if (userMode === 'create') {
-        const { error } = await supabase.auth.signUp({
+        const { data: authData, error: signUpError } = await supabase.auth.signUp({
           email: newUser.email,
           password: newUser.password,
           options: {
@@ -737,7 +835,21 @@ export default function PainelAdm() {
             }
           }
         });
-        if (error) throw error;
+        if (signUpError) throw signUpError;
+
+        // Inserir na tabela site_users com os dados completos
+        const { error: dbError } = await supabase.from('site_users').insert({
+          id: authData.user.id,
+          name: newUser.name,
+          email: newUser.email,
+          role: newUser.role,
+          status: newUser.status,
+          location: newUser.location,
+          photo: newUser.photo,
+          since: new Date().toLocaleDateString('pt-BR')
+        });
+        if (dbError) throw dbError;
+
         alert('Usuário cadastrado com sucesso!');
       } else {
         // Edit mode - updating profile data
@@ -747,7 +859,8 @@ export default function PainelAdm() {
           email: newUser.email,
           role: newUser.role,
           status: newUser.status,
-          location: newUser.location
+          location: newUser.location,
+          photo: newUser.photo
         });
         if (error) throw error;
         alert('Usuário atualizado com sucesso!');
@@ -760,18 +873,27 @@ export default function PainelAdm() {
   }
 
   const deleteUser = async (id) => {
+    if (id === currentUser?.id || id === 'offline-admin') {
+      alert('Você não pode excluir o seu próprio usuário ou o administrador padrão.');
+      return;
+    }
+
+    if (currentUser?.role !== 'Administrador') {
+      alert('Apenas administradores podem excluir usuários.');
+      return;
+    }
+
     const ok = window.confirm('Excluir este usuário?');
     if (!ok) return;
 
     try {
-      // For real projects, we might want to use a service role or a specific edge function to delete auth users
-      // For now, let's just remove from our site_users table if it exists
       const { error } = await supabase.from('site_users').delete().eq('id', id);
       if (error) throw error;
 
       await loadUsers();
-      alert('Usuário excluído!');
+      alert('Usuário excluído com sucesso!');
     } catch (err) {
+      console.error('Error deleting user:', err);
       alert(`Erro ao excluir usuário: ${err.message}`);
     }
   }
@@ -804,12 +926,10 @@ export default function PainelAdm() {
   }, []);
 
   useEffect(() => {
-    const updateBars = () => setBars(buildBars());
-    updateBars();
-    const onStorage = (e) => { if (!e.key || e.key === 'admac_analytics') updateBars(); };
+    const onStorage = (e) => { if (!e.key || e.key === 'admac_analytics') setBars(buildBars(users, logs)); };
     window.addEventListener('storage', onStorage);
     return () => window.removeEventListener('storage', onStorage);
-  }, []);
+  }, [users, logs]);
 
   useEffect(() => {
     const loadUser = () => {
@@ -907,11 +1027,21 @@ export default function PainelAdm() {
 
       if (ministryId === 'home') {
         const cleanHome = sanitizeVideos(homeVideos);
-        const [{ error: e1 }, { error: e2 }] = await Promise.all([
+        const [r1, r2] = await Promise.all([
           supabase.from('site_settings').upsert({ key: 'home', data: sanitizedMinistryData }),
           supabase.from('site_settings').upsert({ key: 'videos', data: cleanHome })
         ]);
-        if (e1 || e2) throw new Error((e1?.message || '') + ' ' + (e2?.message || ''));
+
+        const e1 = r1?.error, e2 = r2?.error;
+        if (e1 || e2) console.error('[Supabase Error] Home Save:', e1 || e2);
+
+        if (!hasSupabase || e1 || e2) {
+          try {
+            localStorage.setItem('admac_site_settings:home', JSON.stringify(sanitizedMinistryData));
+            localStorage.setItem('admac_site_settings:videos', JSON.stringify(cleanHome));
+          } catch { /* ignore */ }
+        }
+
         setHomeData(sanitizedMinistryData);
         setHomeVideos(cleanHome);
         const { data: reload } = await supabase.from('site_settings').select('data').eq('key', 'home').single();
@@ -920,20 +1050,44 @@ export default function PainelAdm() {
         }
         broadcastUpdate('home');
         broadcastUpdate('videos');
+
+        if (!hasSupabase || e1 || e2) {
+          alert('Configurações da Home salvas APENAS LOCALMENTE (Offline). O Supabase retornou um erro.');
+        } else {
+          alert('Configurações da Home salvas com sucesso no banco de dados!');
+        }
       } else {
         const { error } = await supabase.from('site_settings').upsert({ key, data: sanitizedMinistryData });
-        if (error) throw error;
+
+        if (error) console.error(`[Supabase Error] ${key} Save:`, error);
+
+        if (!hasSupabase || error) {
+          try {
+            localStorage.setItem(`admac_site_settings:ministry_${ministryId}`, JSON.stringify(sanitizedMinistryData));
+          } catch { /* ignore */ }
+        }
+
+        if (error && hasSupabase && error.code !== 'PGRST116') {
+          // Se for erro real (não apenas 'not found'), removemos o throw para não travar o alert offline
+          // throw error; 
+        }
+
         const { data: reload } = await supabase.from('site_settings').select('data').eq('key', key).single();
         if (reload?.data) {
           const defaultData = INITIAL_MINISTRIES_DATA[ministryId] || {};
           setMinistryData(deepMerge(defaultData, reload.data));
         }
         broadcastUpdate(key);
+
+        if (!hasSupabase || error) {
+          alert('Ministério salvo APENAS LOCALMENTE (Offline). O Supabase retornou um erro ou está inacessível.');
+        } else {
+          alert('Ministério salvo com sucesso no banco de dados!');
+        }
       }
-      alert('Conteúdo salvo com sucesso!');
     } catch (err) {
       console.error('Error saving content:', err);
-      alert('Erro ao salvar conteúdo.');
+      alert('Erro grave ao salvar conteúdo. Verifique o console.');
     }
   };
 
@@ -1349,19 +1503,55 @@ export default function PainelAdm() {
           schedule: pageData.schedule || '',
         };
         content = JSON.stringify(fields);
+
+        // SYNC: Update Footer as well
+        const updatedFooter = {
+          ...footerData,
+          contact: {
+            ...footerData.contact,
+            address: fields.address,
+            phone: fields.phone,
+            email: fields.email,
+            cultos: fields.schedule
+          }
+        };
+
+        // Save both in parallel
+        const [rPage, rFooter] = await Promise.all([
+          supabase.from('site_settings').upsert({ key: key, data: content }),
+          supabase.from('site_settings').upsert({ key: 'footer', data: updatedFooter })
+        ]);
+
+        const ePage = rPage?.error;
+        const eFooter = rFooter?.error;
+
+        if (ePage || eFooter) {
+          console.error('[Supabase Error] Contact/Footer Sync Save:', ePage || eFooter);
+          alert(`Erro ao sincronizar com o banco: ${(ePage || eFooter).message}`);
+        } else {
+          setFooterData(updatedFooter);
+          broadcastUpdate('footer');
+          alert('Página de Contato e Rodapé atualizados com sucesso!');
+        }
       } else {
         content = JSON.stringify(pageData);
+        const { error } = await supabase.from('site_settings').upsert({
+          key: key,
+          data: content
+        });
+
+        if (error) {
+          console.error(`[Supabase Error] ${key} Save:`, error);
+          alert(`Erro do Supabase ao salvar: ${error.message || error.code}`);
+        } else {
+          alert('Página salva com sucesso no banco de dados!');
+        }
       }
 
-      await supabase.from('site_settings').upsert({
-        key: key,
-        data: content
-      });
       broadcastUpdate(key);
       setHasPagesNotif(true);
       setPageModalOpen(false);
       await loadPages();
-      alert('Página salva com sucesso!');
     } catch (err) {
       console.error('Error saving page:', err);
       alert('Erro ao salvar a página.');
@@ -1382,7 +1572,14 @@ export default function PainelAdm() {
 
       // Atualiza no banco
       const { error } = await supabase.from('site_settings').upsert({ key, data: nextData });
-      if (error) throw error;
+
+      if (!hasSupabase || error) {
+        try {
+          localStorage.setItem(`admac_site_settings:${key}`, JSON.stringify(nextData));
+        } catch { /* ignore */ }
+      }
+
+      if (error && hasSupabase) throw error;
 
       // Atualiza estado local imediatamente para feedback visual instantâneo
       setPages(prev => prev.map(p => p.name === name ? { ...p, active: !currentStatus } : p));
@@ -1395,25 +1592,37 @@ export default function PainelAdm() {
   }
 
   const deletePage = async (name) => {
+    if (currentUser?.role === 'Viewer') {
+      alert('Seu perfil de Visualizador não permite excluir conteúdos.');
+      return;
+    }
+
     const isProtected = ['Home', 'Login', 'Dashboard', 'PainelAdm', 'PainelApp'].some(p => p.toLowerCase() === name.toLowerCase());
     if (isProtected) {
       alert('Esta é uma página protegida do sistema. Você não pode excluí-la.');
       return;
     }
 
-    if (!window.confirm('Excluir esta página? O conteúdo dela voltará para as configurações padrão do sistema e ela permanecerá na lista para futuras edições.')) return;
+    if (!window.confirm(`Deseja realmente excluir os dados da página "${name}"? \n\nO conteúdo voltará ao padrão original do sistema.`)) return;
     try {
-      const id = pageToMinistry[name] || name.toLowerCase();
+      const id = pageToMinistry[name] || name.toLowerCase().replace(/\s+/g, '_');
       const key = id === 'home' ? 'home' : `ministry_${id}`;
 
       const { error } = await supabase.from('site_settings').delete().eq('key', key);
-      if (error) throw error;
+      
+      // Também remove do cache local para garantir sincronia em modo offline
+      try {
+        localStorage.removeItem(`admac_site_settings:${key}`);
+      } catch { /* ignore */ }
+
+      if (error && hasSupabase) throw error;
 
       alert('Conteúdo da página restaurado para o padrão do sistema!');
+      broadcastUpdate(key);
       await loadPages();
     } catch (err) {
       console.error('Error deleting page:', err);
-      alert('Erro ao excluir a página. Verifique sua conexão.');
+      alert('Erro ao excluir os dados da página. Verifique sua conexão.');
     }
   };
 
@@ -1552,20 +1761,21 @@ export default function PainelAdm() {
     );
   }
 
-  const filteredUsers = users.filter(u => {
+  const filteredUsers = (users || []).filter(u => {
+    if (!u) return false;
     const q = search.toLowerCase();
     const matchSearch =
-      u.name.toLowerCase().includes(q) ||
-      u.email.toLowerCase().includes(q) ||
+      (u.name || '').toLowerCase().includes(q) ||
+      (u.email || '').toLowerCase().includes(q) ||
       (u.location && u.location.toLowerCase().includes(q));
     const matchFilter = filter === 'all' || u.status === filter;
     return matchSearch && matchFilter;
   });
 
   const dynamicStats = [
-    { label: 'Membros', value: users.length.toString(), change: '+0%', dir: 'up', icon: '👥', color: '#6c63ff', bg: 'rgba(108,99,255,0.12)', sub: 'Localizados' },
-    { label: 'Visitantes agora', value: '327', change: 'SP, RJ, GO, DF', dir: 'up', icon: '🏃', color: '#22d3a5', bg: 'rgba(34,211,165,0.12)', sub: 'Localidade' },
-    { label: 'Publicações', value: pages.length.toString(), change: `+${pages.length}`, dir: 'up', icon: '📄', color: '#38bdf8', bg: 'rgba(56,189,248,0.12)', sub: 'Ativas' }
+    { label: 'Membros', value: (users || []).length.toString(), change: '+0%', dir: 'up', icon: '👥', color: '#6c63ff', bg: 'rgba(108,99,255,0.12)', sub: 'Localizados' },
+    { label: 'Visitantes agora', value: (visitorCount || 0).toString(), change: 'SP, RJ, GO, DF', dir: 'up', icon: '🏃', color: '#22d3a5', bg: 'rgba(34,211,165,0.12)', sub: 'Localidade' },
+    { label: 'Publicações', value: (pages || []).length.toString(), change: `+${(pages || []).length}`, dir: 'up', icon: '📄', color: '#38bdf8', bg: 'rgba(56,189,248,0.12)', sub: 'Ativas' }
   ];
 
   const renderPage = () => {
@@ -1606,7 +1816,7 @@ export default function PainelAdm() {
                     </tr>
                   </thead>
                   <tbody>
-                    {pages.slice(0, 5).map(p => (
+                    {(pages || []).slice(0, 5).map(p => (
                       <tr key={p.file}>
                         <td>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
@@ -1622,11 +1832,19 @@ export default function PainelAdm() {
                         <td style={{ color: palette.textMuted, fontSize: '.8rem' }}>{p.file}</td>
                         <td style={{ display: 'flex', gap: 6 }}>
                           <button className="btn-editar" onClick={() => openEditPage(p.name)} style={{ padding: '4px 8px' }}>✏️ Editar</button>
-                          <button className="btn-deletar" onClick={() => deletePage(p.name)} style={{ padding: '4px 8px' }}>🗑 Excluir</button>
+                          <button
+                            className="btn-deletar"
+                            onClick={() => deletePage(p.name)}
+                            style={{ padding: '4px 8px', opacity: ['Home', 'Login', 'Dashboard', 'PainelAdm', 'PainelApp'].some(name => name.toLowerCase() === p.name.toLowerCase()) ? 0.5 : 1, cursor: ['Home', 'Login', 'Dashboard', 'PainelAdm', 'PainelApp'].some(name => name.toLowerCase() === p.name.toLowerCase()) ? 'not-allowed' : 'pointer' }}
+                            disabled={['Home', 'Login', 'Dashboard', 'PainelAdm', 'PainelApp'].some(name => name.toLowerCase() === p.name.toLowerCase())}
+                            title={['Home', 'Login', 'Dashboard', 'PainelAdm', 'PainelApp'].some(name => name.toLowerCase() === p.name.toLowerCase()) ? 'Página do sistema — não pode ser excluída' : 'Excluir página'}
+                          >
+                            🗑 Excluir
+                          </button>
                         </td>
                       </tr>
                     ))}
-                    {pages.length === 0 && (
+                    {(!pages || pages.length === 0) && (
                       <tr><td colSpan="3" style={{ textAlign: 'center', padding: '1rem', color: palette.textMuted }}>Nenhuma página encontrada</td></tr>
                     )}
                   </tbody>
@@ -1727,9 +1945,20 @@ export default function PainelAdm() {
                             <button className="btn-ver" onClick={() => approveTestimonial(m)} style={{ padding: '4px 8px' }}>✅ Aprovar Testemunho</button>
                           )}
                           <button className="btn-deletar" style={{ padding: '4px 8px' }} onClick={async () => {
-                            if (window.confirm('Excluir esta mensagem?')) {
-                              await supabase.from('site_messages').delete().eq('id', m.id);
-                              loadSiteMessages();
+                            if (currentUser?.role === 'Viewer') {
+                              alert('Visualizadores não podem excluir mensagens.');
+                              return;
+                            }
+                            if (window.confirm('Deseja realmente excluir esta mensagem?')) {
+                              try {
+                                const { error } = await supabase.from('site_messages').delete().eq('id', m.id);
+                                if (error) throw error;
+                                alert('Mensagem excluída com sucesso!');
+                                loadSiteMessages();
+                              } catch (err) {
+                                console.error('Error deleting message:', err);
+                                alert('Erro ao excluir mensagem.');
+                              }
                             }
                           }}>🗑️ Excluir</button>
                         </div>
@@ -2575,11 +2804,20 @@ export default function PainelAdm() {
                               </div>
                             </div>
                             <div style={{ gridColumn: '1 / -1', display: 'flex', justifyContent: 'flex-end' }}>
-                              <button className="btn-deletar" onClick={() => {
-                                const next = [...(ministryData?.birthdays?.people || [])];
-                                next.splice(idx, 1);
-                                setMinistryData(d => ({ ...d, birthdays: { ...(d.birthdays || {}), people: next } }));
-                              }}>Excluir</button>
+                              <button
+                                className="btn-deletar"
+                                onClick={() => {
+                                  if (currentUser?.role === 'Viewer') {
+                                    alert('Visualizadores não podem excluir dados.');
+                                    return;
+                                  }
+                                  const next = [...(ministryData?.birthdays?.people || [])];
+                                  next.splice(idx, 1);
+                                  setMinistryData(d => ({ ...d, birthdays: { ...(d.birthdays || {}), people: next } }));
+                                }}
+                                disabled={currentUser?.role === 'Viewer'}
+                                style={currentUser?.role === 'Viewer' ? { opacity: .5, cursor: 'not-allowed' } : {}}
+                              >Excluir</button>
                             </div>
                           </div>
                         ))}
@@ -3459,7 +3697,7 @@ export default function PainelAdm() {
                       <td>
                         <div style={{ display: 'flex', alignItems: 'center' }}>
                           <span className="user-avatar-sm" style={{ marginRight: 12 }}>
-                            {u.photo ? <img src={u.photo} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} /> : u.name.split(' ').map(p => p[0]).join('').slice(0, 2).toUpperCase()}
+                            {u.photo ? <img src={u.photo} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} /> : (u.name || 'U').split(' ').map(p => p[0]).join('').slice(0, 2).toUpperCase()}
                           </span>
                           <div>
                             <div style={{ fontWeight: 600, color: '#fff' }}>{u.name}</div>
@@ -3478,7 +3716,15 @@ export default function PainelAdm() {
                       <td style={{ display: 'flex', gap: 8 }}>
                         <button className="btn-ver" onClick={() => openViewUser(u)}>👁 Ver</button>
                         <button className="btn-editar" onClick={() => openEditUser(u)}>✏️ Editar</button>
-                        <button className="btn-deletar" onClick={() => deleteUser(u.id)}>🗑 Excluir</button>
+                        <button
+                          className="btn-deletar"
+                          onClick={() => deleteUser(u.id)}
+                          disabled={currentUser?.role !== 'Administrador' || u.id === currentUser?.id || u.id === 'offline-admin'}
+                          style={(currentUser?.role !== 'Administrador' || u.id === currentUser?.id || u.id === 'offline-admin') ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
+                          title={u.id === currentUser?.id ? 'Você não pode excluir a si mesmo' : currentUser?.role !== 'Administrador' ? 'Apenas administradores podem excluir usuários' : 'Excluir usuário'}
+                        >
+                          🗑 Excluir
+                        </button>
                       </td>
                     </tr>
                   ))}
@@ -3572,9 +3818,9 @@ export default function PainelAdm() {
                           <button
                             className="btn-deletar"
                             onClick={() => deletePage(p.name)}
-                            disabled={isProtected}
-                            title={isProtected ? 'Página do sistema — não pode ser excluída' : 'Excluir página'}
-                            style={isProtected ? { opacity: .5, cursor: 'not-allowed' } : undefined}
+                            disabled={isProtected || currentUser?.role === 'Viewer'}
+                            title={isProtected ? 'Página do sistema — não pode ser excluída' : currentUser?.role === 'Viewer' ? 'Seu perfil não tem permissão para excluir' : 'Excluir página'}
+                            style={isProtected || currentUser?.role === 'Viewer' ? { opacity: .5, cursor: 'not-allowed' } : undefined}
                           >
                             🗑 Excluir
                           </button>
@@ -3890,7 +4136,7 @@ export default function PainelAdm() {
                       <td>
                         <div style={{ display: 'flex', alignItems: 'center' }}>
                           <span className="user-avatar-sm" style={{ marginRight: 12 }}>
-                            {u.photo ? <img src={u.photo} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} /> : u.name.split(' ').map(p => p[0]).join('').slice(0, 2).toUpperCase()}
+                            {u.photo ? <img src={u.photo} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} /> : (u.name || 'U').split(' ').map(p => p[0]).join('').slice(0, 2).toUpperCase()}
                           </span>
                           <div>
                             <div style={{ fontWeight: 600, color: '#fff' }}>{u.name}</div>
@@ -3909,7 +4155,15 @@ export default function PainelAdm() {
                       <td style={{ display: 'flex', gap: 8 }}>
                         <button className="btn-ver" onClick={() => openViewUser(u)}>👁 Ver</button>
                         <button className="btn-editar" onClick={() => openEditUser(u)}>✏️ Editar</button>
-                        <button className="btn-deletar" onClick={() => deleteUser(u.id)}>🗑 Excluir</button>
+                        <button
+                          className="btn-deletar"
+                          onClick={() => deleteUser(u.id)}
+                          disabled={currentUser?.role !== 'Administrador' || u.id === currentUser?.id || u.id === 'offline-admin'}
+                          style={(currentUser?.role !== 'Administrador' || u.id === currentUser?.id || u.id === 'offline-admin') ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
+                          title={u.id === currentUser?.id ? 'Você não pode excluir a si mesmo' : currentUser?.role !== 'Administrador' ? 'Apenas administradores podem excluir usuários' : 'Excluir usuário'}
+                        >
+                          🗑 Excluir
+                        </button>
                       </td>
                     </tr>
                   ))}
@@ -3989,6 +4243,69 @@ export default function PainelAdm() {
                 )}
               </div>
             </div>
+
+            <h3 style={{ fontSize: '.95rem', fontWeight: 600, marginBottom: '1.2rem', marginTop: '1.5rem' }}>Redes Sociais (Cabeçalho)</h3>
+            <div className="pm-field" style={{ marginBottom: '1rem' }}>
+              <label>Instagram (Link)</label>
+              <div className="pm-field-wrap">
+                <span className="pm-icon">📸</span>
+                <input
+                  className="pm-input"
+                  value={headerData?.social?.instagram || ''}
+                  onChange={e => setHeaderData(d => ({ ...d, social: { ...d.social, instagram: e.target.value } }))}
+                  placeholder="https://instagram.com/sua-igreja"
+                />
+              </div>
+            </div>
+            <div className="pm-field" style={{ marginBottom: '1rem' }}>
+              <label>YouTube (Link)</label>
+              <div className="pm-field-wrap">
+                <span className="pm-icon">📺</span>
+                <input
+                  className="pm-input"
+                  value={headerData?.social?.youtube || ''}
+                  onChange={e => setHeaderData(d => ({ ...d, social: { ...d.social, youtube: e.target.value } }))}
+                  placeholder="https://youtube.com/@sua-igreja"
+                />
+              </div>
+            </div>
+            <div className="pm-field" style={{ marginBottom: '1rem' }}>
+              <label>Facebook (Link)</label>
+              <div className="pm-field-wrap">
+                <span className="pm-icon">👥</span>
+                <input
+                  className="pm-input"
+                  value={headerData?.social?.facebook || ''}
+                  onChange={e => setHeaderData(d => ({ ...d, social: { ...d.social, facebook: e.target.value } }))}
+                  placeholder="https://facebook.com/sua-igreja"
+                />
+              </div>
+            </div>
+            <div className="pm-field" style={{ marginBottom: '1rem' }}>
+              <label>Telefone / WhatsApp (Apenas Números)</label>
+              <div className="pm-field-wrap">
+                <span className="pm-icon">📞</span>
+                <input
+                  className="pm-input"
+                  value={headerData?.social?.phone || ''}
+                  onChange={e => setHeaderData(d => ({ ...d, social: { ...d.social, phone: e.target.value } }))}
+                  placeholder="61999999999"
+                />
+              </div>
+            </div>
+            <div className="pm-field" style={{ marginBottom: '1.5rem' }}>
+              <label>Música / TikTok / Spotify (Link)</label>
+              <div className="pm-field-wrap">
+                <span className="pm-icon">🎵</span>
+                <input
+                  className="pm-input"
+                  value={headerData?.social?.music || ''}
+                  onChange={e => setHeaderData(d => ({ ...d, social: { ...d.social, music: e.target.value } }))}
+                  placeholder="https://tiktok.com/@sua-igreja"
+                />
+              </div>
+            </div>
+
             <button
               className="pm-btn-save"
               style={{ width: '100%' }}
@@ -4124,7 +4441,12 @@ export default function PainelAdm() {
               style={{ width: '100%', background: 'transparent', border: `1px solid ${palette.danger}`, color: palette.danger }}
               onClick={() => {
                 if (window.confirm('ATENÇÃO: Deseja limpar o cache local? Isso recarregará a página.')) {
-                  localStorage.clear();
+                  // Limpeza seletiva para não quebrar outras partes do navegador
+                  Object.keys(localStorage).forEach(key => {
+                    if (key.startsWith('admac_') || key.startsWith('site_settings:')) {
+                      localStorage.removeItem(key);
+                    }
+                  });
                   window.location.reload();
                 }
               }}

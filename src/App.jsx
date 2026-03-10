@@ -8,6 +8,7 @@ import React from "react";
 import { BrowserRouter as Router, useRoutes } from "react-router-dom";
 import { routes } from "./routes/index";
 import "./css/App.css";
+import { useVisitorTracker } from "./hooks/useVisitorTracker";
 
 // AppContent precisa ser um componente separado de App porque
 // `useRoutes` e `useLocation` precisam estar dentro do contexto do Router
@@ -21,6 +22,9 @@ const AppContent = () => {
   React.useEffect(() => {
     document.documentElement.setAttribute("data-theme", theme);
   }, [theme]);
+
+  // Ativa o rastreador de visitantes
+  useVisitorTracker();
 
   // Reservado para analytics de navegação
 
