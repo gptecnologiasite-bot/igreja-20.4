@@ -194,7 +194,7 @@ const buildBars = (users = [], logs = []) => {
   return baseData.map((b, idx) => {
     const count = countsByMonth[idx];
     let height = b.h;
-    
+
     // Se tivermos dados reais para este mês (via usuários ou logs), usamos uma base + o proporcional
     if (count > 0) {
       height = Math.min(100, 30 + (count * 10));
@@ -594,10 +594,12 @@ export default function PainelAdm() {
     'Retiro': 'retiro',
     'Intercessão': 'intercessao',
     'Missões': 'missoes',
+    'Missoes': 'missoes',
     'Midia': 'midia',
     'Revista': 'revista',
     'Revista Admac': 'revista',
-    'Sobre': 'sobre'
+    'Sobre': 'sobre',
+    'Contact': 'contact'
   };
 
   // Carrega configurações do menu do painel (se existirem)
@@ -635,6 +637,10 @@ export default function PainelAdm() {
   }, []);
 
   const saveNavConfig = async () => {
+    if (currentUser?.role === 'Viewer') {
+      alert('Visualizadores não podem alterar as configurações do menu.');
+      return;
+    }
     try {
       const payload = { main: navMain, settings: navSettings };
       await supabase.from('site_settings').upsert({
@@ -700,6 +706,10 @@ export default function PainelAdm() {
   };
 
   const approveTestimonial = async (msg) => {
+    if (currentUser?.role === 'Viewer') {
+      alert('Visualizadores não podem aprovar testemunhos.');
+      return;
+    }
     try {
       const key = `ministry_${msg.category}`;
       const { data: dbData } = await supabase
@@ -823,6 +833,10 @@ export default function PainelAdm() {
 
   const saveUser = async (e) => {
     e.preventDefault();
+    if (currentUser?.role === 'Viewer') {
+      alert('Visualizadores não podem criar ou editar usuários.');
+      return;
+    }
     try {
       if (userMode === 'create') {
         const { data: authData, error: signUpError } = await supabase.auth.signUp({
@@ -987,10 +1001,26 @@ export default function PainelAdm() {
         id === 'home' ? supabase.from('site_settings').select('data').eq('key', 'videos').single() : Promise.resolve({ data: null })
       ]);
 
-      const rawData = settingRes.data?.data;
+      let rawData = settingRes.data?.data;
+      let vids = videoRes.data?.data;
+
+      // Fallback offline: se falhar no Supabase ou vier vazio, tenta localStorage
+      if (!rawData || settingRes.error) {
+        try {
+          const local = localStorage.getItem(`admac_site_settings:${key}`);
+          if (local) rawData = JSON.parse(local);
+        } catch { }
+      }
+      if (id === 'home' && (!vids || videoRes.error)) {
+        try {
+          const localVideos = localStorage.getItem('admac_site_settings:videos');
+          if (localVideos) vids = JSON.parse(localVideos);
+        } catch { }
+      }
+
       const defaultData = id === 'home' ? INITIAL_HOME_DATA : INITIAL_MINISTRIES_DATA[id];
-      const data = rawData ? deepMerge(defaultData, rawData) : defaultData;
-      const vids = videoRes.data?.data || [];
+      const data = rawData ? (typeof deepMerge === 'function' ? deepMerge(defaultData, rawData) : { ...defaultData, ...rawData }) : defaultData;
+      vids = vids || [];
 
       setMinistryData(data);
       if (id === 'home') {
@@ -1011,6 +1041,10 @@ export default function PainelAdm() {
   }, [activePage, ministryId]);
 
   const saveMinistry = async () => {
+    if (currentUser?.role === 'Viewer') {
+      alert('Visualizadores não podem salvar alterações em ministérios.');
+      return;
+    }
     if (!ministryId || !ministryData) return;
     try {
       const key = ministryId === 'home' ? 'home' : `ministry_${ministryId}`;
@@ -1301,11 +1335,11 @@ export default function PainelAdm() {
           { name: 'Lares', file: 'Lares.jsx' },
           { name: 'Retiro', file: 'Retiro.jsx' },
           { name: 'Social', file: 'Social.jsx' },
-          { name: 'EDB', file: 'EDB.jsx' },
+          { name: 'EBD', file: 'EBD.jsx' },
           { name: 'Midia', file: 'Midia.jsx' },
           { name: 'Sobre', file: 'Sobre.jsx' },
           { name: 'Contact', file: 'Contact.jsx' },
-          { name: 'Missoes', file: 'Missoes.jsx' },
+          { name: 'Missões', file: 'Missoes.jsx' },
           { name: 'Revista Admac', file: 'RevistaAdmac.jsx' },
           { name: 'Intercessão', file: 'Intercessao.jsx' }
         ];
@@ -1317,10 +1351,18 @@ export default function PainelAdm() {
 
       const items = pageFiles.map(pf => {
         const id = pageToMinistry[pf.name] || pf.name.toLowerCase();
-        const settings = dbSettings?.find(s => s.key === (id === 'home' ? 'home' : `ministry_${id}`))?.data;
+        const key = id === 'home' ? 'home' : `ministry_${id}`;
+        let settings = dbSettings?.find(s => s.key === key)?.data;
 
-        // Verifica se 'active' existe no JSON do banco. 
-        // Se não existir (novo ou padrão), assume-se true.
+        // Fallback offline: se não achou no Supabase, tenta no localStorage
+        if (!settings) {
+          try {
+            const local = localStorage.getItem(`admac_site_settings:${key}`);
+            if (local) settings = JSON.parse(local);
+          } catch { }
+        }
+
+        // Verifica se 'active' existe no JSON do banco ou local.
         const isActive = settings?.active !== false;
 
         return {
@@ -1438,6 +1480,10 @@ export default function PainelAdm() {
   };
 
   const savePage = async () => {
+    if (currentUser?.role === 'Viewer') {
+      alert('Visualizadores não podem salvar alterações nas páginas.');
+      return;
+    }
     try {
       setPageSaving(true);
       if (!pageName.trim()) return;
@@ -1480,15 +1526,24 @@ export default function PainelAdm() {
       }
 
       if (pageMode === 'ministry') {
-        await supabase.from('site_settings').upsert({
+        const { error } = await supabase.from('site_settings').upsert({
           key: `ministry_${ministryId}`,
           data: ministryData || {}
         });
+        if (!hasSupabase || error) {
+          try {
+            localStorage.setItem(`admac_site_settings:ministry_${ministryId}`, JSON.stringify(ministryData || {}));
+          } catch { /* ignore */ }
+        }
         broadcastUpdate(`ministry_${ministryId}`);
         setHasPagesNotif(true);
         setPageModalOpen(false);
         await loadPages();
-        alert('Página de Ministério salva com sucesso!');
+        if (!hasSupabase || error) {
+          alert('Página de Ministério salva em modo offline (navegador).');
+        } else {
+          alert('Página de Ministério salva com sucesso!');
+        }
         return;
       }
 
@@ -1525,9 +1580,15 @@ export default function PainelAdm() {
         const ePage = rPage?.error;
         const eFooter = rFooter?.error;
 
-        if (ePage || eFooter) {
-          console.error('[Supabase Error] Contact/Footer Sync Save:', ePage || eFooter);
-          alert(`Erro ao sincronizar com o banco: ${(ePage || eFooter).message}`);
+        if (!hasSupabase || ePage || eFooter) {
+          try {
+            localStorage.setItem(`admac_site_settings:${key}`, content);
+            localStorage.setItem('admac_site_settings:footer', JSON.stringify(updatedFooter));
+          } catch { }
+          if (hasSupabase && (ePage || eFooter)) console.error('[Supabase Error] Contact/Footer:', ePage || eFooter);
+          setFooterData(updatedFooter);
+          broadcastUpdate('footer');
+          alert('Página de Contato salva LOCALMENTE (Offline).');
         } else {
           setFooterData(updatedFooter);
           broadcastUpdate('footer');
@@ -1540,9 +1601,12 @@ export default function PainelAdm() {
           data: content
         });
 
-        if (error) {
-          console.error(`[Supabase Error] ${key} Save:`, error);
-          alert(`Erro do Supabase ao salvar: ${error.message || error.code}`);
+        if (!hasSupabase || error) {
+          try {
+            localStorage.setItem(`admac_site_settings:${key}`, content);
+          } catch { }
+          if (hasSupabase && error) console.error(`[Supabase Error] ${key} Save:`, error);
+          alert('Página salva LOCALMENTE (Offline).');
         } else {
           alert('Página salva com sucesso no banco de dados!');
         }
@@ -1609,7 +1673,7 @@ export default function PainelAdm() {
       const key = id === 'home' ? 'home' : `ministry_${id}`;
 
       const { error } = await supabase.from('site_settings').delete().eq('key', key);
-      
+
       // Também remove do cache local para garantir sincronia em modo offline
       try {
         localStorage.removeItem(`admac_site_settings:${key}`);
