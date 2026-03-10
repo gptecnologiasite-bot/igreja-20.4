@@ -1,0 +1,800 @@
+[
+  {
+    "id": "TC001",
+    "title": "Kids ministry page loads and shows key content sections",
+    "description": "Verifies that the Kids ministry page loads and displays the main ministry heading and core content sections a visitor expects.",
+    "category": "Ministry Pages (Public Site)",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /kids"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify page title contains \"Kids\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Kids\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Agenda\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Equipe\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Mídia\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC002",
+    "title": "Kids page: schedule section is reachable and visible after scrolling",
+    "description": "Verifies that the schedule section on the Kids page is accessible by scrolling and is visibly rendered.",
+    "category": "Ministry Pages (Public Site)",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /kids"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Kids\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Scroll to the section labeled \"Agenda\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Agenda\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"schedule list\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"schedule item\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC003",
+    "title": "Kids page: team members list renders",
+    "description": "Verifies that the Kids page shows a visible list of team members (or team cards) in the team section.",
+    "category": "Ministry Pages (Public Site)",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /kids"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Kids\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Scroll to the section labeled \"Equipe\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Equipe\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"team members list\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"team member card\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC004",
+    "title": "Kids page: open a media item from the media section",
+    "description": "Verifies that a visitor can open a media item from the Kids page and a media viewer/player area becomes visible.",
+    "category": "Ministry Pages (Public Site)",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /kids"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Kids\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Scroll to the section labeled \"Mídia\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Mídia\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click on the first media item in the media list"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"media viewer\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC005",
+    "title": "Mulheres ministry page loads and shows key content sections",
+    "description": "Verifies that the Mulheres ministry page loads successfully and shows the main title and core sections.",
+    "category": "Ministry Pages (Public Site)",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /mulheres"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify page title contains \"Mulheres\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Mulheres\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Agenda\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Equipe\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Mídia\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC006",
+    "title": "Ministry pages remain navigable from the homepage to Kids",
+    "description": "Verifies that a visitor can start at the homepage and reach the Kids ministry page through visible navigation elements.",
+    "category": "Ministry Pages (Public Site)",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"site navigation\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click on the navigation link labeled \"Kids\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/kids\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Kids\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"ministry description\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC007",
+    "title": "Ministry pages remain navigable from the homepage to Mulheres",
+    "description": "Verifies that a visitor can start at the homepage and reach the Mulheres ministry page through visible navigation elements.",
+    "category": "Ministry Pages (Public Site)",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"site navigation\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click on the navigation link labeled \"Mulheres\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/mulheres\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Mulheres\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"ministry description\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC008",
+    "title": "Login and access the admin panel (/painel)",
+    "description": "Verifies that an admin can log in via /login and reach the admin panel.",
+    "category": "Admin Panel (Site Content Management)",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Login\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Login\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/painel\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Painel\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC009",
+    "title": "Save updated page content from admin panel and verify it appears on /kids",
+    "description": "Verifies editing a page (title and text) in the admin panel saves successfully and is visible on the public page.",
+    "category": "Admin Panel (Site Content Management)",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Login\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/painel\""
+      },
+      {
+        "type": "action",
+        "description": "Click \"Select a page or ministry to edit\""
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Kids\" option in the list"
+      },
+      {
+        "type": "action",
+        "description": "Fill \"Updated Kids Title\" into the title field"
+      },
+      {
+        "type": "action",
+        "description": "Fill \"Updated Kids description text for e2e test.\" into the text field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Save\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Saved\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Kids\" link in the site navigation"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/kids\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Updated Kids Title\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC010",
+    "title": "Change image link (no file upload) and save successfully in admin panel",
+    "description": "Verifies an admin can change an image value (using a URL field) and save, without using file upload dialogs.",
+    "category": "Admin Panel (Site Content Management)",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Login\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/painel\""
+      },
+      {
+        "type": "action",
+        "description": "Click \"Select a page or ministry to edit\""
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Kids\" option in the list"
+      },
+      {
+        "type": "action",
+        "description": "Fill \"https://example.com/test-image.jpg\" into the image URL field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Save\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Saved\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC011",
+    "title": "Attempt to log in with invalid credentials and verify login is rejected",
+    "description": "Verifies the login page blocks access when incorrect credentials are provided.",
+    "category": "Admin Panel (Site Content Management)",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Login\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Type \"invalid.user@example.com\" into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"WrongPassword123!\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Login\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Invalid\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/login\""
+      }
+    ]
+  },
+  {
+    "id": "TC012",
+    "title": "Validate required fields on login form (empty submission)",
+    "description": "Verifies the login form shows a visible validation or error message when submitted with empty fields.",
+    "category": "Admin Panel (Site Content Management)",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Login\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Login\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"required\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/login\""
+      }
+    ]
+  },
+  {
+    "id": "TC013",
+    "title": "Open the page/ministry selector and verify options are visible",
+    "description": "Verifies the admin can open the selection UI and see available pages/ministries to edit.",
+    "category": "Admin Panel (Site Content Management)",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Login\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/painel\""
+      },
+      {
+        "type": "action",
+        "description": "Click \"Select a page or ministry to edit\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Kids\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Jovens\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC014",
+    "title": "Cancel/close selector without choosing an item and verify editor does not change",
+    "description": "Verifies the selection UI can be dismissed and no page/ministry is loaded unintentionally.",
+    "category": "Admin Panel (Site Content Management)",
+    "priority": "Low",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Login\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/painel\""
+      },
+      {
+        "type": "action",
+        "description": "Click \"Select a page or ministry to edit\""
+      },
+      {
+        "type": "action",
+        "description": "Press Escape"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Select a page or ministry to edit\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Save\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC015",
+    "title": "Online save does not show 'saved offline' indicator",
+    "description": "Verifies that when saving while online, the UI does not indicate an offline save and instead shows an online success confirmation (or lacks offline messaging).",
+    "category": "Offline Persistence and Sync",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /login"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_USER}}\" into the username/email field"
+      },
+      {
+        "type": "action",
+        "description": "Type \"{{LOGIN_PASSWORD}}\" into the password field"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Login\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify URL contains \"/painel\""
+      },
+      {
+        "type": "action",
+        "description": "Click on a page or ministry item to edit"
+      },
+      {
+        "type": "action",
+        "description": "Fill \"Online save test\" into a visible content field on the editor"
+      },
+      {
+        "type": "action",
+        "description": "Click the \"Save\" button"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"saved offline\" is not visible"
+      }
+    ]
+  },
+  {
+    "id": "TC016",
+    "title": "Media page loads and shows media gallery entries",
+    "description": "Verifies that the Media page renders and displays visible media entries after loading.",
+    "category": "Media and Image Handling",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /midia"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify page title contains \"Mídia\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Media gallery grid/list\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"At least one media item image thumbnail\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"At least one media item title/caption\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC017",
+    "title": "Open image viewer from a media thumbnail",
+    "description": "Verifies that clicking a media image thumbnail opens an image viewer with an enlarged view.",
+    "category": "Media and Image Handling",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /midia"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"At least one media item image thumbnail\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"the first media item image thumbnail\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Image viewer / lightbox\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Enlarged image in viewer\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Press Escape"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Image viewer / lightbox\" is not visible"
+      }
+    ]
+  },
+  {
+    "id": "TC018",
+    "title": "Media images render successfully (no placeholder shown for valid items)",
+    "description": "Verifies that for items with recognizable image URLs, the page displays normal thumbnails rather than an unavailable placeholder indicator.",
+    "category": "Media and Image Handling",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /midia"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"At least one media item image thumbnail\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Scroll to \"a visible media item with a normal-looking thumbnail\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Placeholder/unavailable media image\" is not visible for that item"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Media item image thumbnail\" is visible for that item"
+      }
+    ]
+  },
+  {
+    "id": "TC019",
+    "title": "Unrecognized image URL shows placeholder with accessibility-friendly alt text",
+    "description": "Verifies that when an image cannot be transformed, a placeholder image is rendered and the alt text indicates the media is unavailable.",
+    "category": "Media and Image Handling",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /midia"
+      },
+      {
+        "type": "action",
+        "description": "Scroll to \"a media item that shows a placeholder/unavailable image\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Placeholder/unavailable media image\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Placeholder image\" has visible accessible name/text indicating \"media unavailable\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"A short alt/label text near the placeholder\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC020",
+    "title": "Viewer can be opened even when a placeholder thumbnail is shown",
+    "description": "Verifies the click behavior on a media item still opens a viewer (or a clear message) when the thumbnail is a placeholder.",
+    "category": "Media and Image Handling",
+    "priority": "Medium",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /midia"
+      },
+      {
+        "type": "action",
+        "description": "Scroll to \"a media item that shows a placeholder/unavailable image\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Placeholder/unavailable media image\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"the placeholder/unavailable media image\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Image viewer / lightbox\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"indisponível\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC021",
+    "title": "Media page remains usable when some items fail image transformation",
+    "description": "Verifies mixed-content resilience: one broken/unrecognized image does not prevent other images from rendering and being opened.",
+    "category": "Media and Image Handling",
+    "priority": "High",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /midia"
+      },
+      {
+        "type": "action",
+        "description": "Scroll to \"a media item that shows a placeholder/unavailable image\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Placeholder/unavailable media image\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Scroll to \"a different media item with a normal-looking thumbnail\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Media item image thumbnail\" is visible"
+      },
+      {
+        "type": "action",
+        "description": "Click on \"the normal-looking media item image thumbnail\""
+      },
+      {
+        "type": "assertion",
+        "description": "Verify element \"Image viewer / lightbox\" is visible"
+      }
+    ]
+  },
+  {
+    "id": "TC022",
+    "title": "Media page provides a visible empty-state message when no media is available",
+    "description": "Verifies the UI shows a user-friendly empty state if the media list is empty.",
+    "category": "Media and Image Handling",
+    "priority": "Low",
+    "steps": [
+      {
+        "type": "action",
+        "description": "Navigate to /midia"
+      },
+      {
+        "type": "action",
+        "description": "Wait for \"Media gallery grid/list\" to appear"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"Nenhuma mídia\" is visible"
+      },
+      {
+        "type": "assertion",
+        "description": "Verify text \"sem conteúdo\" is visible"
+      }
+    ]
+  }
+]

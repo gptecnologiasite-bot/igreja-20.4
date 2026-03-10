@@ -25,10 +25,28 @@ export const useMinistryData = (ministryId) => {
                 if (dbData && dbData.data) {
                     setData(deepMerge(defaultData, parseSafeJson(dbData.data)));
                 } else {
+                    // Tenta ler do localStorage se o Supabase não tiver dados
+                    const raw = localStorage.getItem(`admac_site_settings:ministry_${ministryId}`);
+                    if (raw) {
+                        try {
+                            const local = JSON.parse(raw);
+                            setData(deepMerge(defaultData, local));
+                            return;
+                        } catch { /* ignore */ }
+                    }
                     setData(defaultData);
                 }
             } catch {
                 if (!active) return;
+                // Fallback local em caso de erro (offline)
+                const raw = localStorage.getItem(`admac_site_settings:ministry_${ministryId}`);
+                if (raw) {
+                    try {
+                        const local = JSON.parse(raw);
+                        setData(deepMerge(defaultData, local));
+                        return;
+                    } catch { /* ignore */ }
+                }
                 setData(defaultData);
             }
         };
@@ -47,9 +65,30 @@ export const useMinistryData = (ministryId) => {
                     .eq('key', `ministry_${ministryId}`)
                     .single();
                 if (!active) return;
-                setData(deepMerge(defaultData, parseSafeJson(dbData?.data) || defaultData));
+                
+                if (dbData?.data) {
+                    setData(deepMerge(defaultData, parseSafeJson(dbData.data)));
+                } else {
+                    const raw = localStorage.getItem(`admac_site_settings:ministry_${ministryId}`);
+                    if (raw) {
+                        try {
+                            const local = JSON.parse(raw);
+                            setData(deepMerge(defaultData, local));
+                            return;
+                        } catch { /* ignore */ }
+                    }
+                    setData(defaultData);
+                }
             } catch {
                 if (!active) return;
+                const raw = localStorage.getItem(`admac_site_settings:ministry_${ministryId}`);
+                if (raw) {
+                    try {
+                        const local = JSON.parse(raw);
+                        setData(deepMerge(defaultData, local));
+                        return;
+                    } catch { /* ignore */ }
+                }
                 setData(defaultData);
             }
         };

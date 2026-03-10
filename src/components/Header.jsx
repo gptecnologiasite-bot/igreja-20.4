@@ -6,7 +6,7 @@
 // atualizados automaticamente ao detectar mudanças no localStorage.
 // ================================================================
 
-import React, { useState, useCallback, useMemo } from 'react';
+import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
 import { transformImageLink } from '../utils/imageUtils';
 import { Link } from 'react-router-dom';
 import {
@@ -88,11 +88,29 @@ const Header = ({ theme, toggleTheme }) => {
         // sejam preenchidos pelos valores iniciais (ex: menu)
         setHeaderData(deepMerge(INITIAL_HEADER_DATA, parseSafeJson(dbData.data)));
       } else {
+        // Tenta ler do localStorage se o Supabase não tiver dados
+        const raw = localStorage.getItem('admac_site_settings:header');
+        if (raw) {
+          try {
+            const local = JSON.parse(raw);
+            setHeaderData(deepMerge(INITIAL_HEADER_DATA, local));
+            return;
+          } catch { /* ignore */ }
+        }
         setHeaderData(INITIAL_HEADER_DATA);
       }
     } catch (err) {
       console.error('Error loading header data:', err);
-      // Fallback para dados iniciais em caso de erro
+      // Fallback para localStorage em caso de erro (offline)
+      const raw = localStorage.getItem('admac_site_settings:header');
+      if (raw) {
+        try {
+          const local = JSON.parse(raw);
+          setHeaderData(deepMerge(INITIAL_HEADER_DATA, local));
+          return;
+        } catch { /* ignore */ }
+      }
+      // Fallback para dados iniciais
       setHeaderData(INITIAL_HEADER_DATA);
     }
   };
@@ -117,6 +135,64 @@ const Header = ({ theme, toggleTheme }) => {
       link.href = headerData.logo.icon;
     }
   }, [headerData?.logo?.icon]);
+
+  // ── Estado do cabeçalho (redes sociais, tema, admin) ──
+  const [visitorCount, setVisitorCount] = useState(0);
+  const prevVisitorCount = useRef(0);
+  const [showNotifications, setShowNotifications] = useState(false);
+  const [notifications, setNotifications] = useState([
+    { id: 1, title: 'Bem-vindo ao Painel', text: 'Você agora pode ler avisos e alertas aqui no sino.', time: '01m atrás', read: false }
+  ]);
+
+  const locations = ['São Paulo / SP', 'Rio de Janeiro / RJ', 'Goiânia / GO', 'Brasília / DF', 'Belo Horizonte / MG', 'Curitiba / PR', 'Salvador / BA'];
+
+  const playBellSound = useCallback(() => {
+    try {
+      const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
+      audio.volume = 0.5;
+      audio.play().catch(e => console.warn('Audio play blocked by browser policy. Click anywhere to enable.'));
+      
+      // Adiciona uma nova notificação de visitante
+      const randomLoc = locations[Math.floor(Math.random() * locations.length)];
+      const newNotif = {
+        id: Date.now(),
+        title: 'Novos Visitantes',
+        text: `Neste momento há 1 pessoas de ${randomLoc} visitando o site. Clique para saber mais.`,
+        time: 'Agora',
+        read: false
+      };
+      setNotifications(prev => [newNotif, ...prev].slice(0, 10)); // Mantém as últimas 10
+    } catch (err) {
+      console.error('Error playing sound:', err);
+    }
+  }, [locations]);
+
+  const checkVisitors = useCallback(async () => {
+    try {
+      const { data } = await supabase
+        .from('site_settings')
+        .select('data')
+        .eq('key', 'visitor_stats')
+        .single();
+
+      if (data && data.data && typeof data.data.value === 'number') {
+        const newCount = data.data.value;
+        if (prevVisitorCount.current > 0 && newCount > prevVisitorCount.current) {
+          playBellSound();
+        }
+        prevVisitorCount.current = newCount;
+        setVisitorCount(newCount);
+      }
+    } catch (err) {
+      console.warn('Error checking visitors:', err);
+    }
+  }, [playBellSound]);
+
+  useEffect(() => {
+    checkVisitors();
+    const interval = setInterval(checkVisitors, 30000); // Verifica a cada 30 segundos
+    return () => clearInterval(interval);
+  }, [checkVisitors]);
 
   // Alterna o menu mobile aberto/fechado
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
@@ -434,7 +510,7 @@ const Header = ({ theme, toggleTheme }) => {
               </a>
             )}
             {headerData?.social?.phone && (
-              <a href={`tel:${headerData.social.phone}`} aria-label="Telefone">
+              <a href={headerData.social.phone.startsWith('http') || headerData.social.phone.startsWith('wa.me') ? (headerData.social.phone.startsWith('http') ? headerData.social.phone : `https://${headerData.social.phone}`) : `tel:${headerData.social.phone.replace(/\D/g, '')}`} aria-label="Telefone">
                 <Phone size={18} />
               </a>
             )}
@@ -450,11 +526,79 @@ const Header = ({ theme, toggleTheme }) => {
             {currentTheme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
           </button>
 
-          {/* Link para a Área Administrativa */}
-          <Link to="/painel" className="cta-button">
-            <ShieldCheck size={16} style={{ marginRight: '8px' }} />
-            Área Administrativa
-          </Link>
+          {/* Link para a Área Administrativa com ícone de sino e contador */}
+          <div className="admin-actions-wrap" style={{ display: 'flex', alignItems: 'center', gap: '8px', position: 'relative' }}>
+            <div 
+              className="visitor-bell" 
+              title={`${visitorCount} visitas registradas`} 
+              style={{ color: '#f1c40f', display: 'flex', alignItems: 'center', cursor: 'pointer', gap: '4px' }}
+              onClick={() => setShowNotifications(!showNotifications)}
+            >
+              <span style={{ fontSize: '1.2rem' }}>🔔</span>
+              {visitorCount > 0 && <span style={{ fontSize: '.75rem', fontWeight: 700 }}>{visitorCount}</span>}
+            </div>
+
+            {/* Caixa de Notificações */}
+            {showNotifications && (
+              <div 
+                className="notifications-popover" 
+                style={{
+                  position: 'absolute',
+                  top: '120%',
+                  right: 0,
+                  width: '320px',
+                  backgroundColor: '#1a1d27',
+                  border: '1px solid #2a2f45',
+                  borderRadius: '12px',
+                  boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
+                  zIndex: 1000,
+                  overflow: 'hidden'
+                }}
+              >
+                <div style={{ padding: '12px 16px', borderBottom: '1px solid #2a2f45', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#0f1117' }}>
+                  <span style={{ fontWeight: 600, fontSize: '.9rem', color: '#e8eaf0' }}>Notificações</span>
+                  <button 
+                    style={{ background: 'none', border: 'none', color: '#8b84ff', fontSize: '.75rem', cursor: 'pointer' }}
+                    onClick={() => setNotifications([])}
+                  >
+                    Limpar tudo
+                  </button>
+                </div>
+                <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
+                  {notifications.length === 0 ? (
+                    <div style={{ padding: '2rem', textAlign: 'center', color: '#7c82a0', fontSize: '.85rem' }}>
+                      Nenhuma notificação por enquanto.
+                    </div>
+                  ) : notifications.map(n => (
+                    <div 
+                      key={n.id} 
+                      style={{ 
+                        padding: '12px 16px', 
+                        borderBottom: '1px solid #2a2f45', 
+                        cursor: 'pointer',
+                        background: n.read ? 'transparent' : 'rgba(108, 99, 255, 0.05)',
+                        transition: 'background .2s'
+                      }}
+                      onClick={() => {
+                        setNotifications(prev => prev.map(item => item.id === n.id ? { ...item, read: true } : item));
+                      }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
+                        <span style={{ fontWeight: 600, fontSize: '.85rem', color: '#8b84ff' }}>{n.title}</span>
+                        <span style={{ fontSize: '.7rem', color: '#7c82a0' }}>{n.time}</span>
+                      </div>
+                      <p style={{ fontSize: '.8rem', color: '#e8eaf0', margin: 0, lineHeight: 1.4 }}>{n.text}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            <Link to="/painel" className="cta-button">
+              <ShieldCheck size={16} style={{ marginRight: '8px' }} />
+              Área Administrativa
+            </Link>
+          </div>
 
           {/* Botão hamburguer para menu mobile */}
           <button className="mobile-menu-btn" onClick={toggleMenu} aria-label="Menu">
@@ -524,11 +668,45 @@ const Header = ({ theme, toggleTheme }) => {
             <Link key={idx} to={item.path} onClick={toggleMenu}>{item.name}</Link>
           ))}
 
-          {/* Link para área admin no mobile */}
-          <Link to="/painel" className="mobile-admin-link" onClick={toggleMenu}>
-            <ShieldCheck size={18} style={{ marginRight: '8px' }} />
-            Área Administrativa
-          </Link>
+          {/* Link para área admin no mobile com sino */}
+          <div className="mobile-admin-wrap" style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '10px 15px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+              <Link to="/painel" className="mobile-admin-link" onClick={toggleMenu} style={{ flex: 1, display: 'flex', alignItems: 'center', padding: '12px', background: 'rgba(34, 197, 94, 0.1)', borderRadius: '8px', color: '#22c55e', textDecoration: 'none', fontWeight: 600 }}>
+                <ShieldCheck size={18} style={{ marginRight: '8px' }} />
+                Área Administrativa
+              </Link>
+              <button 
+                onClick={(e) => { e.stopPropagation(); setShowNotifications(!showNotifications); }}
+                style={{ marginLeft: '10px', background: 'rgba(241, 196, 15, 0.1)', border: 'none', borderRadius: '8px', padding: '10px', color: '#f1c40f', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}
+              >
+                <span>🔔</span>
+                {visitorCount > 0 && <span style={{ fontSize: '.8rem', fontWeight: 700 }}>{visitorCount}</span>}
+              </button>
+            </div>
+
+            {/* Notificações Mobile */}
+            {showNotifications && (
+              <div style={{ background: '#1a1d27', border: '1px solid #2a2f45', borderRadius: '8px', marginTop: '8px', overflow: 'hidden' }}>
+                <div style={{ padding: '10px', borderBottom: '1px solid #2a2f45', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#0f1117' }}>
+                  <span style={{ fontSize: '.85rem', fontWeight: 600 }}>Notificações</span>
+                  <button onClick={() => setNotifications([])} style={{ background: 'none', border: 'none', color: '#8b84ff', fontSize: '.7rem' }}>Limpar</button>
+                </div>
+                <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
+                  {notifications.length === 0 ? (
+                    <div style={{ padding: '15px', textAlign: 'center', color: '#7c82a0', fontSize: '.8rem' }}>Sem notificações</div>
+                  ) : notifications.map(n => (
+                    <div key={n.id} style={{ padding: '10px', borderBottom: '1px solid #2a2f45', background: n.read ? 'transparent' : 'rgba(108, 99, 255, 0.05)' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px' }}>
+                        <span style={{ fontWeight: 600, fontSize: '.8rem', color: '#8b84ff' }}>{n.title}</span>
+                        <span style={{ fontSize: '.65rem', color: '#7c82a0' }}>{n.time}</span>
+                      </div>
+                      <p style={{ fontSize: '.75rem', color: '#e8eaf0', margin: 0 }}>{n.text}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         </nav>
       )}
     </header>

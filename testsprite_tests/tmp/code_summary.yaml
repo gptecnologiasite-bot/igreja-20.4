@@ -1,0 +1,122 @@
+version: "2"
+type: frontend
+tech_stack:
+  - JavaScript
+  - React
+  - Vite
+  - Supabase
+  - Lucide-react
+  - Framer-motion
+  - React Router
+routes:
+  - path: /
+    file: src/pages/Home.jsx
+    auth_required: false
+    description: Homepage of ADMAC church
+  - path: /mulheres
+    file: src/pages/Mulheres.jsx
+    auth_required: false
+    description: Women's ministry page
+  - path: /homens
+    file: src/pages/Homens.jsx
+    auth_required: false
+    description: Men's ministry page
+  - path: /jovens
+    file: src/pages/JovensPage.jsx
+    auth_required: false
+    description: Youth ministry page
+  - path: /kids
+    file: src/pages/Kids.jsx
+    auth_required: false
+    description: Kids ministry page
+  - path: /edb
+    file: src/pages/EDB.jsx
+    auth_required: false
+    description: Sunday school page
+  - path: /social
+    file: src/pages/Social.jsx
+    auth_required: false
+    description: Social action ministry page
+  - path: /louvor
+    file: src/pages/Louvor.jsx
+    auth_required: false
+    description: Worship ministry page
+  - path: /lares
+    file: src/pages/Lares.jsx
+    auth_required: false
+    description: Home ministry page
+  - path: /revista
+    file: src/pages/RevistaAdmac.jsx
+    auth_required: false
+    description: Church magazine page
+  - path: /missoes
+    file: src/pages/Missoes.jsx
+    auth_required: false
+    description: Missions ministry page
+  - path: /retiro
+    file: src/pages/Retiro.jsx
+    auth_required: false
+    description: Retreats page
+  - path: /sobre
+    file: src/pages/Sobre.jsx
+    auth_required: false
+    description: About page
+  - path: /midia
+    file: src/pages/Midia.jsx
+    auth_required: false
+    description: Media ministry page
+  - path: /intercessao
+    file: src/pages/Intercessao.jsx
+    auth_required: false
+    description: Intercession ministry page
+  - path: /contato
+    file: src/pages/Contact.jsx
+    auth_required: false
+    description: Contact page
+  - path: /painel
+    file: src/painel/painel.jsx
+    auth_required: true
+    description: Admin panel
+  - path: /login
+    file: src/pages/Login.jsx
+    auth_required: false
+    description: Admin login page
+features:
+  - name: Site Content Management
+    description: Manage church information, ministries, and site settings
+    files:
+      - src/painel/painel.jsx
+      - src/lib/supabase.js
+    entry_route: /painel
+    user_interactions:
+      - Navigate to /painel
+      - Login if required
+      - Select a page or ministry to edit
+      - Update fields like title, text, or images
+      - Click save to persist changes to Supabase or local cache
+    api_calls:
+      - method: POST/UPSERT
+        endpoint: supabase/site_settings
+    auth_required: true
+  - name: Ministry Pages
+    description: Dynamic pages for church ministries
+    files:
+      - src/pages/Mulheres.jsx
+      - src/pages/Homens.jsx
+      - src/pages/Kids.jsx
+      - src/hooks/useMinistryData.js
+    entry_route: /kids
+    user_interactions:
+      - Navigate to ministry page
+      - View ministry info, schedule, and team
+    api_calls:
+      - method: GET
+        endpoint: supabase/site_settings
+    auth_required: false
+known_limitations:
+  - issue: Offline mode uses localStorage fallback which doesn't sync across devices
+    location: src/lib/supabase.js
+    impact: Changes made offline only persist on the same browser
+  - issue: Some images use transformImageLink which may fail if the URL pattern is unrecognized
+    location: src/utils/imageUtils.js
+    impact: Images might not load correctly if the URL is not from Google Drive or local path
