@@ -467,6 +467,14 @@ export default function PainelAdm() {
   const [homeVideos, setHomeVideos] = useState([]);
   const [homeTab, setHomeTab] = useState('bemvindo');
 
+  // Função utilitária para remover thumbnails pesadas do JSON antes de salvar no Supabase
+  const sanitizeVideos = (arr) => (arr || []).map((v) => {
+    if (!v) return null;
+    const rest = { ...v };
+    if ('thumbnail' in rest) delete rest.thumbnail;
+    return rest;
+  }).filter(Boolean);
+
   useEffect(() => {
     // Atualiza o gráfico sempre que os usuários ou logs forem carregados
     setBars(buildBars(users, logs));
@@ -482,7 +490,8 @@ export default function PainelAdm() {
   const [selectedNotif, setSelectedNotif] = useState(null);
   const [currentUser, setCurrentUser] = useState(() => {
     try {
-      const storedUser = localStorage.getItem('admac_current_user');
+      // Tenta a chave nova e depois a legado para evitar logout forçado
+      const storedUser = localStorage.getItem('admac_current_user') || localStorage.getItem('user');
       return storedUser ? JSON.parse(storedUser) : null;
     } catch {
       return null;
@@ -1019,13 +1028,17 @@ export default function PainelAdm() {
       }
 
       const defaultData = id === 'home' ? INITIAL_HOME_DATA : INITIAL_MINISTRIES_DATA[id];
-      const data = rawData ? (typeof deepMerge === 'function' ? deepMerge(defaultData, rawData) : { ...defaultData, ...rawData }) : defaultData;
-      vids = vids || [];
+      const parsedRaw = parseSafeJson(rawData);
+      const data = parsedRaw ? (typeof deepMerge === 'function' ? deepMerge(defaultData, parsedRaw) : { ...defaultData, ...parsedRaw }) : defaultData;
+      vids = parseSafeJson(vids) || [];
 
-      setMinistryData(data);
       if (id === 'home') {
-        setHomeData(data);
-        setHomeVideos(vids);
+        const syncedData = { ...data, videos: vids || [] };
+        setHomeData(syncedData);
+        setMinistryData(syncedData);
+        setHomeVideos(vids || []);
+      } else {
+        setMinistryData(data);
       }
     } catch (err) {
       console.error('Error loading content:', err);
@@ -1049,72 +1062,84 @@ export default function PainelAdm() {
     try {
       const key = ministryId === 'home' ? 'home' : `ministry_${ministryId}`;
 
-      const sanitizeVideos = (arr) => (arr || []).map((v) => {
-        const rest = { ...v };
-        if ('thumbnail' in rest) delete rest.thumbnail;
-        return rest;
-      });
+      const cleanHomeVideos = ministryId === 'home' ? sanitizeVideos(homeVideos) : null;
+      const sanitizedVideos = cleanHomeVideos || sanitizeVideos(ministryData?.videos);
+
       const sanitizedMinistryData = {
         ...ministryData,
-        videos: sanitizeVideos(ministryData?.videos)
+        videos: sanitizedVideos
       };
 
       if (ministryId === 'home') {
-        const cleanHome = sanitizeVideos(homeVideos);
         const [r1, r2] = await Promise.all([
           supabase.from('site_settings').upsert({ key: 'home', data: sanitizedMinistryData }),
-          supabase.from('site_settings').upsert({ key: 'videos', data: cleanHome })
+          supabase.from('site_settings').upsert({ key: 'videos', data: cleanHomeVideos })
         ]);
 
         const e1 = r1?.error, e2 = r2?.error;
-        if (e1 || e2) console.error('[Supabase Error] Home Save:', e1 || e2);
+        if (e1 || e2) {
+          console.error('[Supabase Error] Home Save (home):', e1);
+          console.error('[Supabase Error] Home Save (videos):', e2);
+          console.log('%cAVISO: Se o erro for 413, suas fotos em base64 são muito grandes.', 'color: orange; font-weight: bold;');
+        }
 
         if (!hasSupabase || e1 || e2) {
           try {
             localStorage.setItem('admac_site_settings:home', JSON.stringify(sanitizedMinistryData));
-            localStorage.setItem('admac_site_settings:videos', JSON.stringify(cleanHome));
-          } catch { /* ignore */ }
+            localStorage.setItem('admac_site_settings:videos', JSON.stringify(cleanHomeVideos));
+          } catch (err) { console.warn('LocalStorage Save Error:', err); }
         }
 
         setHomeData(sanitizedMinistryData);
-        setHomeVideos(cleanHome);
-        const { data: reload } = await supabase.from('site_settings').select('data').eq('key', 'home').single();
-        if (reload?.data) {
-          setMinistryData(deepMerge(INITIAL_HOME_DATA, reload.data));
+        setHomeVideos(cleanHomeVideos);
+
+        // CORREÇÃO: Só recarrega do banco se o save deu certo. 
+        // Se deu erro, mantém o estado atual (para não apagar o que o usuário digitou)
+        if (!e1 && !e2 && hasSupabase) {
+          const { data: reload } = await supabase.from('site_settings').select('data').eq('key', 'home').single();
+          if (reload?.data) {
+            const parsedReload = parseSafeJson(reload.data);
+            setMinistryData(deepMerge(INITIAL_HOME_DATA, parsedReload));
+          }
         }
+        
         broadcastUpdate('home');
         broadcastUpdate('videos');
 
         if (!hasSupabase || e1 || e2) {
-          alert('Configurações da Home salvas APENAS LOCALMENTE (Offline). O Supabase retornou um erro.');
+          alert('Configurações da Home salvas APENAS LOCALMENTE (Offline). O Supabase retornou um erro. Abra o console (F12) para detalhes.');
         } else {
           alert('Configurações da Home salvas com sucesso no banco de dados!');
         }
       } else {
         const { error } = await supabase.from('site_settings').upsert({ key, data: sanitizedMinistryData });
 
-        if (error) console.error(`[Supabase Error] ${key} Save:`, error);
+        if (error) {
+          console.error(`[Supabase Error] ${key} Save:`, error);
+          if (error.code === '42P01') console.error('ERRO: Tabela site_settings não encontrada no novo Supabase.');
+          if (error.message?.includes('payload too large')) console.error('ERRO: Imagens base64 muito grandes para o Supabase.');
+        }
 
         if (!hasSupabase || error) {
           try {
             localStorage.setItem(`admac_site_settings:ministry_${ministryId}`, JSON.stringify(sanitizedMinistryData));
-          } catch { /* ignore */ }
+          } catch (err) { console.warn('LocalStorage Save Error:', err); }
         }
 
-        if (error && hasSupabase && error.code !== 'PGRST116') {
-          // Se for erro real (não apenas 'not found'), removemos o throw para não travar o alert offline
-          // throw error; 
+        // CORREÇÃO: Só recarrega do banco se o save deu certo.
+        if (!error && hasSupabase) {
+          const { data: reload } = await supabase.from('site_settings').select('data').eq('key', key).single();
+          if (reload?.data) {
+            const defaultData = INITIAL_MINISTRIES_DATA[ministryId] || {};
+            const parsedReload = parseSafeJson(reload.data);
+            setMinistryData(deepMerge(defaultData, parsedReload));
+          }
         }
-
-        const { data: reload } = await supabase.from('site_settings').select('data').eq('key', key).single();
-        if (reload?.data) {
-          const defaultData = INITIAL_MINISTRIES_DATA[ministryId] || {};
-          setMinistryData(deepMerge(defaultData, reload.data));
-        }
+        
         broadcastUpdate(key);
 
         if (!hasSupabase || error) {
-          alert('Ministério salvo APENAS LOCALMENTE (Offline). O Supabase retornou um erro ou está inacessível.');
+          alert(`Ministério salvo APENAS LOCALMENTE (Offline). Erro: ${error?.message || 'Sem conexão com Supabase'}. Veja o console (F12).`);
         } else {
           alert('Ministério salvo com sucesso no banco de dados!');
         }
@@ -1200,9 +1225,12 @@ export default function PainelAdm() {
 
       hd = hd || INITIAL_HOME_DATA;
       videos = videos || [];
+      
+      // Sincroniza os conteúdos para evitar discrepância no editor
+      const syncedHome = { ...hd, videos };
 
-      setHomeData(hd);
-      setMinistryData(hd);
+      setHomeData(syncedHome);
+      setMinistryData(syncedHome);
       setHomeVideos(videos);
     } catch (err) {
       console.error('Error opening home config:', err);
@@ -1238,50 +1266,68 @@ export default function PainelAdm() {
         setCurrentUser(user);
         setIsLogged(true);
       } else {
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email: loginData.email,
-          password: loginData.password,
-        });
+        // Tenta autenticação real
+        try {
+          const { data, error } = await supabase.auth.signInWithPassword({
+            email: loginData.email,
+            password: loginData.password,
+          });
 
-        if (error) {
-          // Fallback offline se credenciais padrão forem usadas
-          if (!hasSupabase && loginData.email === 'admin@admin.com' && loginData.password === '123456') {
+          if (error) {
+            // Fallback offline se credenciais padrão forem usadas, mesmo com hasSupabase=true
+            if (loginData.email === 'admin@admin.com' && loginData.password === '123456') {
+              const user = { id: 'offline-admin', name: 'Admin', email: 'admin@admin.com', role: 'Administrador', status: 'active', photo: null };
+              sessionStorage.setItem('painel_auth', '1');
+              localStorage.setItem('admac_current_user', JSON.stringify(user));
+              setCurrentUser(user);
+              setIsLogged(true);
+              return;
+            } else {
+              setLoginError(error.message || 'E-mail ou senha inválidos.');
+              return;
+            }
+          }
+
+          if (data?.user) {
+            const user = {
+              id: data.user.id,
+              name: data.user.user_metadata?.full_name || data.user.email.split('@')[0],
+              email: data.user.email,
+              role: data.user.user_metadata?.role || 'Administrador',
+              status: 'active',
+              photo: data.user.user_metadata?.avatar_url || null
+            };
+            sessionStorage.setItem('painel_auth', '1');
+            localStorage.setItem('admac_current_user', JSON.stringify(user));
+            setCurrentUser(user);
+            setIsLogged(true);
+
+            // Log de acesso (silencioso se falhar)
+            try {
+              await supabase.from('site_logs').insert({
+                action: 'LOGIN_SISTEMA',
+                user_email: user.email,
+                details: 'Autenticado via Supabase Auth'
+              });
+            } catch { }
+          }
+        } catch (authErr) {
+          // Captura erros de rede como "Failed to fetch"
+          console.error('[Auth Exception]', authErr);
+          if (loginData.email === 'admin@admin.com' && loginData.password === '123456') {
             const user = { id: 'offline-admin', name: 'Admin', email: 'admin@admin.com', role: 'Administrador', status: 'active', photo: null };
             sessionStorage.setItem('painel_auth', '1');
             localStorage.setItem('admac_current_user', JSON.stringify(user));
             setCurrentUser(user);
             setIsLogged(true);
           } else {
-            setLoginError(error.message || 'E-mail ou senha inválidos.');
-            return;
+            setLoginError('Erro de conexão com o servidor. Verifique sua internet ou tente o acesso padrão.');
           }
-        }
-
-        if (data?.user) {
-          const user = {
-            id: data.user.id,
-            name: data.user.user_metadata?.full_name || data.user.email.split('@')[0],
-            email: data.user.email,
-            role: data.user.user_metadata?.role || 'Administrador',
-            status: 'active',
-            photo: data.user.user_metadata?.avatar_url || null
-          };
-          sessionStorage.setItem('painel_auth', '1');
-          localStorage.setItem('admac_current_user', JSON.stringify(user));
-          setCurrentUser(user);
-          setIsLogged(true);
-
-          // Log de acesso
-          await supabase.from('site_logs').insert({
-            action: 'LOGIN_SISTEMA',
-            user_email: user.email,
-            details: 'Autenticado via Supabase Auth'
-          });
         }
       }
     } catch (err) {
       console.error('Erro ao autenticar no painel:', err);
-      setLoginError('Erro ao tentar fazer login. Verifique sua conexão.');
+      setLoginError('Erro inesperado no login.');
     } finally {
       setLoginLoading(false);
     }
@@ -1400,11 +1446,12 @@ export default function PainelAdm() {
         const { data: dbVideos } = await supabase.from('site_settings').select('data').eq('key', 'videos').single();
 
         const hd = dbHome?.data || INITIAL_HOME_DATA;
-        const videos = dbVideos?.data || [];
+        const videosArr = dbVideos?.data || [];
+        const syncedHomeData = { ...hd, videos: videosArr };
 
-        setHomeData(hd);
-        setMinistryData(hd);
-        setHomeVideos(videos);
+        setHomeData(syncedHomeData);
+        setMinistryData(syncedHomeData);
+        setHomeVideos(videosArr);
         setHomeTab('bemvindo');
         setPageModalOpen(true);
         return;
@@ -1492,10 +1539,12 @@ export default function PainelAdm() {
       const key = id === 'home' ? 'home' : `ministry_${id}`;
 
       if (pageMode === 'home') {
-        const cleanHome = { ...(homeData || {}) };
+        const cleanVideos = sanitizeVideos(homeVideos);
+        const cleanHome = { ...(homeData || {}), videos: cleanVideos };
+
         const [r1, r2] = await Promise.all([
           supabase.from('site_settings').upsert({ key: 'home', data: cleanHome }),
-          supabase.from('site_settings').upsert({ key: 'videos', data: homeVideos || [] })
+          supabase.from('site_settings').upsert({ key: 'videos', data: cleanVideos })
         ]);
 
         // Persistência local quando Supabase estiver offline/erro
@@ -1669,7 +1718,7 @@ export default function PainelAdm() {
 
     if (!window.confirm(`Deseja realmente excluir os dados da página "${name}"? \n\nO conteúdo voltará ao padrão original do sistema.`)) return;
     try {
-      const id = pageToMinistry[name] || name.toLowerCase().replace(/\s+/g, '_');
+      const id = pageToMinistry[name] || name.toLowerCase();
       const key = id === 'home' ? 'home' : `ministry_${id}`;
 
       const { error } = await supabase.from('site_settings').delete().eq('key', key);

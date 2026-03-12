@@ -1,8 +1,10 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo, useState, useCallback } from 'react';
 import { Youtube } from 'lucide-react';
 import '../css/RecentVideos.css';
 import { supabase } from '../lib/supabase';
 import { parseSafeJson } from '../lib/dbUtils';
+
+import { usePageUpdate } from '../hooks/usePageUpdate';
 
 const RecentVideos = ({ limit = 2, category = null }) => {
     const [remoteVideos, setRemoteVideos] = useState(null);
@@ -33,53 +35,58 @@ const RecentVideos = ({ limit = 2, category = null }) => {
         return id ? `https://www.youtube.com/watch?v=${id}` : urlOrId;
     };
 
-    useEffect(() => {
-        let mounted = true;
-        const load = async () => {
-            try {
-                // Busca do Supabase
-                const { data } = await supabase
-                    .from('site_settings')
-                    .select('data')
-                    .eq('key', 'videos')
-                    .single();
-                const parsed = parseSafeJson(data?.data);
-                let vids = Array.isArray(parsed) ? parsed : [];
-                // Fallback para localStorage legado
-                if (vids.length === 0) {
-                    const saved = localStorage.getItem('admac_videos');
-                    if (saved) {
-                        vids = JSON.parse(saved);
-                    }
+    const load = useCallback(async () => {
+        try {
+            // Busca do Supabase
+            const { data } = await supabase
+                .from('site_settings')
+                .select('data')
+                .eq('key', 'videos')
+                .single();
+            const parsed = parseSafeJson(data?.data);
+            let vids = Array.isArray(parsed) ? parsed : [];
+            
+            // Fallback para localStorage legado
+            if (vids.length === 0) {
+                const saved = localStorage.getItem('admac_videos');
+                if (saved) {
+                    vids = JSON.parse(saved);
                 }
-                // Filtra por categoria/ativo e normaliza campos
-                if (category) {
-                    vids = vids.filter(v => v.category === category);
-                }
-                vids = vids
-                    .filter(v => v && v.active !== false)
-                    .map((v, idx) => ({
-                        id: v.id || idx,
-                        title: v.title || 'Vídeo',
-                        description: v.description || '',
-                        // Prioriza url (embed); senão calcula a partir de videoId
-                        embed: v.url ? toEmbed(v.url) : (v.videoId ? `https://www.youtube-nocookie.com/embed/${v.videoId}` : ''),
-                        watch: v.url ? toWatch(v.url) : toWatch(v.videoId || ''),
-                        thumbnail: v.thumbnail || null,
-                        order: Number.isFinite(v.order) ? v.order : idx
-                    }))
-                    .sort((a, b) => a.order - b.order)
-                    .slice(0, limit);
-                if (mounted) setRemoteVideos(vids);
-            } catch {
-                if (mounted) setRemoteVideos([]);
-            } finally {
-                if (mounted) setLoading(false);
             }
-        };
-        load();
-        return () => { mounted = false; };
+            
+            // Filtra por categoria/ativo e normaliza campos
+            if (category) {
+                vids = vids.filter(v => v.category === category);
+            }
+            vids = vids
+                .filter(v => v && v.active !== false && (v.url || v.videoId))
+                .map((v, idx) => ({
+                    id: v.id || idx,
+                    title: v.title || 'Vídeo',
+                    description: v.description || '',
+                    // Prioriza url (embed); senão calcula a partir de videoId
+                    embed: v.url ? toEmbed(v.url) : (v.videoId ? `https://www.youtube-nocookie.com/embed/${v.videoId}` : ''),
+                    watch: v.url ? toWatch(v.url) : toWatch(v.videoId || ''),
+                    thumbnail: v.thumbnail || null,
+                    order: Number.isFinite(v.order) ? v.order : idx
+                }))
+                .sort((a, b) => a.order - b.order)
+                .slice(0, limit);
+            
+            setRemoteVideos(vids);
+        } catch {
+            setRemoteVideos([]);
+        } finally {
+            setLoading(false);
+        }
     }, [limit, category]);
+
+    useEffect(() => {
+        load();
+    }, [load]);
+
+    // Sincronização reativa quando os dados mudam no painel
+    usePageUpdate('videos', load);
 
     const videos = useMemo(() => remoteVideos || [], [remoteVideos]);
 

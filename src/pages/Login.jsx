@@ -32,9 +32,22 @@ const Login = () => {
 
     // Aceita usuário do localStorage ou a conta admin padrão
     if (user || (email === 'admin@admin.com' && password === '123456')) {
-      const userData = user || { name: 'Admin', email: 'admin@admin.com' };
-      localStorage.setItem('isAuthenticated', 'true');
-      localStorage.setItem('user', JSON.stringify(userData));
+      const userData = user || {
+        id: 'offline-admin',
+        name: 'Admin',
+        email: 'admin@admin.com',
+        role: 'Administrador',
+        status: 'active',
+        photo: null
+      };
+
+      // Adiciona role padrão para usuários do localStorage se não tiverem
+      if (user && !userData.role) {
+        userData.role = 'Viewer';
+      }
+
+      sessionStorage.setItem('painel_auth', '1');
+      localStorage.setItem('admac_current_user', JSON.stringify(userData));
       navigate('/painel');
     } else {
       alert('Email ou senha incorretos.');
@@ -45,7 +58,7 @@ const Login = () => {
   const handleRegister = (e) => {
     e.preventDefault();
     if (name && email && password) {
-      const newUser = { name, email, password };
+      const newUser = { name, email, password, role: 'Viewer', status: 'active' };
       const users = JSON.parse(localStorage.getItem('admac_users') || '[]');
 
       if (users.find(u => u.email === email)) {
