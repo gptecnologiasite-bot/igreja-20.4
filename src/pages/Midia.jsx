@@ -20,7 +20,8 @@ import {
     Youtube,
     Facebook,
     Mail,
-    ArrowRight
+    ArrowRight,
+    X
 } from 'lucide-react';
 import { useMinistryData } from '../hooks/useMinistryData';
 import { transformImageLink } from '../utils/imageUtils';
@@ -49,6 +50,9 @@ const Midia = () => {
 
     // Estado para controlar a foto atual da galeria (carrossel)
     const [galleryIndex, setGalleryIndex] = useState(0);
+
+    // Estado para o Lightbox (modal de imagem cheia)
+    const [selectedImage, setSelectedImage] = useState(null);
 
     // Default data structure consistent with initialData.js
     const {
@@ -223,7 +227,11 @@ const Midia = () => {
                     </div>
                     {backstage && backstage.map((item, idx) => (
                         <div key={idx} className={`backstage-item ${item.layout === 'right' ? 'reverse' : ''}`}>
-                            <motion.div className="backstage-image" {...fadeIn}>
+                            <motion.div 
+                                className="backstage-image" 
+                                {...fadeIn}
+                                onClick={() => setSelectedImage({ url: item.image, caption: item.title })}
+                            >
                                 <img src={transformImageLink(item.image)} alt={item.title} />
                             </motion.div>
                             <motion.div className="backstage-content" {...fadeIn} transition={{ delay: 0.3 }}>
@@ -281,7 +289,11 @@ const Midia = () => {
                                     exit={{ opacity: 0, scale: 1.05 }}
                                     transition={{ duration: 0.6 }}
                                 >
-                                    <img src={transformImageLink(gallery[galleryIndex].url)} alt={gallery[galleryIndex].caption} />
+                                    <img 
+                                        src={transformImageLink(gallery[galleryIndex].url)} 
+                                        alt={gallery[galleryIndex].caption} 
+                                        onClick={() => setSelectedImage(gallery[galleryIndex])}
+                                    />
                                     <div className="gallery-info">
                                         <p>{gallery[galleryIndex].caption}</p>
                                     </div>
@@ -408,6 +420,37 @@ const Midia = () => {
                     </div>
                 </div>
             </footer>
+
+            {/* --- LIGHTBOX MODAL --- */}
+            <AnimatePresence>
+                {selectedImage && (
+                    <motion.div 
+                        className="lightbox-overlay"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        onClick={() => setSelectedImage(null)}
+                    >
+                        <motion.div 
+                            className="lightbox-content"
+                            initial={{ scale: 0.8, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.8, opacity: 0 }}
+                            onClick={(e) => e.stopPropagation()}
+                        >
+                            <button className="lightbox-close" onClick={() => setSelectedImage(null)}>
+                                <X size={24} />
+                            </button>
+                            <img src={transformImageLink(selectedImage.url || selectedImage.image)} alt={selectedImage.caption} />
+                            {selectedImage.caption && (
+                                <div className="lightbox-caption">
+                                    {selectedImage.caption}
+                                </div>
+                            )}
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };
