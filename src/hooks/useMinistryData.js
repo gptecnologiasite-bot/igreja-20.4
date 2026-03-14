@@ -14,7 +14,7 @@ export const useMinistryData = (ministryId) => {
         let active = true;
         const run = async () => {
             try {
-                const { data: dbData } = await supabase
+                const { data: dbData, error } = await supabase
                     .from('site_settings')
                     .select('data')
                     .eq('key', `ministry_${ministryId}`)
@@ -22,74 +22,67 @@ export const useMinistryData = (ministryId) => {
                 
                 if (!active) return;
 
-                if (dbData && dbData.data) {
-                    setData(deepMerge(defaultData, parseSafeJson(dbData.data)));
-                } else {
-                    // Tenta ler do localStorage se o Supabase não tiver dados
+                if (error) {
+                    console.warn(`[Supabase] Erro ao carregar ministério ${ministryId}:`, error.message);
+                    
+                    // Fallback para localStorage
                     const raw = localStorage.getItem(`admac_site_settings:ministry_${ministryId}`);
                     if (raw) {
                         try {
                             const local = JSON.parse(raw);
                             setData(deepMerge(defaultData, local));
+                            console.info(`[Storage] Usando cache local para ${ministryId}.`);
                             return;
-                        } catch { /* ignore */ }
+                        } catch (e) {
+                            console.error(`[Storage] JSON inválido para ${ministryId}:`, e);
+                        }
                     }
                     setData(defaultData);
+                    return;
                 }
-            } catch {
+
+                if (dbData && dbData.data) {
+                    const parsed = parseSafeJson(dbData.data);
+                    setData(deepMerge(defaultData, parsed));
+                    // Cacheia para uso offline
+                    localStorage.setItem(`admac_site_settings:ministry_${ministryId}`, JSON.stringify(parsed));
+                } else {
+                    setData(defaultData);
+                }
+            } catch (err) {
                 if (!active) return;
-                // Fallback local em caso de erro (offline)
-                const raw = localStorage.getItem(`admac_site_settings:ministry_${ministryId}`);
-                if (raw) {
-                    try {
-                        const local = JSON.parse(raw);
-                        setData(deepMerge(defaultData, local));
-                        return;
-                    } catch { /* ignore */ }
-                }
+                console.error(`[useMinistryData] Exceção crítica em ${ministryId}:`, err);
                 setData(defaultData);
             }
         };
-        setTimeout(run, 0);
+        run();
         return () => { active = false; };
     }, [ministryId, defaultData]);
 
-    // Sincronização reativa
+    // Sincronização reativa (Realtime fallback)
     usePageUpdate(`ministry_${ministryId}`, () => {
         let active = true;
         const run = async () => {
             try {
-                const { data: dbData } = await supabase
+                const { data: dbData, error } = await supabase
                     .from('site_settings')
                     .select('data')
                     .eq('key', `ministry_${ministryId}`)
                     .single();
                 if (!active) return;
                 
+                if (error) {
+                    console.warn(`[Realtime Update] Erro ao sincronizar ${ministryId}:`, error.message);
+                    return;
+                }
+
                 if (dbData?.data) {
-                    setData(deepMerge(defaultData, parseSafeJson(dbData.data)));
-                } else {
-                    const raw = localStorage.getItem(`admac_site_settings:ministry_${ministryId}`);
-                    if (raw) {
-                        try {
-                            const local = JSON.parse(raw);
-                            setData(deepMerge(defaultData, local));
-                            return;
-                        } catch { /* ignore */ }
-                    }
-                    setData(defaultData);
+                    const parsed = parseSafeJson(dbData.data);
+                    setData(deepMerge(defaultData, parsed));
+                    localStorage.setItem(`admac_site_settings:ministry_${ministryId}`, JSON.stringify(parsed));
                 }
-            } catch {
-                if (!active) return;
-                const raw = localStorage.getItem(`admac_site_settings:ministry_${ministryId}`);
-                if (raw) {
-                    try {
-                        const local = JSON.parse(raw);
-                        setData(deepMerge(defaultData, local));
-                        return;
-                    } catch { /* ignore */ }
-                }
-                setData(defaultData);
+            } catch (err) {
+                console.error(`[Realtime Update] Exceção em ${ministryId}:`, err);
             }
         };
         run();

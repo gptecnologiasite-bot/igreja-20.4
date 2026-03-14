@@ -39,29 +39,37 @@ const Home = () => {
         .eq('key', 'home')
         .single();
 
-      if (dbData && dbData.data) {
-        setData(deepMerge(INITIAL_HOME_DATA, parseSafeJson(dbData.data)));
-        return;
-      }
-
-      // Fallback 1: erro do Supabase (inclui modo OFFLINE)
       if (error) {
+        console.warn('[Supabase] Falha ao carregar Home:', error.message);
+        
+        // Fallback para localStorage
         const raw = localStorage.getItem('admac_site_settings:home');
         if (raw) {
           try {
             const local = JSON.parse(raw);
             setData(deepMerge(INITIAL_HOME_DATA, local));
+            console.info('[Storage] Usando dados locais para a Home.');
             return;
-          } catch {
-            // se inválido, segue para fallback padrão
+          } catch (e) {
+            console.error('[Storage] JSON inválido no localStorage:', e);
           }
         }
+        
+        // Fallback final: dados estáticos
+        setData(INITIAL_HOME_DATA);
+        return;
       }
 
-      // Fallback 2: dados iniciais
+      if (dbData && dbData.data) {
+        const parsed = parseSafeJson(dbData.data);
+        setData(deepMerge(INITIAL_HOME_DATA, parsed));
+        
+        // Cacheia para uso offline futuro
+        localStorage.setItem('admac_site_settings:home', JSON.stringify(parsed));
+      }
+    } catch (err) {
+      console.error('[App] Erro crítico no loadData:', err);
       setData(INITIAL_HOME_DATA);
-    } catch (error) {
-      console.error('Error fetching home data:', error);
     }
   };
 
