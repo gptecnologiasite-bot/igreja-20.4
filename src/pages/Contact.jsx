@@ -17,18 +17,40 @@ const Contact = () => {
   useEffect(() => {
     const loadContactData = async () => {
       try {
-        const { data: dbData } = await supabase
+        const { data: dbData, error } = await supabase
           .from('site_settings')
           .select('data')
           .eq('key', 'ministry_contact')
           .single();
 
+        if (error) {
+          console.warn('[Supabase] Erro ao carregar Contato:', error.message);
+          
+          // Fallback para localStorage
+          const raw = localStorage.getItem('admac_site_settings:ministry_contact');
+          if (raw) {
+            try {
+              const local = JSON.parse(raw);
+              setData(prev => ({ ...prev, ...local }));
+              console.info('[Storage] Usando cache local para Contato.');
+              return;
+            } catch (e) {
+              console.error('[Storage] JSON inválido para Contato:', e);
+            }
+          }
+          return;
+        }
+
         if (dbData && dbData.data) {
           const parsed = parseSafeJson(dbData.data);
-          if (parsed) setData(prev => ({ ...prev, ...parsed }));
+          if (parsed) {
+            setData(prev => ({ ...prev, ...parsed }));
+            // Cacheia para uso offline
+            localStorage.setItem('admac_site_settings:ministry_contact', JSON.stringify(parsed));
+          }
         }
       } catch (err) {
-        console.error('Error loading contact data:', err);
+        console.error('[Contact] Exceção crítica:', err);
       }
     };
     loadContactData();

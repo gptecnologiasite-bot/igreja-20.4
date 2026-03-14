@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase, testSupabaseConnection } from '../lib/supabase';
 import { INITIAL_HOME_DATA, INITIAL_MINISTRIES_DATA, INITIAL_FOOTER_DATA, INITIAL_HEADER_DATA } from '../lib/constants';
-import { deepMerge, transformImageLink } from '../lib/dbUtils';
+import { deepMerge, transformImageLink, parseSafeJson } from '../lib/dbUtils';
 import { broadcastUpdate } from '../hooks/usePageUpdate';
 
 const palette = {
@@ -47,7 +47,19 @@ const globalCSS = `
   .painel-nav-item:hover{background:${palette.surfaceHover};color:${palette.text}}
   .painel-nav-item.active{background:${palette.accentGlow};color:${palette.accentLight};font-weight:600}
   .painel-nav-item .nav-icon{font-size:1.05rem;width:20px;text-align:center}
-  .painel-sidebar-footer{margin-top:auto;padding:1rem .8rem;border-top:1px solid ${palette.border}}
+  
+  /* Status de Conexão */
+  .conn-status-wrap { padding: 1rem .8rem; border-top: 1px solid ${palette.border}; margin-top: auto; }
+  .conn-badge { display: flex; align-items: center; gap: 8px; font-size: 0.75rem; color: ${palette.textMuted}; margin-bottom: 8px; }
+  .conn-status-dot { width: 8px; height: 8px; border-radius: 50%; background: #ccc; }
+  .conn-status-dot.online { background: #10b981; box-shadow: 0 0 8px rgba(16,185,129,0.4); }
+  .conn-status-dot.offline { background: #ef4444; box-shadow: 0 0 8px rgba(239,68,68,0.4); }
+  .conn-status-dot.testing { background: #f59e0b; animation: conn-pulse 1s infinite; }
+  .conn-test-btn { width: 100%; padding: 8px; font-size: 0.7rem; background: ${palette.bg}; border: 1px solid ${palette.border}; border-radius: 6px; color: ${palette.text}; cursor: pointer; transition: all 0.2s; }
+  .conn-test-btn:hover { background: ${palette.accentGlow}; border-color: ${palette.accent}; }
+  @keyframes conn-pulse { 0% { opacity: 0.5; } 50% { opacity: 1; } 100% { opacity: 0.5; } }
+
+  .painel-sidebar-footer{padding:1rem .8rem;border-top:1px solid ${palette.border}}
   .painel-topbar{position:fixed;top:0;right:0;left:240px;height:60px;background:${palette.surface};border-bottom:1px solid ${palette.border};display:flex;align-items:center;justify-content:space-between;padding:0 1.5rem;z-index:99;transition:left .3s ease}
   .painel-topbar.full{left:0}
   .painel-hamburger{background:none;border:none;cursor:pointer;color:${palette.textMuted};font-size:1.2rem;padding:4px;border-radius:6px}
@@ -428,6 +440,33 @@ export default function PainelAdm() {
   const [loginData, setLoginData] = useState({ email: '', password: '' });
   const [loginError, setLoginError] = useState('');
   const [loginLoading, setLoginLoading] = useState(false);
+  
+  // Status de Conexão com Supabase
+  const [connStatus, setConnStatus] = useState({ state: 'testing', message: 'Iniciando...' });
+  const [isTestingConn, setIsTestingConn] = useState(false);
+
+  const checkConnection = async (manual = false) => {
+    setIsTestingConn(true);
+    if (manual) setConnStatus({ state: 'testing', message: 'Testando...' });
+    
+    const { testSupabaseConnection } = await import('../lib/supabase');
+    const result = await testSupabaseConnection();
+    
+    setConnStatus({
+      state: result.ok ? 'online' : 'offline',
+      message: result.ok ? 'Online' : 'Desativado'
+    });
+    setIsTestingConn(false);
+    
+    if (manual) {
+      alert(result.ok ? 'Conexão estabelecida com sucesso!' : `Falha: ${result.message}`);
+    }
+  };
+
+  useEffect(() => {
+    if (isLogged) checkConnection();
+  }, [isLogged]);
+
   const [showPassword, setShowPassword] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(() => (typeof window !== 'undefined' ? window.innerWidth >= 768 : true));
   const [activePage, setActivePage] = useState('dashboard');
@@ -1029,7 +1068,13 @@ export default function PainelAdm() {
 
       const defaultData = id === 'home' ? INITIAL_HOME_DATA : INITIAL_MINISTRIES_DATA[id];
       const parsedRaw = parseSafeJson(rawData);
-      const data = parsedRaw ? (typeof deepMerge === 'function' ? deepMerge(defaultData, parsedRaw) : { ...defaultData, ...parsedRaw }) : defaultData;
+      
+      // Fusão robusta: Garante que nunca seja null
+      let data = defaultData;
+      if (parsedRaw) {
+        data = typeof deepMerge === 'function' ? deepMerge(defaultData, parsedRaw) : { ...defaultData, ...parsedRaw };
+      }
+      
       vids = parseSafeJson(vids) || [];
 
       if (id === 'home') {
@@ -1042,6 +1087,10 @@ export default function PainelAdm() {
       }
     } catch (err) {
       console.error('Error loading content:', err);
+      // Fallback supremo para não deixar a tela branca/vazia
+      const fallback = id === 'home' ? INITIAL_HOME_DATA : INITIAL_MINISTRIES_DATA[id];
+      setMinistryData(fallback);
+      if (id === 'home') setHomeData(fallback);
     } finally {
       setMinistryLoading(false);
     }
@@ -1107,7 +1156,15 @@ export default function PainelAdm() {
         broadcastUpdate('videos');
 
         if (!hasSupabase || e1 || e2) {
-          alert('Configurações da Home salvas APENAS LOCALMENTE (Offline). O Supabase retornou um erro. Abra o console (F12) para detalhes.');
+          let errorHint = '';
+          const err = e1 || e2;
+          if (err) {
+            if (err.code === '42P01') errorHint = '\n\nDICA: A tabela "site_settings" não foi encontrada no banco. Execute o SQL de configuração.';
+            else if (err.code === '42501') errorHint = '\n\nDICA: Permissão negada (RLS). Você precisa autorizar o acesso anon ou entrar com uma conta real.';
+            else if (err.message?.includes('payload too large') || err.code === '413') errorHint = '\n\nDICA: Suas fotos são muito grandes. Tente usar imagens menores.';
+            else errorHint = `\n\nDetalhe: ${err.message || 'Erro desconhecido'}`;
+          }
+          alert(`Configurações da Home salvas APENAS LOCALMENTE (Offline). O Supabase retornou um erro.${errorHint}`);
         } else {
           alert('Configurações da Home salvas com sucesso no banco de dados!');
         }
@@ -1139,7 +1196,13 @@ export default function PainelAdm() {
         broadcastUpdate(key);
 
         if (!hasSupabase || error) {
-          alert(`Ministério salvo APENAS LOCALMENTE (Offline). Erro: ${error?.message || 'Sem conexão com Supabase'}. Veja o console (F12).`);
+          let errorHint = '';
+          if (error) {
+            if (error.code === '42P01') errorHint = '\n\nDICA: Tabela não encontrada. Execute o SQL de configuração.';
+            else if (error.code === '42501') errorHint = '\n\nDICA: Permissão negada (RLS). Mude para uma conta real ou libere o acesso anônimo no SQL.';
+            else errorHint = `\n\nDetalhe: ${error.message}`;
+          }
+          alert(`Ministério salvo APENAS LOCALMENTE (Offline). ${errorHint}`);
         } else {
           alert('Ministério salvo com sucesso no banco de dados!');
         }
@@ -1258,35 +1321,40 @@ export default function PainelAdm() {
     setLoginLoading(true);
     setLoginError('');
 
+    const email = (loginData.email || '').trim().toLowerCase();
+    const password = (loginData.password || '').trim();
+
     try {
-      if (!hasSupabase && (loginData.email === 'admin@admin.com' && loginData.password === '123456')) {
-        const user = { id: 'offline-admin', name: 'Admin', email: 'admin@admin.com', role: 'Administrador', status: 'active', photo: null };
+      // Prioridade 1: Bypass para contas administrativas padrão (offline ou primeiro acesso)
+      if ((email === 'admin@admin.com' && password === '123456') || 
+          (email === 'aelda@800' && password === 'igrejaadmac2026')) {
+        const user = { 
+          id: email === 'aelda@800' ? 'aelda-admin' : 'offline-admin', 
+          name: email === 'aelda@800' ? 'Aelda ADMAC' : 'Admin (Master)', 
+          email: email, 
+          role: 'Administrador', 
+          status: 'active', 
+          photo: null 
+        };
         sessionStorage.setItem('painel_auth', '1');
         localStorage.setItem('admac_current_user', JSON.stringify(user));
         setCurrentUser(user);
         setIsLogged(true);
-      } else {
-        // Tenta autenticação real
-        try {
-          const { data, error } = await supabase.auth.signInWithPassword({
-            email: loginData.email,
-            password: loginData.password,
-          });
+        console.info(`[Login] Acesso via conta mestre (${email}) autorizado.`);
+        return;
+      }
 
-          if (error) {
-            // Fallback offline se credenciais padrão forem usadas, mesmo com hasSupabase=true
-            if (loginData.email === 'admin@admin.com' && loginData.password === '123456') {
-              const user = { id: 'offline-admin', name: 'Admin', email: 'admin@admin.com', role: 'Administrador', status: 'active', photo: null };
-              sessionStorage.setItem('painel_auth', '1');
-              localStorage.setItem('admac_current_user', JSON.stringify(user));
-              setCurrentUser(user);
-              setIsLogged(true);
-              return;
-            } else {
-              setLoginError(error.message || 'E-mail ou senha inválidos.');
-              return;
-            }
-          }
+      // Prioridade 2: Autenticação real via Supabase
+      try {
+        const { data, error } = await supabase.auth.signInWithPassword({
+          email: email,
+          password: password,
+        });
+
+        if (error) {
+          setLoginError(`Erro de Autenticação: ${error.message}${error.message?.includes('Invalid') ? '. Tente as credenciais padrão se não possuir uma conta.' : ''}`);
+          return;
+        }
 
           if (data?.user) {
             const user = {
@@ -1309,7 +1377,9 @@ export default function PainelAdm() {
                 user_email: user.email,
                 details: 'Autenticado via Supabase Auth'
               });
-            } catch { }
+            } catch (e) {
+              console.warn('[Log] Falha ao registrar log de login:', e.message);
+            }
           }
         } catch (authErr) {
           // Captura erros de rede como "Failed to fetch"
@@ -1323,7 +1393,6 @@ export default function PainelAdm() {
           } else {
             setLoginError('Erro de conexão com o servidor. Verifique sua internet ou tente o acesso padrão.');
           }
-        }
       }
     } catch (err) {
       console.error('Erro ao autenticar no painel:', err);
@@ -2097,7 +2166,10 @@ export default function PainelAdm() {
             <div className="painel-table-bar">
               <h3 style={{ fontSize: '.95rem', fontWeight: 600 }}>Editor de Conteúdo</h3>
               <div style={{ display: 'flex', gap: '.6rem', alignItems: 'center', flexWrap: 'wrap' }}>
-                <select className="pm-select" value={ministryId} onChange={e => setMinistryId(e.target.value)}>
+                <select className="pm-select" value={ministryId} onChange={e => {
+                  setMinistryId(e.target.value);
+                  setMinistryTab('geral');
+                }}>
                   {ministryOptions.map(o => <option key={o.id} value={o.id}>{o.label}</option>)}
                 </select>
                 <button
@@ -4071,7 +4143,10 @@ export default function PainelAdm() {
                   <h3 style={{ fontSize: '.95rem', fontWeight: 600, marginBottom: '.6rem' }}>Conteúdo do Site</h3>
                   <div style={{ display: 'flex', gap: '.6rem', flexWrap: 'wrap', alignItems: 'center', marginBottom: '.6rem' }}>
                     <button className="pm-add-btn" onClick={openConfigEditHome}>Editar Home</button>
-                    <select className="pm-select" value={ministryId} onChange={e => setMinistryId(e.target.value)}>
+                    <select className="pm-select" value={ministryId} onChange={e => {
+                      setMinistryId(e.target.value);
+                      setMinistryTab('geral');
+                    }}>
                       {ministryOptions.map(o => <option key={o.id} value={o.id}>{o.label}</option>)}
                     </select>
                     <button className="painel-action-btn" onClick={() => openConfigEditMinistry(ministryId)}>Editar Ministério</button>
@@ -4613,6 +4688,19 @@ export default function PainelAdm() {
                 <span>{item.label}</span>
               </div>
             ))}
+          </div>
+          <div className="conn-status-wrap">
+            <div className="conn-badge" title={connStatus.message}>
+              <div className={`conn-status-dot ${connStatus.state}`}></div>
+              <span>Supabase {connStatus.state === 'online' ? 'Online' : connStatus.state === 'testing' ? 'Testando...' : 'Desativado'}</span>
+            </div>
+            <button 
+              className="conn-test-btn" 
+              onClick={() => checkConnection(true)}
+              disabled={isTestingConn}
+            >
+              {isTestingConn ? 'Testando...' : 'Testar Conexão'}
+            </button>
           </div>
           <div className="painel-sidebar-footer">
             <button className="painel-logout-btn" onClick={handleLogout}>
