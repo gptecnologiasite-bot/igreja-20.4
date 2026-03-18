@@ -277,6 +277,7 @@
   font-style: italic;
   line-height: 1.6;
   margin-bottom: 1.5rem;
+  white-space: pre-wrap;
 }
 
 .lares-page .testimonial-author {
@@ -332,8 +333,9 @@
   font-weight: 500;
 }
 
-.lares-page .form-group input,
-.lares-page .form-group select {
+.lares-page .form-group input:not([type="checkbox"]):not([type="radio"]),
+.lares-page .form-group select,
+.lares-page .form-group textarea {
   width: 100%;
   padding: 12px;
   background-color: var(--bg-color);
@@ -345,9 +347,15 @@
 }
 
 .lares-page .form-group input:focus,
-.lares-page .form-group select:focus {
+.lares-page .form-group select:focus,
+.lares-page .form-group textarea:focus {
   outline: none;
   border-color: #3498db;
+}
+
+.lares-page .form-group textarea {
+  resize: vertical;
+  min-height: 120px;
 }
 
 .lares-page .submit-btn {
