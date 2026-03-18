@@ -26,7 +26,7 @@ const PublicLayout = () => {
                 const id = keysMap[rawPath] || rawPath;
                 const key = id === 'home' ? 'home' : `ministry_${id}`;
 
-                const { data } = await supabase.from('site_settings').select('data').eq('key', key).single();
+                const { data } = await supabase.from('site_settings').select('data').eq('key', key).limit(1).limit(1).single();
 
                 const parsed = parseSafeJson(data?.data);
                 if (parsed) {

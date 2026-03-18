@@ -7,7 +7,6 @@
 // ================================================================
 
 import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
-import { transformImageLink } from '../utils/imageUtils';
 import { Link } from 'react-router-dom';
 import {
   Instagram,
@@ -23,10 +22,12 @@ import {
   ChevronDown
 } from 'lucide-react';
 import '../css/Header.css';
-import { supabase } from '../lib/supabase';
+import { supabase, hasSupabaseConfigured } from '../lib/supabase';
 import { INITIAL_HEADER_DATA } from '../lib/constants';
-import { deepMerge, parseSafeJson } from '../lib/dbUtils';
+import { deepMerge, parseSafeJson, transformImageLink } from '../lib/dbUtils';
 import { usePageUpdate } from '../hooks/usePageUpdate';
+
+const locations = ['São Paulo / SP', 'Rio de Janeiro / RJ', 'Goiânia / GO', 'Brasília / DF', 'Belo Horizonte / MG', 'Curitiba / PR', 'Salvador / BA'];
 
 const Header = ({ theme, toggleTheme }) => {
   // ── Estado do menu mobile ─────────────────────────────────────
@@ -77,45 +78,42 @@ const Header = ({ theme, toggleTheme }) => {
 
   const loadHeaderData = async () => {
     try {
-      const { data: dbData } = await supabase
+      if (!supabase || !hasSupabaseConfigured) {
+        throw new Error('Supabase não configurado');
+      }
+
+      const { data: dbData, error } = await supabase
         .from('site_settings')
         .select('data')
         .eq('key', 'header')
         .single();
 
+      if (error) throw error;
+
       if (dbData?.data) {
-        // Usa deepMerge para garantir que campos ausentes no Supabase 
-        // sejam preenchidos pelos valores iniciais (ex: menu)
         setHeaderData(deepMerge(INITIAL_HEADER_DATA, parseSafeJson(dbData.data)));
+        setIsConnected(true);
       } else {
-        // Tenta ler do localStorage se o Supabase não tiver dados
-        const raw = localStorage.getItem('admac_site_settings:header');
-        if (raw) {
-          try {
-            const local = JSON.parse(raw);
-            setHeaderData(deepMerge(INITIAL_HEADER_DATA, local));
-            return;
-          } catch { /* ignore */ }
-        }
-        setHeaderData(INITIAL_HEADER_DATA);
+        throw new Error('Dados não encontrados');
       }
     } catch (err) {
-      console.error('Error loading header data:', err);
-      // Fallback para localStorage em caso de erro (offline)
+      console.warn('[Header] Falha ao carregar dados do Supabase, usando fallback local:', err.message);
+      setIsConnected(false);
       const raw = localStorage.getItem('admac_site_settings:header');
       if (raw) {
         try {
           const local = JSON.parse(raw);
           setHeaderData(deepMerge(INITIAL_HEADER_DATA, local));
-          return;
-        } catch { /* ignore */ }
+        } catch {
+          setHeaderData(INITIAL_HEADER_DATA);
+        }
+      } else {
+        setHeaderData(INITIAL_HEADER_DATA);
       }
-      // Fallback para dados iniciais
-      setHeaderData(INITIAL_HEADER_DATA);
     }
   };
 
-  React.useEffect(() => {
+  useEffect(() => {
     loadHeaderData();
   }, []);
 
@@ -123,7 +121,7 @@ const Header = ({ theme, toggleTheme }) => {
   usePageUpdate(['header'], loadHeaderData);
 
   // ── Atualiza o favicon dinamicamente se o logo for uma imagem ──
-  React.useEffect(() => {
+  useEffect(() => {
     const icon = headerData?.logo?.icon?.trim();
     if (icon && typeof icon === 'string' && (icon.includes('data:image') || icon.includes('http'))) {
       let link = document.querySelector("link[rel~='icon']");
@@ -143,21 +141,20 @@ const Header = ({ theme, toggleTheme }) => {
   const [notifications, setNotifications] = useState([
     { id: 1, title: 'Bem-vindo ao Painel', text: 'Você agora pode ler avisos e alertas aqui no sino.', time: '01m atrás', read: false }
   ]);
+  const [isConnected, setIsConnected] = useState(hasSupabaseConfigured);
 
-  const locations = ['São Paulo / SP', 'Rio de Janeiro / RJ', 'Goiânia / GO', 'Brasília / DF', 'Belo Horizonte / MG', 'Curitiba / PR', 'Salvador / BA'];
-
-  const playBellSound = useCallback(() => {
+  const playBellSound = useCallback((location = null) => {
     try {
       const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
       audio.volume = 0.5;
       audio.play().catch(e => console.warn('Audio play blocked by browser policy. Click anywhere to enable.'));
       
-      // Adiciona uma nova notificação de visitante
-      const randomLoc = locations[Math.floor(Math.random() * locations.length)];
+      // Adiciona uma nova notificação de visitante (usa localização real se disponível)
+      const finalLoc = location || locations[Math.floor(Math.random() * locations.length)];
       const newNotif = {
         id: Date.now(),
         title: 'Novos Visitantes',
-        text: `Neste momento há 1 pessoas de ${randomLoc} visitando o site. Clique para saber mais.`,
+        text: `Neste momento há 1 pessoas de ${finalLoc} visitando o site. Clique para saber mais.`,
         time: 'Agora',
         read: false
       };
@@ -165,34 +162,78 @@ const Header = ({ theme, toggleTheme }) => {
     } catch (err) {
       console.error('Error playing sound:', err);
     }
-  }, [locations]);
+  }, []);
 
   const checkVisitors = useCallback(async () => {
     try {
-      const { data } = await supabase
+      // 1. Check total count
+      const { data: statsData } = await supabase
         .from('site_settings')
         .select('data')
         .eq('key', 'visitor_stats')
         .single();
 
-      if (data && data.data && typeof data.data.value === 'number') {
-        const newCount = data.data.value;
-        if (prevVisitorCount.current > 0 && newCount > prevVisitorCount.current) {
-          playBellSound();
-        }
+      if (statsData && statsData.data && typeof statsData.data.value === 'number') {
+        const newCount = statsData.data.value;
         prevVisitorCount.current = newCount;
         setVisitorCount(newCount);
       }
+
+      // 2. Fetch last visit to populate initial notifications
+      const { data: lastVisitData } = await supabase
+        .from('site_settings')
+        .select('data')
+        .eq('key', 'last_visit')
+        .single();
+      
+      if (lastVisitData && lastVisitData.data && lastVisitData.data.location) {
+        // Se já houver uma visita recente no banco, pode inicializar a lista com ela
+      }
     } catch (err) {
-      console.warn('Error checking visitors:', err);
+      console.warn('[Header] Falha ao verificar visitantes:', err.message);
     }
-  }, [playBellSound]);
+  }, []);
 
   useEffect(() => {
+    // Inicializa o contador
     checkVisitors();
-    const interval = setInterval(checkVisitors, 30000); // Verifica a cada 30 segundos
-    return () => clearInterval(interval);
-  }, [checkVisitors]);
+
+    // Configura o Realtime do Supabase para monitorar a tabela site_settings
+    const channel = supabase
+      .channel('visitor_updates')
+      .on(
+        'postgres_changes',
+        {
+          event: 'UPDATE',
+          schema: 'public',
+          table: 'site_settings'
+        },
+        (payload) => {
+          // Monitora atualizações no contador total
+          if (payload.new && payload.new.key === 'visitor_stats') {
+            const newCount = payload.new.data?.value;
+            if (newCount !== undefined) setVisitorCount(newCount);
+          }
+          
+          // Monitora atualizações de visitas individuais (Sino e Notificação de Localização)
+          if (payload.new && payload.new.key === 'last_visit') {
+            const loc = payload.new.data?.location;
+            if (loc) {
+              playBellSound(loc);
+            }
+          }
+        }
+      )
+      .subscribe();
+
+    // Polling de segurança a cada 2 minutos
+    const interval = setInterval(checkVisitors, 120000);
+    
+    return () => {
+      supabase.removeChannel(channel);
+      clearInterval(interval);
+    };
+  }, [checkVisitors, playBellSound]);
 
   // Alterna o menu mobile aberto/fechado
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
@@ -594,9 +635,24 @@ const Header = ({ theme, toggleTheme }) => {
               </div>
             )}
 
-            <Link to="/painel" className="cta-button">
+            <Link to="/painel" className="cta-button" style={{ position: 'relative' }}>
               <ShieldCheck size={16} style={{ marginRight: '8px' }} />
               Área Administrativa
+              {/* Indicador de Conexão */}
+              <span 
+                title={isConnected ? "Conectado ao Supabase" : "Desconectado do Supabase"}
+                style={{
+                  position: 'absolute',
+                  top: '-4px',
+                  right: '-4px',
+                  width: '8px',
+                  height: '8px',
+                  borderRadius: '50%',
+                  background: isConnected ? '#22c55e' : '#ef4444',
+                  border: '2px solid var(--surface)',
+                  boxShadow: isConnected ? '0 0 8px rgba(34,197,94,0.5)' : '0 0 8px rgba(239,68,68,0.5)'
+                }} 
+              />
             </Link>
           </div>
 
@@ -671,9 +727,20 @@ const Header = ({ theme, toggleTheme }) => {
           {/* Link para área admin no mobile com sino */}
           <div className="mobile-admin-wrap" style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '10px 15px' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-              <Link to="/painel" className="mobile-admin-link" onClick={toggleMenu} style={{ flex: 1, display: 'flex', alignItems: 'center', padding: '12px', background: 'rgba(34, 197, 94, 0.1)', borderRadius: '8px', color: '#22c55e', textDecoration: 'none', fontWeight: 600 }}>
+              <Link to="/painel" className="mobile-admin-link" onClick={toggleMenu} style={{ flex: 1, display: 'flex', alignItems: 'center', padding: '12px', background: 'rgba(34, 197, 94, 0.1)', borderRadius: '8px', color: '#22c55e', textDecoration: 'none', fontWeight: 600, position: 'relative' }}>
                 <ShieldCheck size={18} style={{ marginRight: '8px' }} />
                 Área Administrativa
+                <span 
+                  style={{
+                    position: 'absolute',
+                    top: '10px',
+                    right: '10px',
+                    width: '8px',
+                    height: '8px',
+                    borderRadius: '50%',
+                    background: isConnected ? '#22c55e' : '#ef4444'
+                  }} 
+                />
               </Link>
               <button 
                 onClick={(e) => { e.stopPropagation(); setShowNotifications(!showNotifications); }}

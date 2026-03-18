@@ -392,12 +392,14 @@
   overflow: hidden;
   aspect-ratio: 4/3;
   cursor: pointer;
+  background-color: #121212;
+  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 .gallery-item img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain;
   transition: transform 0.3s;
 }
 
@@ -517,6 +519,7 @@
   background: linear-gradient(to right, #fff, #FF9F43);
   -webkit-background-clip: text;
   -webkit-text-fill-color: transparent;
+  background-clip: text;
 }
 
 .kids-cta p {

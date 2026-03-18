@@ -24,14 +24,21 @@ const Lares = () => {
   return (
     <div className="lares-page">
       {/* Hero Section */}
-      <div className="lares-hero">
+      <div 
+        className="lares-hero"
+        style={data?.hero?.image ? { 
+          backgroundImage: `linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)), url(${transformImageLink(data.hero.image)})`,
+          backgroundSize: 'cover',
+          backgroundPosition: 'center'
+        } : {}}
+      >
         <div className="hero-overlay"></div>
         <div className="hero-content">
           <Home size={80} className="hero-icon" />
-          <h1>{data.hero.title}</h1>
-          <p className="hero-subtitle">{data.hero.subtitle}</p>
+          <h1>{data?.hero?.title || 'Ministério de Lares'}</h1>
+          <p className="hero-subtitle">{data?.hero?.subtitle}</p>
           <div className="hero-verse">
-            <p>{data.hero.verse}</p>
+            <p>{data?.hero?.verse}</p>
           </div>
         </div>
       </div>
@@ -39,15 +46,15 @@ const Lares = () => {
       {/* Mission Section */}
       <section className="mission-section">
         <div className="container">
-          <h2>{data.mission.title}</h2>
+          <h2>{data?.mission?.title || 'Nossa Missão'}</h2>
           <p className="mission-text">
-            {data.mission.text}
+            {data?.mission?.text}
           </p>
         </div>
       </section>
 
       {/* Video Section */}
-      {data.hero.videoUrl && (
+      {data?.hero?.videoUrl && (
         <section className="video-section">
           <div className="container">
             <div className="section-header">
@@ -78,7 +85,7 @@ const Lares = () => {
           <p className="section-subtitle">Conheça os líderes do ministério de lares</p>
 
           <div className="team-grid">
-            {data.team.map((member, index) => (
+            {(data?.team || []).map((member, index) => (
               <div key={index} className="team-card">
                 <img src={transformImageLink(member.photo)} alt={member.name} className="team-photo" />
                 <h3>{member.name}</h3>
@@ -99,34 +106,32 @@ const Lares = () => {
           <p className="section-subtitle">Momentos especiais dos nossos encontros</p>
 
           <div className="gallery-cards">
-            {(data.gallery && data.gallery.length > 0 ? data.gallery : [
+            {(!data?.gallery ? [
               {
-                title: 'Título do cartão',
-                text: 'Este é um cartão mais amplo com texto de apoio abaixo, servindo como introdução natural a conteúdo adicional. Este conteúdo é um pouco mais extenso.',
-                updated: 'Última atualização há 3 minutos'
-              },
-              {
-                title: 'Título do cartão',
-                text: 'Este cartão contém um texto de apoio abaixo, que serve como introdução natural a conteúdo adicional.',
-                updated: 'Última atualização há 3 minutos'
-              },
-              {
-                title: 'Título do cartão',
-                text: 'Este é um cartão mais amplo com texto de apoio abaixo, servindo como uma introdução natural ao conteúdo adicional. Este cartão possui um conteúdo ainda mais extenso que o primeiro, para demonstrar a mesma altura da ação.',
-                updated: 'Última atualização há 3 minutos'
+                title: 'Carregando...',
+                text: 'Aguarde um momento enquanto buscamos as fotos.',
+                updated: ''
               }
-            ]).map((item, index) => (
+            ] : data.gallery.length === 0 ? [
+              {
+                title: 'Nenhum momento registrado',
+                text: 'Aguarde as próximas atualizações com fotos dos nossos encontros.',
+                updated: ''
+              }
+            ] : data.gallery).map((item, index) => (
               <div key={index} className="gallery-card">
                 <div className="gallery-card-img">
-                  {item.url ? <img src={item.url} alt={item.title || item.caption} /> : 'Image cap'}
+                  {item.url ? <img src={transformImageLink(item.url)} alt={item.title || item.caption} /> : <div className="img-placeholder">📸</div>}
                 </div>
                 <div className="gallery-card-body">
-                  <h5 className="gallery-card-title">{item.title || 'Título do cartão'}</h5>
-                  <p className="gallery-card-text">{item.text || item.caption || 'Texto de exemplo para o cartão.'}</p>
+                  <h5 className="gallery-card-title">{item.title || item.caption || 'Foto da Galeria'}</h5>
+                  <p className="gallery-card-text">{item.text || ''}</p>
                 </div>
-                <div className="gallery-card-footer">
-                  <small>{item.updated || 'Última atualização há 3 minutos'}</small>
-                </div>
+                {item.updated && (
+                  <div className="gallery-card-footer">
+                    <small>{item.updated}</small>
+                  </div>
+                )}
               </div>
             ))}
           </div>
@@ -140,7 +145,7 @@ const Lares = () => {
           <p className="section-subtitle">Veja o que os participantes dizem</p>
 
           <div className="testimonials-grid">
-            {data.testimonials.map((testimonial, index) => (
+            {(data?.testimonials || []).map((testimonial, index) => (
               <div key={index} className="testimonial-card">
                 <div className="stars">
                   {[...Array(5)].map((_, i) => (

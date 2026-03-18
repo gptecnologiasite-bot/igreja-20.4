@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { MapPin, Phone, Mail, Clock, Send } from 'lucide-react';
 import { parseSafeJson } from '../lib/dbUtils';
+import { usePageUpdate } from '../hooks/usePageUpdate';
 import '../css/Contact.css';
 
 const Contact = () => {
@@ -14,47 +15,51 @@ const Contact = () => {
     schedule: 'Domingo: 18h | Quinta: 19h30'
   });
 
-  useEffect(() => {
-    const loadContactData = async () => {
-      try {
-        const { data: dbData, error } = await supabase
-          .from('site_settings')
-          .select('data')
-          .eq('key', 'ministry_contact')
-          .single();
+  const loadContactData = async () => {
+    try {
+      const { data: dbData, error } = await supabase
+        .from('site_settings')
+        .select('data')
+        .eq('key', 'ministry_contact')
+        .limit(1).limit(1).single();
 
-        if (error) {
-          console.warn('[Supabase] Erro ao carregar Contato:', error.message);
-          
-          // Fallback para localStorage
-          const raw = localStorage.getItem('admac_site_settings:ministry_contact');
-          if (raw) {
-            try {
-              const local = JSON.parse(raw);
-              setData(prev => ({ ...prev, ...local }));
-              console.info('[Storage] Usando cache local para Contato.');
-              return;
-            } catch (e) {
-              console.error('[Storage] JSON inválido para Contato:', e);
-            }
-          }
-          return;
-        }
-
-        if (dbData && dbData.data) {
-          const parsed = parseSafeJson(dbData.data);
-          if (parsed) {
-            setData(prev => ({ ...prev, ...parsed }));
-            // Cacheia para uso offline
-            localStorage.setItem('admac_site_settings:ministry_contact', JSON.stringify(parsed));
+      if (error) {
+        console.warn('[Supabase] Erro ao carregar Contato:', error.message);
+        
+        // Fallback para localStorage
+        const raw = localStorage.getItem('admac_site_settings:ministry_contact');
+        if (raw) {
+          try {
+            const local = JSON.parse(raw);
+            setData(prev => ({ ...prev, ...local }));
+            console.info('[Storage] Usando cache local para Contato.');
+            return;
+          } catch (e) {
+            console.error('[Storage] JSON inválido para Contato:', e);
           }
         }
-      } catch (err) {
-        console.error('[Contact] Exceção crítica:', err);
+        return;
       }
-    };
+
+      if (dbData && dbData.data) {
+        const parsed = parseSafeJson(dbData.data);
+        if (parsed) {
+          setData(prev => ({ ...prev, ...parsed }));
+          // Cacheia para uso offline
+          localStorage.setItem('admac_site_settings:ministry_contact', JSON.stringify(parsed));
+        }
+      }
+    } catch (err) {
+      console.error('[Contact] Exceção crítica:', err);
+    }
+  };
+
+  useEffect(() => {
     loadContactData();
   }, []);
+
+  // Sincronização reativa do painel
+  usePageUpdate('ministry_contact', loadContactData);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

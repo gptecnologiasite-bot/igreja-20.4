@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { supabase, testSupabaseConnection } from '../lib/supabase';
+import { supabase, testSupabaseConnection, hasSupabaseConfigured } from '../lib/supabase';
 import { INITIAL_HOME_DATA, INITIAL_MINISTRIES_DATA, INITIAL_FOOTER_DATA, INITIAL_HEADER_DATA } from '../lib/constants';
 import { deepMerge, transformImageLink, parseSafeJson } from '../lib/dbUtils';
 import { broadcastUpdate } from '../hooks/usePageUpdate';
@@ -265,7 +265,69 @@ const parseContactPage = (content) => ({
 // Removed unused applyContactPage function
 
 // -------- HomeAnivEditor: Manages birthdays from the Home editor --------
-function HomeAnivEditor({ palette, ministryOptions }) {
+const handleFileUpload = (callback, hasSupabase, supabase) => {
+  const input = document.createElement('input');
+  input.type = 'file';
+  input.accept = 'image/*';
+  input.onchange = async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    
+    const MAX_SIZE_MB = hasSupabase ? 5 : 2;
+    if (file.size > MAX_SIZE_MB * 1024 * 1024) {
+      alert(`A imagem é muito grande (limite ${MAX_SIZE_MB}MB). Tente diminuir o tamanho da foto.`);
+      return;
+    }
+
+    // Tenta enviar para Supabase Storage se disponível
+    if (hasSupabase && supabase?.storage) {
+      try {
+        console.info('[Supabase Storage] Iniciando upload:', file.name);
+        const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
+        const safeName = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+        const path = `uploads/${safeName}`;
+        
+        const { error: upErr } = await supabase.storage.from('site-images').upload(path, file, {
+          upsert: true,
+          contentType: file.type || 'image/jpeg',
+          cacheControl: '3600'
+        });
+
+        if (!upErr) {
+          const { data } = supabase.storage.from('site-images').getPublicUrl(path);
+          if (data?.publicUrl) {
+            console.info('[Supabase Storage] Upload concluído:', data.publicUrl);
+            callback(data.publicUrl);
+            return;
+          }
+        } else {
+          console.warn('[Supabase Storage] Erro no upload:', upErr.message);
+          if (upErr.message.includes('row-level security') || upErr.status === 403) {
+             console.error('ERRO DE PERMISSÃO: O banco de dados bloqueou o upload. Certifique-se de executar o SQL de infraestrutura (setup_infrastructure.sql) no painel do Supabase.');
+          }
+          // Fallback para Base64 se o erro não for crítico ou se quisermos garantir que o usuário consiga salvar algo (mesmo localmente)
+        }
+      } catch (storageErr) {
+        console.error('Storage Exception:', storageErr);
+      }
+    }
+
+    // Fallback: Converte para Base64 se não houver Supabase ou se o upload falhar
+    console.info('[Upload Fallback] Convertendo imagem para Base64...');
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const base64 = e.target.result;
+      if (base64.length > 500000) {
+        console.warn('[Upload Warning] Imagem Base64 muito grande. Isso pode causar erro ao salvar no banco de dados.');
+      }
+      callback(base64);
+    };
+    reader.readAsDataURL(file);
+  };
+  input.click();
+};
+
+function HomeAnivEditor({ palette, ministryOptions, handleFileUpload, hasSupabase, supabase }) {
   const [selMin, setSelMin] = React.useState(ministryOptions[0]?.value || 'jovens');
   const [bData, setBData] = React.useState(null);
   const [saving, setSaving] = React.useState(false);
@@ -361,21 +423,23 @@ function HomeAnivEditor({ palette, ministryOptions }) {
                 </div>
                 <label style={{ cursor: 'pointer', padding: '0.35rem 0.75rem', fontSize: '0.78rem', background: palette.accentGlow, color: palette.accentLight, borderRadius: '6px', border: `1px solid ${palette.accent}` }}>
                   Alterar Foto
-                  <input type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => {
-                    const file = e.target.files[0];
-                    if (!file) return;
-                    if (file.size > 1024 * 1024) {
-                      alert('A imagem é muito grande (maior que 1MB).\n\nPara não sobrecarregar o sistema, use imagens menores ou links externos.');
-                      return;
-                    }
-                    const reader = new FileReader();
-                    reader.onload = ev => {
+                  <button 
+                    type="button" 
+                    style={{ position: 'absolute', opacity: 0, width: 0, height: 0 }} 
+                    onClick={() => handleFileUpload((url) => {
                       const next = [...(bData.people || [])];
-                      next[idx] = { ...next[idx], photo: ev.target.result };
+                      next[idx] = { ...next[idx], photo: url };
                       updatePeople(next);
-                    };
-                    reader.readAsDataURL(file);
-                  }} />
+                    }, hasSupabase, supabase)} 
+                  />
+                  <span onClick={(e) => {
+                    e.preventDefault();
+                    handleFileUpload((url) => {
+                      const next = [...(bData.people || [])];
+                      next[idx] = { ...next[idx], photo: url };
+                      updatePeople(next);
+                    }, hasSupabase, supabase);
+                  }}>Alterar Foto</span>
                 </label>
               </div>
               <div className="pm-field">
@@ -435,7 +499,7 @@ function HomeAnivEditor({ palette, ministryOptions }) {
 }
 
 export default function PainelAdm() {
-  const hasSupabase = Boolean(import.meta.env?.VITE_SUPABASE_URL && import.meta.env?.VITE_SUPABASE_ANON_KEY);
+  const hasSupabase = hasSupabaseConfigured;
   const [isLogged, setIsLogged] = useState(() => sessionStorage.getItem('painel_auth') === '1');
   const [loginData, setLoginData] = useState({ email: '', password: '' });
   const [loginError, setLoginError] = useState('');
@@ -449,7 +513,6 @@ export default function PainelAdm() {
     setIsTestingConn(true);
     if (manual) setConnStatus({ state: 'testing', message: 'Testando...' });
     
-    const { testSupabaseConnection } = await import('../lib/supabase');
     const result = await testSupabaseConnection();
     
     setConnStatus({
@@ -459,7 +522,17 @@ export default function PainelAdm() {
     setIsTestingConn(false);
     
     if (manual) {
-      alert(result.ok ? 'Conexão estabelecida com sucesso!' : `Falha: ${result.message}`);
+      const msgs = [
+        `Ambiente (URL/Key): ${result.env ? '✅ OK' : '❌ FALHA'}`,
+        `Banco de Dados: ${result.db ? '✅ OK' : '❌ FALHA'}`,
+        `Storage (Imagens): ${result.storage ? '✅ OK' : '❌ FALHA'}`
+      ];
+      
+      let hint = '';
+      if (!result.db) hint = '\n\nDICA: Se o Banco falhou, verifique se a URL no .env está correta e se você executou o SQL de infraestrutura no Supabase.';
+      if (!result.storage && result.db) hint = '\n\nDICA: Se apenas o Storage falhou, verifique se o bucket "site-images" foi criado no Supabase.';
+
+      alert(`Status da Conexão:\n\n${msgs.join('\n')}${result.message ? `\n\nErro: ${result.message}` : ''}${hint}`);
     }
   };
 
@@ -547,49 +620,6 @@ export default function PainelAdm() {
     }
   }, [currentUser]);
 
-  const handleFileUpload = (callback) => {
-    const input = document.createElement('input');
-    input.type = 'file';
-    input.accept = 'image/*';
-    input.onchange = async (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-      const MAX_SIZE_MB = hasSupabase ? 5 : 1;
-      if (file.size > MAX_SIZE_MB * 1024 * 1024) {
-        alert(`A imagem é muito grande (limite ${MAX_SIZE_MB}MB).`);
-        return;
-      }
-
-      // Tenta enviar para Supabase Storage se disponível
-      if (hasSupabase && supabase?.storage) {
-        try {
-          const ext = (file.name.split('.').pop() || 'jpg').toLowerCase();
-          const safeName = `${Date.now()}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
-          const path = `uploads/${safeName}`;
-          const { error: upErr } = await supabase.storage.from('site-images').upload(path, file, {
-            upsert: true,
-            contentType: file.type || 'image/jpeg',
-            cacheControl: '3600'
-          });
-          if (!upErr) {
-            const { data } = supabase.storage.from('site-images').getPublicUrl(path);
-            if (data?.publicUrl) {
-              callback(data.publicUrl);
-              return;
-            }
-          }
-        } catch {
-          // fallback abaixo
-        }
-      }
-
-      // Fallback: base64 local (modo offline)
-      const reader = new FileReader();
-      reader.onload = (ev) => callback(ev.target.result);
-      reader.readAsDataURL(file);
-    };
-    input.click();
-  };
 
   const loadLogs = async () => {
     if (!hasSupabase) {
@@ -960,17 +990,6 @@ export default function PainelAdm() {
     }
   }
 
-  const handlePhoto = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    if (file.size > 1024 * 1024) {
-      alert('A foto é muito grande (limite 1MB).\n\nReduza o tamanho da imagem ou use um link externo.');
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = ev => setNewUser(u => ({ ...u, photo: ev.target.result }));
-    reader.readAsDataURL(file);
-  };
 
   useEffect(() => {
     const onResize = () => {
@@ -1119,6 +1138,12 @@ export default function PainelAdm() {
         videos: sanitizedVideos
       };
 
+      // Log de tamanho para diagnóstico, mas permite salvar (fallback de texto)
+      const stringified = JSON.stringify(sanitizedMinistryData);
+      if (stringified.length > 800000) {
+        console.warn("Conteúdo grande detectado (>800KB). Isso pode dificultar o salvamento em conexões lentas.");
+      }
+
       if (ministryId === 'home') {
         const [r1, r2] = await Promise.all([
           supabase.from('site_settings').upsert({ key: 'home', data: sanitizedMinistryData }),
@@ -1129,7 +1154,12 @@ export default function PainelAdm() {
         if (e1 || e2) {
           console.error('[Supabase Error] Home Save (home):', e1);
           console.error('[Supabase Error] Home Save (videos):', e2);
-          console.log('%cAVISO: Se o erro for 413, suas fotos em base64 são muito grandes.', 'color: orange; font-weight: bold;');
+          
+          let tip = '';
+          if ((e1?.message || '').includes('payload too large') || (e2?.message || '').includes('payload too large')) {
+            tip = '\n\nATENÇÃO: Suas imagens são muito grandes para o banco de dados. Tente usar fotos menores ou links externos.';
+          }
+          alert(`Erro ao salvar no banco. Salvando LOCALMENTE em seu navegador.${tip}`);
         }
 
         if (!hasSupabase || e1 || e2) {
@@ -1583,16 +1613,10 @@ export default function PainelAdm() {
     }
   }
 
-  const handlePagePhoto = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    if (file.size > 1024 * 1024) {
-      alert('A imagem é muito grande (maior que 1MB).\n\nRecomendamos usar imagens otimizadas p/ web ou links externos.');
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = ev => setPageData(d => ({ ...d, photo: ev.target.result }));
-    reader.readAsDataURL(file);
+  const handlePagePhoto = () => {
+    handleFileUpload(url => {
+      setPageData(d => ({ ...d, photo: url }));
+    }, hasSupabase, supabase);
   };
 
   const savePage = async () => {
@@ -1604,12 +1628,24 @@ export default function PainelAdm() {
       setPageSaving(true);
       if (!pageName.trim()) return;
 
+      // Proteção contra payload excessivo (base64)
+      // Log payload size for observability but don't block
+      const totalPayload = JSON.stringify({ pageData, homeData, ministryData });
+      if (totalPayload.length > 800000) {
+        console.warn("⚠️ Payload grande detectado:", (totalPayload.length / 1024).toFixed(2), "KB");
+      }
+
       const id = pageToMinistry[pageName] || pageName.toLowerCase();
       const key = id === 'home' ? 'home' : `ministry_${id}`;
 
       if (pageMode === 'home') {
         const cleanVideos = sanitizeVideos(homeVideos);
-        const cleanHome = { ...(homeData || {}), videos: cleanVideos };
+        const cleanHome = { 
+          ...(homeData || {}), 
+          videos: cleanVideos,
+          // Ensure carousel is preserved if it exists in ministryData but missing in homeData due to state drift
+          carousel: homeData?.carousel || ministryData?.carousel || [] 
+        };
 
         const [r1, r2] = await Promise.all([
           supabase.from('site_settings').upsert({ key: 'home', data: cleanHome }),
@@ -1625,6 +1661,7 @@ export default function PainelAdm() {
           } catch { /* ignore */ }
         }
 
+        setHomeData(cleanHome);
         setMinistryData(cleanHome);
         broadcastUpdate('home');
         broadcastUpdate('videos');
@@ -1644,13 +1681,19 @@ export default function PainelAdm() {
       }
 
       if (pageMode === 'ministry') {
+        const sanitized = {
+          ...ministryData,
+          videos: sanitizeVideos(ministryData?.videos)
+        };
         const { error } = await supabase.from('site_settings').upsert({
           key: `ministry_${ministryId}`,
-          data: ministryData || {}
+          data: sanitized || {}
         });
+        if (error) console.error(`[Supabase Error] Ministry ${ministryId} Save:`, error);
+        
         if (!hasSupabase || error) {
           try {
-            localStorage.setItem(`admac_site_settings:ministry_${ministryId}`, JSON.stringify(ministryData || {}));
+            localStorage.setItem(`admac_site_settings:ministry_${ministryId}`, JSON.stringify(sanitized || {}));
           } catch { /* ignore */ }
         }
         broadcastUpdate(`ministry_${ministryId}`);
@@ -1658,9 +1701,14 @@ export default function PainelAdm() {
         setPageModalOpen(false);
         await loadPages();
         if (!hasSupabase || error) {
-          alert('Página de Ministério salva em modo offline (navegador).');
+          let hint = '';
+          if (error?.code === '42P01') hint = '\n\nDICA: Tabela site_settings n\u00e3o encontrada. Execute o SQL de configura\u00e7\u00e3o.';
+          else if (error?.code === '42501') hint = '\n\nDICA: Permiss\u00e3o negada (RLS). Libere acesso an\u00f4nimo ou fa\u00e7a login com uma conta real.';
+          else if (error?.message?.includes('payload too large')) hint = '\n\nDICA: Suas imagens s\u00e3o muito grandes. Tente usar fotos menores ou links externos.';
+          else if (error) hint = `\n\nDetalhe: ${error.message}`;
+          alert(`Minist\u00e9rio salvo LOCALMENTE (modo offline).${hint}`);
         } else {
-          alert('Página de Ministério salva com sucesso!');
+          alert('Minist\u00e9rio salvo com sucesso no banco de dados!');
         }
         return;
       }
@@ -1675,7 +1723,7 @@ export default function PainelAdm() {
           email: pageData.email || '',
           schedule: pageData.schedule || '',
         };
-        content = JSON.stringify(fields);
+        content = fields;
 
         // SYNC: Update Footer as well
         const updatedFooter = {
@@ -1700,23 +1748,24 @@ export default function PainelAdm() {
 
         if (!hasSupabase || ePage || eFooter) {
           try {
-            localStorage.setItem(`admac_site_settings:${key}`, content);
+            localStorage.setItem(`admac_site_settings:${key}`, JSON.stringify(content));
             localStorage.setItem('admac_site_settings:footer', JSON.stringify(updatedFooter));
           } catch { }
           if (hasSupabase && (ePage || eFooter)) console.error('[Supabase Error] Contact/Footer:', ePage || eFooter);
           setFooterData(updatedFooter);
+          broadcastUpdate(key);
           broadcastUpdate('footer');
           alert('Página de Contato salva LOCALMENTE (Offline).');
         } else {
           setFooterData(updatedFooter);
+          broadcastUpdate(key);
           broadcastUpdate('footer');
           alert('Página de Contato e Rodapé atualizados com sucesso!');
         }
       } else {
-        content = JSON.stringify(pageData);
         const { error } = await supabase.from('site_settings').upsert({
           key: key,
-          data: content
+          data: pageData
         });
 
         if (!hasSupabase || error) {
@@ -2346,9 +2395,9 @@ export default function PainelAdm() {
                               type="button"
                               className="pm-photo-btn"
                               style={{ whiteSpace: 'nowrap', padding: '0 12px', height: '38px', marginTop: '0' }}
-                              onClick={() => handleFileUpload(base64 => {
-                                setMinistryData(d => ({ ...d, hero: { ...d.hero, image: base64 } }));
-                              })}
+                              onClick={() => handleFileUpload(url => {
+                                setMinistryData(d => ({ ...d, hero: { ...d.hero, image: url } }));
+                              }, hasSupabase, supabase)}
                             >
                               Subir Foto
                             </button>
@@ -2441,11 +2490,11 @@ export default function PainelAdm() {
                               type="button"
                               className="pm-photo-btn"
                               style={{ whiteSpace: 'nowrap', padding: '0 12px', height: '38px', marginTop: '0' }}
-                              onClick={() => handleFileUpload(base64 => {
+                              onClick={() => handleFileUpload(url => {
                                 const next = [...(ministryData.carousel || [])];
-                                next[idx] = { ...next[idx], image: base64 };
+                                next[idx] = { ...next[idx], image: url };
                                 setMinistryData(d => ({ ...d, carousel: next }));
-                              })}
+                              }, hasSupabase, supabase)}
                             >
                               Subir Foto
                             </button>
@@ -2559,11 +2608,11 @@ export default function PainelAdm() {
                               type="button"
                               className="pm-photo-btn"
                               style={{ whiteSpace: 'nowrap', padding: '0 12px', height: '38px', marginTop: '0' }}
-                              onClick={() => handleFileUpload(base64 => {
+                              onClick={() => handleFileUpload(url => {
                                 const next = [...(ministryData.pastors || [])];
-                                next[idx] = { ...next[idx], image: base64 };
+                                next[idx] = { ...next[idx], image: url };
                                 setMinistryData(d => ({ ...d, pastors: next }));
-                              })}
+                              }, hasSupabase, supabase)}
                             >
                               Subir Foto
                             </button>
@@ -2859,11 +2908,11 @@ export default function PainelAdm() {
                               type="button"
                               className="pm-photo-btn"
                               style={{ whiteSpace: 'nowrap', padding: '0 12px', height: '38px', marginTop: '0' }}
-                              onClick={() => handleFileUpload(base64 => {
+                              onClick={() => handleFileUpload(url => {
                                 const next = [...(ministryData.team || [])];
-                                next[idx] = { ...next[idx], photo: base64 };
+                                next[idx] = { ...next[idx], photo: url };
                                 setMinistryData(d => ({ ...d, team: next }));
-                              })}
+                              }, hasSupabase, supabase)}
                             >
                               Subir Foto
                             </button>
@@ -2909,6 +2958,9 @@ export default function PainelAdm() {
                         <HomeAnivEditor
                           palette={palette}
                           ministryOptions={MINISTRY_OPTIONS}
+                          handleFileUpload={handleFileUpload}
+                          hasSupabase={hasSupabase}
+                          supabase={supabase}
                         />
                       );
                     })() : (
@@ -2935,9 +2987,9 @@ export default function PainelAdm() {
                               type="button"
                               className="pm-photo-btn"
                               style={{ whiteSpace: 'nowrap', padding: '0 12px', height: '38px', marginTop: '0' }}
-                              onClick={() => handleFileUpload(base64 => {
-                                setMinistryData(d => ({ ...d, birthdays: { ...(d.birthdays || {}), videoUrl: base64 } }));
-                              })}
+                              onClick={() => handleFileUpload(url => {
+                                setMinistryData(d => ({ ...d, birthdays: { ...(d.birthdays || {}), videoUrl: url } }));
+                              }, hasSupabase, supabase)}
                             >
                               Subir Capa
                             </button>
@@ -2953,17 +3005,15 @@ export default function PainelAdm() {
                               </div>
                               <label style={{ cursor: 'pointer', padding: '0.35rem 0.75rem', fontSize: '0.78rem', background: palette.accentGlow, color: palette.accentLight, borderRadius: '6px', border: `1px solid ${palette.accent}` }}>
                                 Trocar Foto
-                                <input type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => {
-                                  const file = e.target.files[0];
-                                  if (!file) return;
-                                  const reader = new FileReader();
-                                  reader.onload = ev => {
+                                <button
+                                  type="button"
+                                  style={{ position: 'absolute', opacity: 0, width: 0, height: 0 }}
+                                  onClick={() => handleFileUpload(url => {
                                     const next = [...(ministryData?.birthdays?.people || [])];
-                                    next[idx] = { ...next[idx], photo: ev.target.result };
+                                    next[idx] = { ...next[idx], photo: url };
                                     setMinistryData(d => ({ ...d, birthdays: { ...(d.birthdays || {}), people: next } }));
-                                  };
-                                  reader.readAsDataURL(file);
-                                }} />
+                                  }, hasSupabase, supabase)}
+                                />
                               </label>
                             </div>
                             <div className="pm-field">
@@ -3402,11 +3452,11 @@ export default function PainelAdm() {
                               type="button"
                               className="pm-photo-btn"
                               style={{ whiteSpace: 'nowrap', padding: '0 12px', height: '38px', marginTop: '0' }}
-                              onClick={() => handleFileUpload(base64 => {
+                              onClick={() => handleFileUpload(url => {
                                 const next = [...(ministryData.activities || [])];
-                                next[idx] = { ...next[idx], image: base64 };
+                                next[idx] = { ...next[idx], image: url };
                                 setMinistryData(d => ({ ...d, activities: next }));
-                              })}
+                              }, hasSupabase, supabase)}
                             >
                               Subir Foto
                             </button>
@@ -3533,11 +3583,11 @@ export default function PainelAdm() {
                               type="button"
                               className="pm-photo-btn"
                               style={{ whiteSpace: 'nowrap', padding: '0 12px', height: '38px', marginTop: '0' }}
-                              onClick={() => handleFileUpload(base64 => {
+                              onClick={() => handleFileUpload(url => {
                                 const next = [...(ministryData.gallery || [])];
-                                next[idx] = { ...next[idx], url: base64 };
+                                next[idx] = { ...next[idx], url: url };
                                 setMinistryData(d => ({ ...d, gallery: next }));
-                              })}
+                              }, hasSupabase, supabase)}
                             >
                               Subir Foto
                             </button>
@@ -4403,19 +4453,11 @@ export default function PainelAdm() {
                     />
                   </div>
                   <div style={{ marginTop: 8 }}>
-                    <label style={{ display: 'inline-block', padding: '6px 12px', background: palette.surfaceHover, border: `1px solid ${palette.border}`, borderRadius: 6, fontSize: '.8rem', cursor: 'pointer', color: palette.textMuted }}>
+                    <label 
+                      style={{ display: 'inline-block', padding: '6px 12px', background: palette.surfaceHover, border: `1px solid ${palette.border}`, borderRadius: 6, fontSize: '.8rem', cursor: 'pointer', color: palette.textMuted }}
+                      onClick={() => handleFileUpload(url => setHeaderData(d => ({ ...d, logo: { ...d.logo, icon: url } })), hasSupabase, supabase)}
+                    >
                       📁 Enviar Arquivo
-                      <input type="file" accept="image/*" style={{ display: 'none' }} onChange={e => {
-                        const file = e.target.files[0];
-                        if (!file) return;
-                        if (file.size > 512 * 1024) {
-                          alert('O logo deve ser pequeno (máx 512KB) para não afetar o carregamento do site.');
-                          return;
-                        }
-                        const reader = new FileReader();
-                        reader.onload = ev => setHeaderData(d => ({ ...d, logo: { ...d.logo, icon: ev.target.result } }));
-                        reader.readAsDataURL(file);
-                      }} />
                     </label>
                     <p style={{ fontSize: '.7rem', color: palette.textMuted, marginTop: 4 }}>Esta imagem será usada como Logo principal e como Favicon (ícone do navegador).</p>
                   </div>
@@ -4718,7 +4760,7 @@ export default function PainelAdm() {
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: '.8rem', position: 'relative' }}>
             <div
-              title={hasSupabase ? 'Conectado ao Supabase' : 'Modo offline (navegador)'}
+              title={connStatus.state === 'online' ? 'Conectado ao Supabase' : 'Modo offline (navegador)'}
               style={{
                 display: 'flex',
                 alignItems: 'center',
@@ -4726,8 +4768,8 @@ export default function PainelAdm() {
                 padding: '4px 10px',
                 borderRadius: 8,
                 border: `1px solid ${palette.border}`,
-                background: hasSupabase ? 'rgba(34,197,94,0.1)' : 'rgba(245,158,11,0.1)',
-                color: hasSupabase ? '#22c55e' : '#f59e0b',
+                background: connStatus.state === 'online' ? 'rgba(34,197,94,0.1)' : 'rgba(245,158,11,0.1)',
+                color: connStatus.state === 'online' ? '#22c55e' : '#f59e0b',
                 fontSize: '.8rem',
                 fontWeight: 600
               }}
@@ -4736,24 +4778,17 @@ export default function PainelAdm() {
                 width: 8,
                 height: 8,
                 borderRadius: 999,
-                background: hasSupabase ? '#22c55e' : '#f59e0b'
+                background: connStatus.state === 'online' ? '#22c55e' : '#f59e0b'
               }} />
-              <span>{hasSupabase ? 'Supabase' : 'Offline'}</span>
+              <span>{connStatus.state === 'online' ? 'Supabase' : 'Offline'}</span>
             </div>
             <button
               className="painel-badge-btn"
               title="Testar conexão"
-              onClick={async () => {
-                const res = await testSupabaseConnection();
-                const msgs = [
-                  `Env: ${res.env ? 'OK' : 'FALHA'}`,
-                  `DB: ${res.db ? 'OK' : 'FALHA'}`,
-                  `Storage: ${res.storage ? 'OK' : 'FALHA'}`
-                ];
-                alert(`Teste de Conexão\n${msgs.join('\n')}`);
-              }}
+              onClick={() => checkConnection(true)}
+              disabled={isTestingConn}
             >
-              ✅
+              {isTestingConn ? '⌛' : '✅'}
             </button>
             <button
               className="painel-badge-btn"
@@ -4855,9 +4890,12 @@ export default function PainelAdm() {
                   <div className="pm-photo-preview">
                     {newUser.photo ? <img src={newUser.photo} alt="preview" /> : '👤'}
                   </div>
-                  <label className="pm-photo-btn" style={{ pointerEvents: userMode === 'view' ? 'none' : 'auto', opacity: userMode === 'view' ? .6 : 1 }}>
+                  <label 
+                    className="pm-photo-btn" 
+                    style={{ pointerEvents: userMode === 'view' ? 'none' : 'auto', opacity: userMode === 'view' ? .6 : 1 }}
+                    onClick={() => handleFileUpload(url => setNewUser(u => ({ ...u, photo: url })), hasSupabase, supabase)}
+                  >
                     Selecionar Foto
-                    <input type="file" accept="image/*" onChange={handlePhoto} style={{ display: 'none' }} />
                   </label>
                 </div>
                 <div className="pm-row">
@@ -5006,7 +5044,7 @@ export default function PainelAdm() {
               ) : pageMode === 'home' ? (
                 <>
                   <div style={{ display: 'flex', gap: '.6rem', marginBottom: '.8rem', flexWrap: 'wrap' }}>
-                    {['bemvindo', 'programacao', 'atividades'].map(t => (
+                    {['bemvindo', 'sliders', 'programacao', 'atividades'].map(t => (
                       <button
                         key={t}
                         onClick={() => setHomeTab(t)}
@@ -5017,7 +5055,7 @@ export default function PainelAdm() {
                           background: homeTab === t ? palette.accentGlow : 'transparent'
                         }}
                       >
-                        {t === 'bemvindo' ? 'Boas‑vindas' : t === 'programacao' ? 'Programação' : 'Atividades'}
+                        {t === 'bemvindo' ? 'Boas‑vindas' : t === 'sliders' ? 'Sliders (Fotos)' : t === 'programacao' ? 'Programação' : 'Atividades'}
                       </button>
                     ))}
                   </div>
@@ -5050,6 +5088,94 @@ export default function PainelAdm() {
                           style={{ width: '100%', height: 100, background: palette.bg, color: palette.text, border: `1px solid ${palette.border}`, borderRadius: 10, padding: 12, fontSize: '.9rem', outline: 'none', resize: 'vertical', fontFamily: 'Inter, sans-serif', lineHeight: 1.6 }}
                         />
                       </div>
+                    </div>
+                  )}
+                  {homeTab === 'sliders' && (
+                    <div style={{ padding: '0.2rem' }}>
+                      {(homeData?.carousel || []).map((s, idx) => (
+                        <div key={idx} className="pm-row" style={{ marginBottom: '.8rem' }}>
+                          <div className="pm-field">
+                            <label>Imagem (URL)</label>
+                            <div className="pm-field-wrap" style={{ display: 'flex', gap: '8px' }}>
+                              <div style={{ position: 'relative', flex: 1 }}>
+                                <span className="pm-icon">🖼</span>
+                                <input
+                                  className="pm-input"
+                                  value={s.image || ''}
+                                  onChange={e => {
+                                    const val = e.target.value;
+                                    const next = [...(homeData.carousel || [])];
+                                    next[idx] = { ...next[idx], image: val };
+                                    setHomeData(d => ({ ...d, carousel: next }));
+                                  }}
+                                />
+                              </div>
+                              <button
+                                type="button"
+                                className="pm-photo-btn"
+                                style={{ whiteSpace: 'nowrap', padding: '0 12px', height: '38px', marginTop: '0' }}
+                                onClick={() => handleFileUpload(url => {
+                                  const next = [...(homeData.carousel || [])];
+                                  next[idx] = { ...next[idx], image: url };
+                                  setHomeData(d => ({ ...d, carousel: next }));
+                                }, hasSupabase, supabase)}
+                              >
+                                Subir Foto
+                              </button>
+                            </div>
+                          </div>
+                          {s.image ? <div style={{ marginBottom: '.5rem', gridColumn: '1 / -1' }}><img src={transformImageLink(s.image)} alt="" style={{ width: 120, height: 72, borderRadius: 8, objectFit: 'cover', border: `1px solid ${palette.border}` }} /></div> : null}
+                          <div className="pm-field">
+                            <label>Título</label>
+                            <div className="pm-field-wrap">
+                              <span className="pm-icon">✏️</span>
+                              <input
+                                className="pm-input"
+                                value={s.title || ''}
+                                onChange={e => {
+                                  const next = [...(homeData.carousel || [])];
+                                  next[idx] = { ...next[idx], title: e.target.value };
+                                  setHomeData(d => ({ ...d, carousel: next }));
+                                }}
+                              />
+                            </div>
+                          </div>
+                          <div className="pm-field">
+                            <label>Subtítulo</label>
+                            <div className="pm-field-wrap">
+                              <span className="pm-icon">📝</span>
+                              <input
+                                className="pm-input"
+                                value={s.subtitle || ''}
+                                onChange={e => {
+                                  const next = [...(homeData.carousel || [])];
+                                  next[idx] = { ...next[idx], subtitle: e.target.value };
+                                  setHomeData(d => ({ ...d, carousel: next }));
+                                }}
+                              />
+                            </div>
+                          </div>
+                          <div className="pm-field">
+                            <label style={{ visibility: 'hidden' }}>x</label>
+                            <button
+                              className="btn-deletar"
+                              onClick={() => {
+                                const next = [...(homeData.carousel || [])];
+                                next.splice(idx, 1);
+                                setHomeData(d => ({ ...d, carousel: next }));
+                              }}
+                            >
+                              Remover
+                            </button>
+                          </div>
+                        </div>
+                      ))}
+                      <button
+                        className="pm-add-btn"
+                        onClick={() => setHomeData(d => ({ ...d, carousel: [...(d.carousel || []), { image: '', title: '', subtitle: '' }] }))}
+                      >
+                        + Adicionar Slider (Foto)
+                      </button>
                     </div>
                   )}
                   {homeTab === 'programacao' && (
@@ -5193,7 +5319,7 @@ export default function PainelAdm() {
                                   const next = [...(homeData.activities || [])];
                                   next[idx] = { ...next[idx], image: url };
                                   setHomeData(d => ({ ...d, activities: next }));
-                                })}
+                                }, hasSupabase, supabase)}
                               >
                                 Subir Foto
                               </button>
@@ -5268,10 +5394,27 @@ export default function PainelAdm() {
                       </div>
                       <div className="pm-field">
                         <label>Imagem de Fundo</label>
-                        <div className="pm-field-wrap">
-                          <span className="pm-icon">🖼</span>
-                          <input className="pm-input" value={ministryData?.hero?.image || ''} onChange={e => setMinistryData(d => ({ ...d, hero: { ...d.hero, image: e.target.value } }))} />
+                        <div className="pm-field-wrap" style={{ display: 'flex', gap: '8px' }}>
+                          <div style={{ position: 'relative', flex: 1 }}>
+                            <span className="pm-icon">🖼</span>
+                            <input className="pm-input" value={ministryData?.hero?.image || ''} onChange={e => setMinistryData(d => ({ ...d, hero: { ...d.hero, image: e.target.value } }))} />
+                          </div>
+                          <button
+                            type="button"
+                            className="pm-photo-btn"
+                            style={{ whiteSpace: 'nowrap', padding: '0 12px', height: '38px', marginTop: '0' }}
+                            onClick={() => handleFileUpload(url => {
+                              setMinistryData(d => ({ ...d, hero: { ...d.hero, image: url } }));
+                            }, hasSupabase, supabase)}
+                          >
+                            Subir Foto
+                          </button>
                         </div>
+                        {ministryData?.hero?.image && (
+                          <div style={{ marginTop: '0.5rem' }}>
+                            <img src={transformImageLink(ministryData.hero.image)} alt="Preview Hero" style={{ width: '100%', height: '80px', objectFit: 'cover', borderRadius: '8px', border: `1px solid ${palette.border}` }} />
+                          </div>
+                        )}
                       </div>
                       <div className="pm-field">
                         <label>Título da Seção</label>
@@ -5314,24 +5457,18 @@ export default function PainelAdm() {
                             <div className="pm-photo-preview" style={{ width: 60, height: 60 }}>
                               {p.photo ? <img src={transformImageLink(p.photo)} alt="preview" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} /> : '👤'}
                             </div>
-                            <label className="pm-action-btn" style={{ cursor: 'pointer', padding: '0.4rem 0.8rem', fontSize: '0.8rem', background: palette.accentGlow, color: palette.accentLight, borderRadius: '6px' }}>
+                            <button 
+                              type="button" 
+                              className="pm-action-btn" 
+                              style={{ border: 'none', cursor: 'pointer', padding: '0.4rem 0.8rem', fontSize: '0.8rem', background: palette.accentGlow, color: palette.accentLight, borderRadius: '6px' }}
+                              onClick={() => handleFileUpload(url => {
+                                const next = [...(ministryData.birthdays.people || [])];
+                                next[idx] = { ...next[idx], photo: url };
+                                setMinistryData(d => ({ ...d, birthdays: { ...d.birthdays, people: next } }));
+                              }, hasSupabase, supabase)}
+                            >
                               Alterar Foto
-                              <input type="file" accept="image/*" style={{ display: 'none' }} onChange={(e) => {
-                                const file = e.target.files[0];
-                                if (!file) return;
-                                if (file.size > 1024 * 1024) {
-                                  alert('A imagem é muito grande (limite 1MB).\n\nEscolha uma foto menor para evitar que o site pare de salvar.');
-                                  return;
-                                }
-                                const reader = new FileReader();
-                                reader.onload = ev => {
-                                  const next = [...(ministryData.birthdays.people || [])];
-                                  next[idx] = { ...next[idx], photo: ev.target.result };
-                                  setMinistryData(d => ({ ...d, birthdays: { ...d.birthdays, people: next } }));
-                                };
-                                reader.readAsDataURL(file);
-                              }} />
-                            </label>
+                            </button>
                           </div>
                           <div className="pm-field">
                             <label>Nome</label>
@@ -5410,12 +5547,35 @@ export default function PainelAdm() {
                             </div>
                           </div>
                           <div className="pm-field">
-                            <label>Foto (URL)</label>
-                            <div className="pm-field-wrap">
-                              <span className="pm-icon">🖼</span>
-                              <input className="pm-input" value={m.photo || ''} onChange={e => { const next = [...(ministryData.team || [])]; next[idx] = { ...next[idx], photo: e.target.value }; setMinistryData(d => ({ ...d, team: next })); }} />
+                            <label>Foto do Líder</label>
+                            <div className="pm-field-wrap" style={{ display: 'flex', gap: '8px' }}>
+                              <div style={{ position: 'relative', flex: 1 }}>
+                                <span className="pm-icon">🖼</span>
+                                <input
+                                  className="pm-input"
+                                  value={m.photo || ''}
+                                  onChange={e => {
+                                    const next = [...(ministryData.team || [])];
+                                    next[idx] = { ...next[idx], photo: e.target.value };
+                                    setMinistryData(d => ({ ...d, team: next }));
+                                  }}
+                                />
+                              </div>
+                              <button
+                                type="button"
+                                className="pm-photo-btn"
+                                style={{ whiteSpace: 'nowrap', padding: '0 12px', height: '38px', marginTop: '0' }}
+                                onClick={() => handleFileUpload(url => {
+                                  const next = [...(ministryData.team || [])];
+                                  next[idx] = { ...next[idx], photo: url };
+                                  setMinistryData(d => ({ ...d, team: next }));
+                                }, hasSupabase, supabase)}
+                              >
+                                Subir Foto
+                              </button>
                             </div>
                           </div>
+                          {m.photo ? <div style={{ marginBottom: '.5rem', gridColumn: '1 / -1' }}><img src={transformImageLink(m.photo)} alt="" style={{ width: 60, height: 60, borderRadius: '50%', objectFit: 'cover', border: `1px solid ${palette.border}` }} /></div> : null}
                           <div className="pm-field">
                             <label style={{ visibility: 'hidden' }}>x</label>
                             <button className="btn-deletar" onClick={() => { const next = [...(ministryData.team || [])]; next.splice(idx, 1); setMinistryData(d => ({ ...d, team: next })); }}>Remover</button>
@@ -5471,30 +5631,86 @@ export default function PainelAdm() {
                     </div>
                   )}
                   {ministryTab === 'galeria' && (
-                    <div>
+                    <div style={{ padding: '0.2rem' }}>
                       {(ministryData?.gallery || []).map((g, idx) => (
                         <div key={idx} className="pm-row" style={{ marginBottom: '.8rem' }}>
                           <div className="pm-field">
-                            <label>Imagem (URL)</label>
-                            <div className="pm-field-wrap">
-                              <span className="pm-icon">🖼</span>
-                              <input className="pm-input" value={g.url || ''} onChange={e => { const next = [...(ministryData.gallery || [])]; next[idx] = { ...next[idx], url: e.target.value }; setMinistryData(d => ({ ...d, gallery: next })); }} />
+                            <label>Foto da Galeria</label>
+                            <div className="pm-field-wrap" style={{ display: 'flex', gap: '8px' }}>
+                              <div style={{ position: 'relative', flex: 1 }}>
+                                <span className="pm-icon">🖼</span>
+                                <input
+                                  className="pm-input"
+                                  value={g.url || ''}
+                                  onChange={e => {
+                                    const next = [...(ministryData.gallery || [])];
+                                    next[idx] = { ...next[idx], url: e.target.value };
+                                    setMinistryData(d => ({ ...d, gallery: next }));
+                                  }}
+                                />
+                              </div>
+                              <button
+                                type="button"
+                                className="pm-photo-btn"
+                                style={{ whiteSpace: 'nowrap', padding: '0 12px', height: '38px', marginTop: '0' }}
+                                onClick={() => handleFileUpload(url => {
+                                  const next = [...(ministryData.gallery || [])];
+                                  next[idx] = { ...next[idx], url: url };
+                                  setMinistryData(d => ({ ...d, gallery: next }));
+                                }, hasSupabase, supabase)}
+                              >
+                                Subir Foto
+                              </button>
                             </div>
                           </div>
                           <div className="pm-field">
-                            <label>Legenda</label>
+                            <label>Título / Legenda</label>
                             <div className="pm-field-wrap">
                               <span className="pm-icon">✏️</span>
-                              <input className="pm-input" value={g.caption || ''} onChange={e => { const next = [...(ministryData.gallery || [])]; next[idx] = { ...next[idx], caption: e.target.value }; setMinistryData(d => ({ ...d, gallery: next })); }} />
+                              <input
+                                className="pm-input"
+                                value={g.title || g.caption || ''}
+                                onChange={e => {
+                                  const next = [...(ministryData.gallery || [])];
+                                  next[idx] = { ...next[idx], title: e.target.value, caption: e.target.value };
+                                  setMinistryData(d => ({ ...d, gallery: next }));
+                                }}
+                              />
                             </div>
                           </div>
+                          <div className="pm-field" style={{ gridColumn: '1 / -1' }}>
+                            <label>Texto de Apoio (Opcional)</label>
+                            <textarea
+                              value={g.text || ''}
+                              onChange={e => {
+                                const next = [...(ministryData.gallery || [])];
+                                next[idx] = { ...next[idx], text: e.target.value };
+                                setMinistryData(d => ({ ...d, gallery: next }));
+                              }}
+                              style={{ width: '100%', height: 70, background: palette.bg, color: palette.text, border: `1px solid ${palette.border}`, borderRadius: 10, padding: 12, fontSize: '.9rem', outline: 'none', resize: 'vertical', fontFamily: 'Inter, sans-serif', lineHeight: 1.6 }}
+                            />
+                          </div>
+                          {g.url ? <div style={{ marginBottom: '.5rem', gridColumn: '1 / -1' }}><img src={transformImageLink(g.url)} alt="" style={{ width: 120, height: 72, borderRadius: 8, objectFit: 'cover', border: `1px solid ${palette.border}` }} /></div> : null}
                           <div className="pm-field">
-                            <label style={{ visibility: 'hidden' }}>x</label>
-                            <button className="btn-deletar" onClick={() => { const next = [...(ministryData.gallery || [])]; next.splice(idx, 1); setMinistryData(d => ({ ...d, gallery: next })); }}>Remover</button>
+                            <button
+                              className="btn-deletar"
+                              onClick={() => {
+                                const next = [...(ministryData.gallery || [])];
+                                next.splice(idx, 1);
+                                setMinistryData(d => ({ ...d, gallery: next }));
+                              }}
+                            >
+                              Remover Foto
+                            </button>
                           </div>
                         </div>
                       ))}
-                      <button className="pm-add-btn" onClick={() => setMinistryData(d => ({ ...d, gallery: [...(d.gallery || []), { url: '', caption: '' }] }))}>+ Adicionar Foto</button>
+                      <button
+                        className="pm-add-btn"
+                        onClick={() => setMinistryData(d => ({ ...d, gallery: [...(d.gallery || []), { url: '', title: '', text: '' }] }))}
+                      >
+                        + Adicionar Foto à Galeria
+                      </button>
                     </div>
                   )}
                   {ministryTab === 'testemunhos' && (
@@ -5520,12 +5736,35 @@ export default function PainelAdm() {
                             <textarea value={t.text || ''} onChange={e => { const next = [...(ministryData.testimonials || [])]; next[idx] = { ...next[idx], text: e.target.value }; setMinistryData(d => ({ ...d, testimonials: next })); }} style={{ width: '100%', height: 90, background: palette.bg, color: palette.text, border: `1px solid ${palette.border}`, borderRadius: 10, padding: 12, fontSize: '.9rem', outline: 'none', resize: 'vertical', fontFamily: 'Inter, sans-serif', lineHeight: 1.6 }} />
                           </div>
                           <div className="pm-field">
-                            <label>Foto (URL)</label>
-                            <div className="pm-field-wrap">
-                              <span className="pm-icon">🖼</span>
-                              <input className="pm-input" value={t.photo || ''} onChange={e => { const next = [...(ministryData.testimonials || [])]; next[idx] = { ...next[idx], photo: e.target.value }; setMinistryData(d => ({ ...d, testimonials: next })); }} />
+                            <label>Foto do Autor</label>
+                            <div className="pm-field-wrap" style={{ display: 'flex', gap: '8px' }}>
+                              <div style={{ position: 'relative', flex: 1 }}>
+                                <span className="pm-icon">🖼</span>
+                                <input
+                                  className="pm-input"
+                                  value={t.photo || ''}
+                                  onChange={e => {
+                                    const next = [...(ministryData.testimonials || [])];
+                                    next[idx] = { ...next[idx], photo: e.target.value };
+                                    setMinistryData(d => ({ ...d, testimonials: next }));
+                                  }}
+                                />
+                              </div>
+                              <button
+                                type="button"
+                                className="pm-photo-btn"
+                                style={{ whiteSpace: 'nowrap', padding: '0 12px', height: '38px', marginTop: '0' }}
+                                onClick={() => handleFileUpload(url => {
+                                  const next = [...(ministryData.testimonials || [])];
+                                  next[idx] = { ...next[idx], photo: url };
+                                  setMinistryData(d => ({ ...d, testimonials: next }));
+                                }, hasSupabase, supabase)}
+                              >
+                                Subir Foto
+                              </button>
                             </div>
                           </div>
+                          {t.photo ? <div style={{ marginBottom: '.5rem', gridColumn: '1 / -1' }}><img src={transformImageLink(t.photo)} alt="" style={{ width: 60, height: 60, borderRadius: '50%', objectFit: 'cover', border: `1px solid ${palette.border}` }} /></div> : null}
                           <div className="pm-field">
                             <label style={{ visibility: 'hidden' }}>x</label>
                             <button className="btn-deletar" onClick={() => { const next = [...(ministryData.testimonials || [])]; next.splice(idx, 1); setMinistryData(d => ({ ...d, testimonials: next })); }}>Remover</button>
