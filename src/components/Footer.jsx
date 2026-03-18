@@ -15,8 +15,8 @@ const Footer = () => {
   const loadData = async () => {
     try {
       const [footerRes, headerRes] = await Promise.all([
-        supabase.from('site_settings').select('data').eq('key', 'footer').single(),
-        supabase.from('site_settings').select('data').eq('key', 'header').single()
+        supabase.from('site_settings').select('data').eq('key', 'footer').limit(1).limit(1).single(),
+        supabase.from('site_settings').select('data').eq('key', 'header').limit(1).limit(1).single()
       ]);
 
       const footerFromDb = footerRes.data?.data;

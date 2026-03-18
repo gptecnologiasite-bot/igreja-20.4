@@ -42,7 +42,7 @@ const RecentVideos = ({ limit = 2, category = null }) => {
                 .from('site_settings')
                 .select('data')
                 .eq('key', 'videos')
-                .single();
+                .limit(1).limit(1).single();
             const parsed = parseSafeJson(data?.data);
             let vids = Array.isArray(parsed) ? parsed : [];
             

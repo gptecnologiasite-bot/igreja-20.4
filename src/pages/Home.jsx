@@ -36,11 +36,11 @@ const Home = () => {
       const { data: dbData, error } = await supabase
         .from('site_settings')
         .select('data')
-        .eq('key', 'home')
-        .single();
+        .eq('key', 'home').single();
 
       if (error) {
-        console.warn('[Supabase] Falha ao carregar Home:', error.message);
+        console.error('❌ [Supabase] Falha ao carregar Home:', error.message, error.details);
+        console.log('💡 DICA: Verifique se a tabela site_settings existe e se o RLS está liberado.');
         
         // Fallback para localStorage
         const raw = localStorage.getItem('admac_site_settings:home');
@@ -62,10 +62,13 @@ const Home = () => {
 
       if (dbData && dbData.data) {
         const parsed = parseSafeJson(dbData.data);
-        setData(deepMerge(INITIAL_HOME_DATA, parsed));
-        
-        // Cacheia para uso offline futuro
-        localStorage.setItem('admac_site_settings:home', JSON.stringify(parsed));
+        if (parsed && typeof parsed === 'object') {
+          setData(deepMerge(INITIAL_HOME_DATA, parsed));
+          // Cacheia para uso offline futuro
+          localStorage.setItem('admac_site_settings:home', JSON.stringify(parsed));
+        } else {
+          console.warn('⚠️ [Supabase] Dados da Home vieram em formato inválido ou vazios.');
+        }
       }
     } catch (err) {
       console.error('[App] Erro crítico no loadData:', err);
@@ -93,8 +96,7 @@ const Home = () => {
           const { data: dbData } = await supabase
             .from('site_settings')
             .select('data')
-            .eq('key', `ministry_${id}`)
-            .single();
+            .eq('key', `ministry_${id}`).single();
 
           const raw = dbData?.data;
           const d = parseSafeJson(raw);
@@ -339,7 +341,7 @@ const Home = () => {
                   className="card-img-top"
                   src={transformImageLink(a.image) || '/imagem/admac.png'}
                   alt={a.title || 'Atividade'}
-                  style={{ width: '100%', aspectRatio: '16 / 9', objectFit: 'contain', background: '#0b0b0b', display: 'block' }}
+                  style={{ width: '100%', aspectRatio: '16 / 9', objectFit: 'contain', background: '#000', display: 'block' }}
                   onError={(e) => { e.currentTarget.src = '/imagem/admac.png'; }}
                 />
                 <div className="card-body" style={{ padding: '1rem' }}>

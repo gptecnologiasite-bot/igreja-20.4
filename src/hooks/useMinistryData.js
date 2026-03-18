@@ -18,12 +18,12 @@ export const useMinistryData = (ministryId) => {
                     .from('site_settings')
                     .select('data')
                     .eq('key', `ministry_${ministryId}`)
-                    .single();
+                    .limit(1).limit(1).single();
                 
                 if (!active) return;
 
                 if (error) {
-                    console.warn(`[Supabase] Erro ao carregar ministério ${ministryId}:`, error.message);
+                    console.error(`❌ [Supabase] Erro ao carregar ministério ${ministryId}:`, error.message, error.details || '');
                     
                     // Fallback para localStorage
                     const raw = localStorage.getItem(`admac_site_settings:ministry_${ministryId}`);
@@ -43,9 +43,14 @@ export const useMinistryData = (ministryId) => {
 
                 if (dbData && dbData.data) {
                     const parsed = parseSafeJson(dbData.data);
-                    setData(deepMerge(defaultData, parsed));
-                    // Cacheia para uso offline
-                    localStorage.setItem(`admac_site_settings:ministry_${ministryId}`, JSON.stringify(parsed));
+                    if (parsed && typeof parsed === 'object') {
+                        setData(deepMerge(defaultData, parsed));
+                        // Cacheia para uso offline
+                        localStorage.setItem(`admac_site_settings:ministry_${ministryId}`, JSON.stringify(parsed));
+                    } else {
+                        console.warn(`⚠️ [Supabase] Dados de ${ministryId} vieram vazios ou inválidos.`);
+                        setData(defaultData);
+                    }
                 } else {
                     setData(defaultData);
                 }
@@ -61,15 +66,16 @@ export const useMinistryData = (ministryId) => {
 
     // Sincronização reativa (Realtime fallback)
     usePageUpdate(`ministry_${ministryId}`, () => {
-        let active = true;
-        const run = async () => {
+        let activeCallback = true;
+        const runUpdate = async () => {
             try {
                 const { data: dbData, error } = await supabase
                     .from('site_settings')
                     .select('data')
                     .eq('key', `ministry_${ministryId}`)
-                    .single();
-                if (!active) return;
+                    .limit(1).limit(1).single();
+                
+                if (!activeCallback) return;
                 
                 if (error) {
                     console.warn(`[Realtime Update] Erro ao sincronizar ${ministryId}:`, error.message);
@@ -78,15 +84,20 @@ export const useMinistryData = (ministryId) => {
 
                 if (dbData?.data) {
                     const parsed = parseSafeJson(dbData.data);
-                    setData(deepMerge(defaultData, parsed));
+                    setData(prev => {
+                        const merged = deepMerge(defaultData, parsed);
+                        // Só atualiza se for diferente para evitar loops ou re-renders desnecessários
+                        if (JSON.stringify(prev) === JSON.stringify(merged)) return prev;
+                        return merged;
+                    });
                     localStorage.setItem(`admac_site_settings:ministry_${ministryId}`, JSON.stringify(parsed));
                 }
             } catch (err) {
                 console.error(`[Realtime Update] Exceção em ${ministryId}:`, err);
             }
         };
-        run();
-        return () => { active = false; };
+        runUpdate();
+        return () => { activeCallback = false; };
     });
 
     return [data, setData];
