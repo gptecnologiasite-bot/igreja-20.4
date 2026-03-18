@@ -276,6 +276,7 @@ section {
   font-style: italic;
   margin-bottom: 2.5rem;
   color: rgba(255, 255, 255, 0.9);
+  white-space: pre-wrap;
 }
 
 .testimonial-author {
