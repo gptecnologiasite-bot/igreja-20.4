@@ -1828,7 +1828,7 @@ export default function PainelAdm() {
       return;
     }
 
-    const isProtected = ['Home', 'Login', 'Dashboard', 'PainelAdm', 'PainelApp'].some(p => p.toLowerCase() === name.toLowerCase());
+    const isProtected = ['Login', 'Dashboard', 'PainelAdm', 'PainelApp'].some(p => p.toLowerCase() === name.toLowerCase());
     if (isProtected) {
       alert('Esta é uma página protegida do sistema. Você não pode excluí-la.');
       return;
@@ -4001,7 +4001,7 @@ export default function PainelAdm() {
                     <tr><td colSpan="5" style={{ padding: '1rem', color: '#7c82a0' }}>Carregando...</td></tr>
                   )}
                   {!pagesLoading && pages.map(p => {
-                    const protectedPages = ['Home', 'Login', 'Dashboard', 'PainelAdm', 'PainelApp'];
+                    const protectedPages = ['Login', 'Dashboard', 'PainelAdm', 'PainelApp'];
                     const isProtected = protectedPages.some(name => name.toLowerCase() === p.name.toLowerCase());
 
                     return (
@@ -4310,10 +4310,10 @@ export default function PainelAdm() {
                 <tbody>
                   {logs.length > 0 ? logs.map(l => (
                     <tr key={l.id}>
-                      <td style={{ whiteSpace: 'nowrap' }}>{new Date(l.date).toLocaleString('pt-BR')}</td>
+                      <td style={{ whiteSpace: 'nowrap' }}>{new Date(l.created_at || l.date).toLocaleString('pt-BR')}</td>
                       <td><strong>{l.action}</strong></td>
-                      <td>{l.user || 'Sistema'}</td>
-                      <td><span style={{ fontSize: '.8rem', color: palette.textMuted }}>📍 {l.location || 'Desconhecido'}</span></td>
+                      <td>{l.user_email || l.user || 'Sistema'}</td>
+                      <td><span style={{ fontSize: '.8rem', color: palette.textMuted }}>📍 {l.location || (l.action === 'visitor_access' ? l.user_email : 'Desconhecido')}</span></td>
                       <td style={{ fontSize: '.8rem', color: palette.textMuted }}>{l.details || '—'}</td>
                     </tr>
                   )) : (

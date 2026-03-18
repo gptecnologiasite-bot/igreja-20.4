@@ -153,8 +153,8 @@ const Header = ({ theme, toggleTheme }) => {
       const finalLoc = location || locations[Math.floor(Math.random() * locations.length)];
       const newNotif = {
         id: Date.now(),
-        title: 'Novos Visitantes',
-        text: `Neste momento há 1 pessoas de ${finalLoc} visitando o site. Clique para saber mais.`,
+        title: 'Novo Visitante',
+        text: `Neste momento há 1 pessoa de ${finalLoc} visitando o site. Clique para saber mais.`,
         time: 'Agora',
         read: false
       };
