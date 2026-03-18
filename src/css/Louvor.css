@@ -270,6 +270,145 @@
   font-weight: 600;
 }
 
+/* Gallery Section */
+.louvor-page .gallery-section {
+  padding: 4rem 1rem;
+  background: var(--bg-color);
+}
+
+.louvor-page .gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.louvor-page .gallery-item {
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  aspect-ratio: 4/3;
+  cursor: pointer;
+  background-color: #121212;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.louvor-page .gallery-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  transition: transform 0.3s;
+}
+
+.louvor-page .gallery-item:hover img {
+  transform: scale(1.1);
+}
+
+.louvor-page .gallery-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: linear-gradient(to top, rgba(0,0,0,0.8), transparent);
+  padding: 1rem;
+  color: #fff;
+  font-weight: 600;
+  transform: translateY(100%);
+  transition: transform 0.3s;
+}
+
+.louvor-page .gallery-item:hover .gallery-overlay {
+  transform: translateY(0);
+}
+
+.louvor-page .empty-gallery {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 3rem;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 12px;
+  color: var(--text-muted);
+  border: 1px dashed rgba(255, 255, 255, 0.1);
+}
+
+/* Birthdays Section */
+.louvor-page .birthdays-section {
+  padding: 4rem 1rem;
+  background: #1a1a1a;
+}
+
+.louvor-page .birthdays-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 2rem;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.louvor-page .birthday-card {
+  background: #2a2a2a;
+  padding: 1.5rem;
+  border-radius: 12px;
+  text-align: center;
+  transition: transform 0.3s;
+  border: 1px solid rgba(155, 89, 182, 0.1);
+}
+
+.louvor-page .birthday-card:hover {
+  transform: translateY(-5px);
+  border-color: #9b59b6;
+}
+
+.louvor-page .birthday-photo-wrap {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  margin: 0 auto 1rem;
+}
+
+.louvor-page .birthday-photo-wrap img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #9b59b6;
+}
+
+.louvor-page .birthday-badge {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  background: #9b59b6;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.9rem;
+  border: 2px solid #2a2a2a;
+}
+
+.louvor-page .birthday-card h3 {
+  color: var(--text-color);
+  font-size: 1.1rem;
+  margin-bottom: 0.25rem;
+}
+
+.louvor-page .birthday-date {
+  color: #9b59b6;
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.louvor-page .empty-birthdays {
+  grid-column: 1 / -1;
+  text-align: center;
+  color: var(--text-muted);
+  padding: 2rem;
+}
+
 /* Testimonial Form Section */
 .louvor-page .testimonial-form-section {
   padding: 4rem 1rem;
@@ -433,6 +572,10 @@
   }
   .louvor-page .section-header h2 {
     font-size: 2rem;
+  }
+  .louvor-page .gallery-grid {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 1rem;
   }
   .louvor-page .louvor-cta h2 {
     font-size: 2rem;
