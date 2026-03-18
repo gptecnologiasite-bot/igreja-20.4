@@ -327,7 +327,7 @@ const handleFileUpload = (callback, hasSupabase, supabase) => {
   input.click();
 };
 
-function HomeAnivEditor({ palette, ministryOptions, handleFileUpload, hasSupabase, supabase }) {
+function HomeAnivEditor({ palette, ministryOptions, handleFileUpload, hasSupabase, supabase, currentUser }) {
   const [selMin, setSelMin] = React.useState(ministryOptions[0]?.value || 'jovens');
   const [bData, setBData] = React.useState(null);
   const [saving, setSaving] = React.useState(false);
@@ -339,7 +339,8 @@ function HomeAnivEditor({ palette, ministryOptions, handleFileUpload, hasSupabas
       .select('data')
       .eq('key', `ministry_${id}`)
       .single();
-    return dbData?.data?.birthdays || { title: '', text: '', videoUrl: '', people: [] };
+    const parsed = parseSafeJson(dbData?.data);
+    return parsed?.birthdays || { title: '', text: '', videoUrl: '', people: [] };
   };
 
   React.useEffect(() => {
@@ -358,7 +359,7 @@ function HomeAnivEditor({ palette, ministryOptions, handleFileUpload, hasSupabas
         .eq('key', `ministry_${selMin}`)
         .single();
 
-      const full = dbData?.data || {};
+      const full = parseSafeJson(dbData?.data) || {};
       await supabase.from('site_settings').upsert({
         key: `ministry_${selMin}`,
         data: { ...full, birthdays: bData }
@@ -937,10 +938,8 @@ export default function PainelAdm() {
           role: newUser.role,
           status: newUser.status,
           location: newUser.location,
-          photo: newUser.photo,
-          since: new Date().toLocaleDateString('pt-BR')
+          photo: newUser.photo
         });
-        if (dbError) throw dbError;
 
         alert('Usuário cadastrado com sucesso!');
       } else {
@@ -1869,8 +1868,16 @@ export default function PainelAdm() {
         <div className="painel-login-wrap">
           <div className="painel-login-card">
             <div className="painel-login-logo">
-              <div className="painel-login-logo-icon">⛪</div>
-              <span>ADMAC — Painel</span>
+              <div className="painel-login-logo-icon">
+                {headerData?.logo?.icon ? (
+                  headerData.logo.icon.includes('http') || headerData.logo.icon.includes('data:image') ? (
+                    <img src={headerData.logo.icon} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                  ) : (
+                    <span style={{ fontSize: '1.4rem' }}>{headerData.logo.icon}</span>
+                  )
+                ) : '⛪'}
+              </div>
+              <span>{headerData?.logo?.text || 'ADMAC'} — Painel</span>
             </div>
             <h2>Bem-vindo</h2>
             <p>Faça login para acessar o painel administrativo.</p>
@@ -1923,6 +1930,17 @@ export default function PainelAdm() {
                 </div>
                 <form onSubmit={saveUser}>
                   <div className="pm-body">
+                    <div className="pm-photo-wrap">
+                      <div className="pm-photo-preview">
+                        {newUser.photo ? <img src={newUser.photo} alt="preview" /> : '👤'}
+                      </div>
+                      <label 
+                        className="pm-photo-btn" 
+                        onClick={() => handleFileUpload(url => setNewUser(u => ({ ...u, photo: url })), hasSupabase, supabase)}
+                      >
+                        Selecionar Foto
+                      </label>
+                    </div>
                     <div className="pm-row">
                       <div className="pm-field">
                         <label>Nome</label>
@@ -2961,6 +2979,7 @@ export default function PainelAdm() {
                           handleFileUpload={handleFileUpload}
                           hasSupabase={hasSupabase}
                           supabase={supabase}
+                          currentUser={currentUser}
                         />
                       );
                     })() : (
@@ -4389,7 +4408,7 @@ export default function PainelAdm() {
                           <span className="status-dot" /> {u.status}
                         </span>
                       </td>
-                      <td>{u.since}</td>
+                      <td>{u.since || (u.created_at ? new Date(u.created_at).toLocaleDateString('pt-BR') : '—')}</td>
                       <td style={{ display: 'flex', gap: 8 }}>
                         <button className="btn-ver" onClick={() => openViewUser(u)}>👁 Ver</button>
                         <button className="btn-editar" onClick={() => openEditUser(u)}>✏️ Editar</button>
