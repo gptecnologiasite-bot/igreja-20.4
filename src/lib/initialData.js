@@ -131,7 +131,12 @@ export const INITIAL_MINISTRIES_DATA = {
       text: 'Parabéns aos nossos adoradores aniversariantes!',
       videoUrl: '',
       people: []
-    }
+    },
+    gallery: [
+      { url: 'https://images.unsplash.com/photo-1510915361894-db8b60106cb1?auto=format&fit=crop&q=80&w=800', caption: 'Ensaio Geral' },
+      { url: 'https://images.unsplash.com/photo-1514525253361-bee8a187499b?auto=format&fit=crop&q=80&w=800', caption: 'Culto de domingo' },
+      { url: 'https://images.unsplash.com/photo-1516280440614-37939bbacd81?auto=format&fit=crop&q=80&w=800', caption: 'Noite de Adoração' },
+    ]
   },
   jovens: {
     hero: { title: 'Ministério de Jovens', subtitle: 'Jovens apaixonados por Deus', verse: '"Ninguém despreze a tua mocidade..." - 1 Timóteo 4:12', image: 'https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=1200&h=400&fit=crop' },

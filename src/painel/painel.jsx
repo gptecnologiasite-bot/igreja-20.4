@@ -5353,20 +5353,29 @@ export default function PainelAdm() {
               ) : pageMode === 'ministry' ? (
                 <>
                   <div style={{ display: 'flex', gap: '.6rem', marginBottom: '.8rem', flexWrap: 'wrap' }}>
-                    {['geral', 'equipe', 'programacao', 'galeria', 'testemunhos', 'aniversariantes'].map(t => (
-                      <button
-                        key={t}
-                        onClick={() => setMinistryTab(t)}
-                        className="painel-action-btn"
-                        style={{
-                          borderColor: ministryTab === t ? palette.accent : palette.border,
-                          color: ministryTab === t ? palette.accentLight : palette.textMuted,
-                          background: ministryTab === t ? palette.accentGlow : 'transparent'
-                        }}
-                      >
-                        {t === 'geral' ? 'Geral' : t === 'equipe' ? 'Equipe' : t === 'programacao' ? 'Programação' : t === 'galeria' ? 'Galeria' : t === 'aniversariantes' ? 'Aniversariantes' : 'Testemunhos'}
-                      </button>
-                    ))}
+                    {['geral', 'equipe', 'programacao', 'galeria', 'testemunhos', 'aniversariantes'].map(t => {
+                      // Define which tabs are available for each ministry
+                      const isGalleryAllowed = ['jovens', 'mulheres', 'homens', 'louvor', 'kids', 'ebd', 'lares', 'social', 'retiro', 'intercessao', 'missoes', 'midia'].includes(ministryId);
+                      const isBirthdaysAllowed = ['jovens', 'mulheres', 'homens', 'louvor', 'kids', 'ebd', 'lares', 'social', 'retiro', 'intercessao', 'missoes', 'midia'].includes(ministryId);
+                      
+                      if (t === 'galeria' && !isGalleryAllowed) return null;
+                      if (t === 'aniversariantes' && !isBirthdaysAllowed) return null;
+                      
+                      return (
+                        <button
+                          key={t}
+                          onClick={() => setMinistryTab(t)}
+                          className="painel-action-btn"
+                          style={{
+                            borderColor: ministryTab === t ? palette.accent : palette.border,
+                            color: ministryTab === t ? palette.accentLight : palette.textMuted,
+                            background: ministryTab === t ? palette.accentGlow : 'transparent'
+                          }}
+                        >
+                          {t === 'geral' ? 'Geral' : t === 'equipe' ? 'Equipe' : t === 'programacao' ? 'Programação' : t === 'galeria' ? 'Galeria' : t === 'aniversariantes' ? 'Aniversariantes' : 'Testemunhos'}
+                        </button>
+                      );
+                    })}
                   </div>
                   {ministryTab === 'geral' && (
                     <div>
