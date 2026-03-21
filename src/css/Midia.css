@@ -435,7 +435,7 @@ section {
 /* --- 6. GALLERY --- */
 .gallery-main {
   position: relative;
-  height: 700px;
+  height: 500px;
   border-radius: 48px;
   overflow: hidden;
   margin-bottom: 3rem;
@@ -446,12 +446,13 @@ section {
 .gallery-slide {
   position: absolute;
   inset: 0;
+  background: rgba(0, 0, 0, 0.4); /* Fundo para quando a imagem não preenche o quadro */
 }
 
 .gallery-slide img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain; /* Agora a imagem cabe inteira no quadro sem cortar */
   cursor: zoom-in;
 }
 
@@ -465,7 +466,7 @@ section {
 }
 
 .gallery-info p {
-  font-size: 1.8rem;
+  font-size: clamp(1.2rem, 3vw, 1.8rem);
   font-weight: 700;
   letter-spacing: -0.5px;
 }
@@ -529,7 +530,8 @@ section {
 .thumb-item img {
   width: 100%;
   height: 100%;
-  object-fit: cover;
+  object-fit: contain; /* Miniaturas também mostram a imagem inteira */
+  background: rgba(255, 255, 255, 0.05);
 }
 
 /* --- 7. TEAM --- */
@@ -814,6 +816,10 @@ section {
     justify-items: center;
     gap: 1.5rem;
   }
+  .gallery-main {
+    height: 400px;
+    border-radius: 32px;
+  }
 }
 
 @media (max-width: 768px) {
@@ -822,7 +828,8 @@ section {
     gap: 1rem;
   }
   .gallery-main {
-    height: 450px;
+    height: 300px;
+    border-radius: 24px;
   }
   .footer-content {
     flex-direction: column;
@@ -834,6 +841,31 @@ section {
   }
   .news-grid {
     grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .gallery-main {
+    height: 220px;
+    border-radius: 16px;
+    margin-bottom: 1.5rem;
+  }
+  .carousel-btn {
+    width: 40px;
+    height: 40px;
+  }
+  .carousel-btn.prev {
+    left: 1rem;
+  }
+  .carousel-btn.next {
+    right: 1rem;
+  }
+  .thumb-item {
+    width: 60px;
+    height: 45px;
+  }
+  .gallery-info {
+    padding: 3rem 2rem 2rem;
   }
 }
 
