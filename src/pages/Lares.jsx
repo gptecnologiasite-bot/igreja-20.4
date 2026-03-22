@@ -154,7 +154,7 @@ const Lares = () => {
                 </div>
                 <p className="testimonial-text">"{testimonial.text}"</p>
                 <div className="testimonial-author">
-                  <img src={transformImageLink(testimonial.photo)} alt={testimonial.name} />
+                  <img src={transformImageLink(testimonial?.photo) || `https://ui-avatars.com/api/?name=${encodeURIComponent(testimonial?.name || 'Membro')}&background=random`} alt={testimonial?.name} />
                   <strong>{testimonial.name}</strong>
                 </div>
               </div>

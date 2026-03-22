@@ -588,5 +588,6 @@ export const INITIAL_PAGES_DATA = [
   { id: 'midia', name: 'Midia', path: '/midia', status: 'online', type: 'system' },
   { id: 'missoes', name: 'Missões', path: '/missoes', status: 'online', type: 'system' },
   { id: 'intercessao', name: 'Intercessão', path: '/intercessao', status: 'online', type: 'system' },
+  { id: 'contact', name: 'Contato', path: '/contato', status: 'online', type: 'system' }
 ];
 

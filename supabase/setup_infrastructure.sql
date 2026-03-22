@@ -32,6 +32,7 @@ CREATE TABLE IF NOT EXISTS public.site_messages (
   phone TEXT,
   subject TEXT,
   message TEXT,
+  photo_url TEXT,
   category TEXT DEFAULT 'geral',
   status TEXT DEFAULT 'new',
   created_at TIMESTAMPTZ DEFAULT now()
