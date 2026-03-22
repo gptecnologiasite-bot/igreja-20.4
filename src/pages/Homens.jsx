@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { transformImageLink } from '../lib/dbUtils';
-import { Shield, Calendar, Clock, Users, Camera, MessageSquare, Send, Heart, MapPin, Star, Play } from 'lucide-react';
+import { supabase } from '../lib/supabase';
+import { Shield, Calendar, Clock, Users, Camera, MessageSquare, Send, Heart, MapPin, Star, Play, Gift } from 'lucide-react';
 import { useMinistryData } from '../hooks/useMinistryData';
 import '../css/Homens.css';
 
@@ -13,6 +14,8 @@ const Homens = () => {
     city: '',
     message: ''
   });
+  const [photoFile, setPhotoFile] = useState(null);
+  const [uploading, setUploading] = useState(false);
 
   const [data] = useMinistryData('homens');
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -25,6 +28,59 @@ const Homens = () => {
       return () => clearInterval(timer);
     }
   }, [data.gallery]);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setUploading(true);
+    let photoUrl = '';
+
+    if (photoFile) {
+      try {
+        const fileExt = photoFile.name.split('.').pop();
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+        const filePath = `uploads/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('site-images')
+          .upload(filePath, photoFile);
+        
+        if (!uploadError) {
+          const { data: publicUrlData } = supabase.storage
+            .from('site-images')
+            .getPublicUrl(filePath);
+          if (publicUrlData) photoUrl = publicUrlData.publicUrl;
+        }
+      } catch (err) {
+        console.error('Error uploading photo:', err);
+      }
+    }
+
+    const payload = {
+      type: 'testimonial_submission',
+      category: 'homens',
+      ...testimonial,
+      photo_url: photoUrl,
+      created_at: new Date().toISOString()
+    };
+
+    try {
+      const { error } = await supabase.from('site_messages').insert(payload);
+      if (error) throw error;
+      alert('Testemunho enviado com sucesso! Obrigado por compartilhar.');
+      setTestimonial({ name: '', age: '', email: '', phone: '', city: '', message: '' });
+      setPhotoFile(null);
+    } catch (err) {
+      console.error('Error sending:', err);
+      const backups = JSON.parse(localStorage.getItem('admac_messages_backup') || '[]');
+      backups.push(payload);
+      localStorage.setItem('admac_messages_backup', JSON.stringify(backups));
+      alert('Testemunho enviado com sucesso! (Salvo localmente).');
+      setTestimonial({ name: '', age: '', email: '', phone: '', city: '', message: '' });
+      setPhotoFile(null);
+    } finally {
+      setUploading(false);
+    }
+  };
 
   return (
     <div className="homens-page">
@@ -169,6 +225,93 @@ const Homens = () => {
         </div>
       </section>
 
+      {/* Birthdays Section */}
+      {data.birthdays && (
+        <section className="birthdays-section">
+          <div className="container">
+            <div className="section-header">
+              <Gift size={32} />
+              <h2>{data.birthdays.title || 'Aniversariantes do Mês'}</h2>
+            </div>
+            <p className="section-subtitle">{data.birthdays.text || 'Celebramos a vida dos nossos irmãos!'}</p>
+
+            {data.birthdays.videoUrl && (
+              <div className="birthday-video-wrapper" style={{ marginBottom: '2rem', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }}>
+                {data.birthdays.videoUrl.includes('youtube.com') || data.birthdays.videoUrl.includes('youtu.be') ? (
+                  <iframe
+                    width="100%"
+                    height="400"
+                    src={data.birthdays.videoUrl.replace('watch?v=', 'embed/').split('&')[0]}
+                    title="Vídeo de Aniversariantes"
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  ></iframe>
+                ) : (
+                  <video 
+                    controls 
+                    width="100%" 
+                    src={transformImageLink(data.birthdays.videoUrl)}
+                  />
+                )}
+              </div>
+            )}
+
+            <div className="birthdays-grid">
+              {(data.birthdays.people || []).map((person, index) => (
+                <div key={index} className="birthday-card">
+                  <div className="birthday-photo-wrap">
+                    <img 
+                      src={transformImageLink(person.photo || `https://ui-avatars.com/api/?name=${encodeURIComponent(person.name)}&background=3498db&color=fff`)} 
+                      alt={person.name} 
+                    />
+                    <div className="birthday-badge">🎂</div>
+                  </div>
+                  <h3>{person.name}</h3>
+                  <span className="birthday-date">{person.date}</span>
+                </div>
+              ))}
+              {(!data.birthdays.people || data.birthdays.people.length === 0) && (
+                <div className="empty-birthdays">
+                  <p>Nenhum aniversariante este mês.</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Testimonials Display */}
+      <section className="testimonials-display-section">
+        <div className="container">
+          <h2>Testemunhos</h2>
+          <p className="section-subtitle">Veja como Deus tem fortalecido nossos homens</p>
+
+          <div className="testimonials-grid">
+            {data.testimonials?.map((testimonial, index) => (
+              <div key={index} className="testimonial-card">
+                <div className="stars">
+                  {[...Array(5)].map((_, i) => (
+                    <Star key={i} size={16} fill="#64748b" color="#64748b" />
+                  ))}
+                </div>
+                <p className="testimonial-text">"{testimonial.text}"</p>
+                <div className="testimonial-author">
+                  <img src={transformImageLink(testimonial?.photo) || `https://ui-avatars.com/api/?name=${encodeURIComponent(testimonial?.name || 'Homem')}&background=random`} alt={testimonial?.name} />
+                  <div>
+                    <strong>{testimonial.name}</strong>
+                    {testimonial.age && <span>{testimonial.age} anos</span>}
+                  </div>
+                </div>
+              </div>
+            ))}
+            {(!data.testimonials || data.testimonials.length === 0) && (
+              <p style={{ textAlign: 'center', color: 'var(--text-muted)', gridColumn: '1 / -1', padding: '2rem' }}>Nenhum testemunho publicado ainda. Seja o primeiro!</p>
+            )}
+          </div>
+        </div>
+      </section>
+
       <section className="testimonial-form-section">
         <div className="container">
           <div className="section-header">
@@ -177,7 +320,7 @@ const Homens = () => {
           </div>
           <p className="section-subtitle">Conte como Deus tem te fortalecido neste ministério</p>
           <div className="form-wrapper">
-            <form className="testimonial-form" onSubmit={(e) => { e.preventDefault(); alert('Obrigado por compartilhar!'); }}>
+            <form className="testimonial-form" onSubmit={handleSubmit}>
               <div className="form-group">
                 <label>Nome</label>
                 <input type="text" value={testimonial.name} onChange={(e) => setTestimonial({ ...testimonial, name: e.target.value })} />
@@ -198,12 +341,34 @@ const Homens = () => {
                 <label>Cidade</label>
                 <input type="text" value={testimonial.city} onChange={(e) => setTestimonial({ ...testimonial, city: e.target.value })} />
               </div>
+
+              <div className="form-group">
+                <label htmlFor="photo">Sua Foto (Opcional)</label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '0.5rem' }}>
+                  <label style={{ cursor: 'pointer', padding: '0.6rem 1.2rem', background: 'var(--surface-color)', borderRadius: '8px', border: '1px dashed var(--border-color)', display: 'inline-block', fontSize: '0.9rem', color: 'var(--text-color)', transition: 'all 0.2s ease' }}>
+                    {photoFile ? 'Trocar Foto' : 'Escolher Foto'}
+                    <input
+                      type="file"
+                      id="photo"
+                      accept="image/*"
+                      style={{ display: 'none' }}
+                      onChange={(e) => {
+                        if (e.target.files && e.target.files[0]) {
+                          setPhotoFile(e.target.files[0]);
+                        }
+                      }}
+                    />
+                  </label>
+                  {photoFile && <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{photoFile.name}</span>}
+                </div>
+              </div>
+
               <div className="form-group">
                 <label>Mensagem</label>
                 <textarea value={testimonial.message} onChange={(e) => setTestimonial({ ...testimonial, message: e.target.value })} rows={4} />
               </div>
-              <button className="submit-btn" type="submit">
-                <Send size={16} /> Enviar
+              <button className="submit-btn" type="submit" disabled={uploading}>
+                <Send size={16} /> {uploading ? 'Enviando...' : 'Enviar'}
               </button>
             </form>
           </div>

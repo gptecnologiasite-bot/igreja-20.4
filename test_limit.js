@@ -1,0 +1,21 @@
+import { createClient } from '@supabase/supabase-js';
+
+const supabaseUrl = 'https://yfghllidghmgywotqyok.supabase.co';
+const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InlmZ2hsbGlkZ2htZ3l3b3RxeW9rIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM0NDAxMzMsImV4cCI6MjA4OTAxNjEzM30.N5IWhBnWgxv9rEtWPVz7oYrluaJsmHsT2QMA72k6ck8';
+const supabase = createClient(supabaseUrl, supabaseKey);
+
+async function checkData() {
+  const { data, error } = await supabase
+    .from('site_settings')
+    .select('key')
+    .eq('key', 'ministry_mulheres')
+    .limit(1).limit(1).single();
+    
+  if (error) {
+    console.error('Error:', error);
+  } else {
+    console.log('Success:', data);
+  }
+}
+
+checkData();

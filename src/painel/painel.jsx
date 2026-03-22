@@ -650,6 +650,7 @@ export default function PainelAdm() {
     { id: 'midia', label: 'Mídia' },
     { id: 'revista', label: 'Revista' },
     { id: 'sobre', label: 'Sobre' },
+    { id: 'contact', label: 'Contato' },
   ];
   const pageToMinistry = {
     'Home': 'home',
@@ -797,14 +798,14 @@ export default function PainelAdm() {
         .eq('key', key)
         .single();
 
-      const mData = dbData?.data || {};
+      const mData = parseSafeJson(dbData?.data) || {};
       const testimonials = mData.testimonials || [];
 
       const newTestimonial = {
         name: msg.name,
         text: msg.message,
-        photo: '',
-        age: ''
+        photo: msg.photo_url || '',
+        age: msg.age || ''
       };
 
       const updated = {
@@ -834,7 +835,25 @@ export default function PainelAdm() {
   };
 
   useEffect(() => {
-    if (activePage === 'mensagens') loadSiteMessages();
+    if (activePage === 'mensagens') {
+      loadSiteMessages();
+      
+      // Realtime subscription para novas mensagens
+      const channel = supabase
+        .channel('public:site_messages')
+        .on(
+          'postgres_changes',
+          { event: '*', schema: 'public', table: 'site_messages' },
+          () => {
+            loadSiteMessages();
+          }
+        )
+        .subscribe();
+        
+      return () => {
+        supabase.removeChannel(channel);
+      };
+    }
   }, [activePage]);
 
   // Header and Footer Data for Configs Tab
@@ -2158,7 +2177,7 @@ export default function PainelAdm() {
       return (
         <div className="painel-card">
           <div className="painel-table-bar">
-            <h3 style={{ fontSize: '.95rem', fontWeight: 600 }}>Mensagens & Testemunhos Recebidos Boris</h3>
+            <h3 style={{ fontSize: '.95rem', fontWeight: 600 }}>Mensagens & Testemunhos Recebidos</h3>
             <button className="painel-action-btn" onClick={loadSiteMessages}>🔄 Atualizar</button>
           </div>
 
@@ -2187,7 +2206,16 @@ export default function PainelAdm() {
                       <td>
                         <span className="status-pill active" style={{ fontSize: '.65rem', textTransform: 'uppercase' }}>{m.category}</span>
                       </td>
-                      <td style={{ maxWidth: 300, fontSize: '.8rem', lineHeight: 1.4 }}>{m.message}</td>
+                      <td style={{ maxWidth: 300, fontSize: '.8rem', lineHeight: 1.4 }}>
+                        {m.message}
+                        {m.photo_url && (
+                          <div style={{ marginTop: '0.5rem' }}>
+                            <a href={m.photo_url} target="_blank" rel="noreferrer" style={{ color: palette.accent, textDecoration: 'none', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                              <span>📷</span> Ver Foto Anexa
+                            </a>
+                          </div>
+                        )}
+                      </td>
                       <td>
                         <div style={{ display: 'flex', gap: 6 }}>
                           {m.type === 'testimonial_submission' && (
@@ -2964,6 +2992,7 @@ export default function PainelAdm() {
                   <div style={{ padding: '1.2rem' }}>
                     {ministryId === 'home' ? (() => {
                       const MINISTRY_OPTIONS = [
+                        { value: 'home', label: 'Página Principal' },
                         { value: 'kids', label: 'Kids' },
                         { value: 'louvor', label: 'Louvor' },
                         { value: 'jovens', label: 'Jovens' },
@@ -2971,6 +3000,14 @@ export default function PainelAdm() {
                         { value: 'homens', label: 'Homens' },
                         { value: 'lares', label: 'Lares' },
                         { value: 'retiro', label: 'Retiro' },
+                        { value: 'social', label: 'Ação Social' },
+                        { value: 'ebd', label: 'EBD' },
+                        { value: 'midia', label: 'Mídia' },
+                        { value: 'missoes', label: 'Missões' },
+                        { value: 'intercessao', label: 'Intercessão' },
+                        { value: 'revista', label: 'Revista' },
+                        { value: 'sobre', label: 'Sobre' },
+                        { value: 'contact', label: 'Contato' },
                       ];
                       return (
                         <HomeAnivEditor

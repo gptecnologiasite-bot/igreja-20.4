@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { transformImageLink } from '../lib/dbUtils';
+import { supabase } from '../lib/supabase';
 import { Zap, Calendar, Clock, Users, Camera, MessageSquare, Send, Heart, MapPin, Star, Music, Gamepad2 } from 'lucide-react';
 import { useMinistryData } from '../hooks/useMinistryData';
 import '../css/Jovens.css';
@@ -11,6 +12,8 @@ const Jovens = () => {
     email: '',
     message: ''
   });
+  const [photoFile, setPhotoFile] = useState(null);
+  const [uploading, setUploading] = useState(false);
 
   const [data] = useMinistryData('jovens');
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -24,10 +27,57 @@ const Jovens = () => {
     }
   }, [data.gallery]);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    alert('Testemunho enviado com sucesso! Obrigado por compartilhar.');
-    setTestimonial({ name: '', age: '', email: '', message: '' });
+    setUploading(true);
+    let photoUrl = '';
+
+    if (photoFile) {
+      try {
+        const fileExt = photoFile.name.split('.').pop();
+        const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
+        const filePath = `uploads/${fileName}`;
+
+        const { error: uploadError } = await supabase.storage
+          .from('site-images')
+          .upload(filePath, photoFile);
+        
+        if (!uploadError) {
+          const { data: publicUrlData } = supabase.storage
+            .from('site-images')
+            .getPublicUrl(filePath);
+          if (publicUrlData) photoUrl = publicUrlData.publicUrl;
+        }
+      } catch (err) {
+        console.error('Error uploading photo:', err);
+      }
+    }
+
+    const payload = {
+      type: 'testimonial_submission',
+      category: 'jovens',
+      ...testimonial,
+      photo_url: photoUrl,
+      created_at: new Date().toISOString()
+    };
+
+    try {
+      const { error } = await supabase.from('site_messages').insert(payload);
+      if (error) throw error;
+      alert('Testemunho enviado com sucesso! Obrigado por compartilhar.');
+      setTestimonial({ name: '', age: '', email: '', message: '' });
+      setPhotoFile(null);
+    } catch (err) {
+      console.error('Error sending:', err);
+      const backups = JSON.parse(localStorage.getItem('admac_messages_backup') || '[]');
+      backups.push(payload);
+      localStorage.setItem('admac_messages_backup', JSON.stringify(backups));
+      alert('Testemunho salvo localmente com sucesso! Obrigado por compartilhar.');
+      setTestimonial({ name: '', age: '', email: '', message: '' });
+      setPhotoFile(null);
+    } finally {
+      setUploading(false);
+    }
   };
 
   return (
@@ -155,7 +205,7 @@ const Jovens = () => {
           <p className="section-subtitle">Veja o que os jovens dizem</p>
 
           <div className="testimonials-grid">
-            {data.testimonials.map((testimonial, index) => (
+            {data.testimonials?.map((testimonial, index) => (
               <div key={index} className="testimonial-card">
                 <div className="stars">
                   {[...Array(5)].map((_, i) => (
@@ -164,14 +214,17 @@ const Jovens = () => {
                 </div>
                 <p className="testimonial-text">"{testimonial.text}"</p>
                 <div className="testimonial-author">
-                  <img src={transformImageLink(testimonial.photo)} alt={testimonial.name} />
+                  <img src={transformImageLink(testimonial?.photo) || `https://ui-avatars.com/api/?name=${encodeURIComponent(testimonial?.name || 'Jovem')}&background=random`} alt={testimonial?.name} />
                   <div>
                     <strong>{testimonial.name}</strong>
-                    <span>{testimonial.age} anos</span>
+                    {testimonial.age && <span>{testimonial.age} anos</span>}
                   </div>
                 </div>
               </div>
             ))}
+            {(!data.testimonials || data.testimonials.length === 0) && (
+              <p style={{ textAlign: 'center', color: 'var(--text-muted)', gridColumn: '1 / -1', padding: '2rem' }}>Nenhum testemunho publicado ainda. Seja o primeiro!</p>
+            )}
           </div>
         </div>
       </section>
@@ -225,6 +278,27 @@ const Jovens = () => {
               </div>
 
               <div className="form-group">
+                <label htmlFor="photo">Sua Foto (Opcional)</label>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '0.5rem' }}>
+                  <label style={{ cursor: 'pointer', padding: '0.6rem 1.2rem', background: 'var(--surface-color)', borderRadius: '8px', border: '1px dashed var(--border-color)', display: 'inline-block', fontSize: '0.9rem', color: 'var(--text-color)', transition: 'all 0.2s ease' }}>
+                    {photoFile ? 'Trocar Foto' : 'Escolher Foto'}
+                    <input
+                      type="file"
+                      id="photo"
+                      accept="image/*"
+                      style={{ display: 'none' }}
+                      onChange={(e) => {
+                        if (e.target.files && e.target.files[0]) {
+                          setPhotoFile(e.target.files[0]);
+                        }
+                      }}
+                    />
+                  </label>
+                  {photoFile && <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{photoFile.name}</span>}
+                </div>
+              </div>
+
+              <div className="form-group">
                 <label htmlFor="message">Seu Testemunho</label>
                 <textarea
                   id="message"
@@ -236,8 +310,8 @@ const Jovens = () => {
                 ></textarea>
               </div>
 
-              <button type="submit" className="submit-btn">
-                <Send size={18} /> Enviar Testemunho
+              <button type="submit" className="submit-btn" disabled={uploading}>
+                <Send size={18} /> {uploading ? 'Enviando...' : 'Enviar Testemunho'}
               </button>
             </form>
           </div>
