@@ -217,7 +217,7 @@ const Homens = () => {
               { url: 'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=400&h=300&fit=crop', caption: 'Retiro' }
             ]).map((item, index) => (
               <div key={index} className="gallery-item">
-                <img src={item.url} alt={item.caption || 'Foto'} />
+                <img src={transformImageLink(item.url)} alt={item.caption || 'Foto'} />
                 <div className="gallery-overlay">{item.caption || 'Momentos'}</div>
               </div>
             ))}
