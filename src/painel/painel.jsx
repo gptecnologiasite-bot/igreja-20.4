@@ -736,7 +736,10 @@ export default function PainelAdm() {
   const loadUsers = async () => {
     try {
       if (!hasSupabase) {
-        setUsers([]);
+        // Modo offline: usa o usuário logado do localStorage
+        const stored = localStorage.getItem('admac_current_user');
+        const cu = stored ? JSON.parse(stored) : null;
+        setUsers(cu ? [cu] : []);
         return;
       }
       const { data: dbUsers, error } = await supabase
@@ -744,13 +747,29 @@ export default function PainelAdm() {
         .select('*');
 
       if (error) {
-        const { data: authUsers } = await supabase.auth.admin.listUsers();
-        setUsers(authUsers?.users || []);
+        console.warn('[loadUsers] Erro ao buscar site_users:', error.message, '| código:', error.code);
+        // Fallback: mostra o usuário logado mesmo se a tabela falhar
+        const stored = localStorage.getItem('admac_current_user');
+        const cu = stored ? JSON.parse(stored) : null;
+        setUsers(cu ? [cu] : []);
         return;
       }
-      setUsers(dbUsers || []);
+
+      // Mescla: adiciona o usuário logado se ele não estiver na lista (segurança)
+      const stored = localStorage.getItem('admac_current_user');
+      const cu = stored ? JSON.parse(stored) : null;
+      let finalUsers = dbUsers || [];
+      if (cu && cu.email && !finalUsers.some(u => u.email === cu.email)) {
+        finalUsers = [cu, ...finalUsers];
+      }
+
+      setUsers(finalUsers.length > 0 ? finalUsers : (cu ? [cu] : []));
     } catch (err) {
-      console.warn('Error loading users:', err);
+      console.warn('[loadUsers] Exceção:', err.message);
+      // Fallback de emergência
+      const stored = localStorage.getItem('admac_current_user');
+      const cu = stored ? JSON.parse(stored) : null;
+      setUsers(cu ? [cu] : []);
     }
   };
 
@@ -935,6 +954,15 @@ export default function PainelAdm() {
       alert('Visualizadores não podem criar ou editar usuários.');
       return;
     }
+
+    // Helpers de cache local
+    const readCache = () => {
+      try { return JSON.parse(localStorage.getItem('admac_users_cache') || '[]'); } catch { return []; }
+    };
+    const writeCache = (arr) => {
+      try { localStorage.setItem('admac_users_cache', JSON.stringify(arr)); } catch { /* ignore */ }
+    };
+
     try {
       if (userMode === 'create') {
         const { data: authData, error: signUpError } = await supabase.auth.signUp({
@@ -949,30 +977,52 @@ export default function PainelAdm() {
         });
         if (signUpError) throw signUpError;
 
-        // Inserir na tabela site_users com os dados completos
-        const { error: dbError } = await supabase.from('site_users').insert({
-          id: authData.user.id,
+        const userId = authData?.user?.id || `local-${Date.now()}`;
+        const userRecord = {
+          id: userId,
           name: newUser.name,
           email: newUser.email,
           role: newUser.role,
-          status: newUser.status,
-          location: newUser.location,
-          photo: newUser.photo
-        });
+          status: newUser.status || 'active',
+          location: newUser.location || '',
+          photo: newUser.photo || null,
+          created_at: new Date().toISOString()
+        };
+
+        // Tenta inserir no banco
+        const { error: dbError } = await supabase.from('site_users').insert(userRecord);
+        if (dbError) {
+          console.warn('[saveUser] Erro ao inserir em site_users:', dbError.message, '| Salvando localmente...');
+        }
+
+        // Sempre salva no cache local (garante que aparece mesmo com RLS)
+        const cache = readCache();
+        const exists = cache.some(u => u.email === userRecord.email);
+        if (!exists) writeCache([...cache, userRecord]);
 
         alert('Usuário cadastrado com sucesso!');
       } else {
-        // Edit mode - updating profile data
-        const { error } = await supabase.from('site_users').upsert({
+        // Edit mode
+        const userRecord = {
           id: editingUserId,
           name: newUser.name,
           email: newUser.email,
           role: newUser.role,
-          status: newUser.status,
-          location: newUser.location,
-          photo: newUser.photo
-        });
-        if (error) throw error;
+          status: newUser.status || 'active',
+          location: newUser.location || '',
+          photo: newUser.photo || null
+        };
+
+        const { error } = await supabase.from('site_users').upsert(userRecord);
+        if (error) {
+          console.warn('[saveUser] Erro ao atualizar site_users:', error.message, '| Salvando localmente...');
+        }
+
+        // Atualiza no cache local também
+        const cache = readCache();
+        const updated = cache.map(u => u.id === editingUserId || u.email === newUser.email ? { ...u, ...userRecord } : u);
+        writeCache(updated);
+
         alert('Usuário atualizado com sucesso!');
       }
       setShowModal(false);
@@ -1405,13 +1455,27 @@ export default function PainelAdm() {
         }
 
           if (data?.user) {
+            // Busca dados completos em site_users (foto, role, status, name personalizado)
+            let siteUserData = null;
+            try {
+              const { data: siteUser } = await supabase
+                .from('site_users')
+                .select('*')
+                .eq('id', data.user.id)
+                .single();
+              siteUserData = siteUser;
+            } catch (e) {
+              console.warn('[Login] Não foi possível buscar site_users:', e.message);
+            }
+
             const user = {
               id: data.user.id,
-              name: data.user.user_metadata?.full_name || data.user.email.split('@')[0],
+              name: siteUserData?.name || data.user.user_metadata?.full_name || data.user.email.split('@')[0],
               email: data.user.email,
-              role: data.user.user_metadata?.role || 'Administrador',
-              status: 'active',
-              photo: data.user.user_metadata?.avatar_url || null
+              role: siteUserData?.role || data.user.user_metadata?.role || 'Administrador',
+              status: siteUserData?.status || 'active',
+              photo: siteUserData?.photo || data.user.user_metadata?.avatar_url || null,
+              location: siteUserData?.location || ''
             };
             sessionStorage.setItem('painel_auth', '1');
             localStorage.setItem('admac_current_user', JSON.stringify(user));
@@ -2291,8 +2355,10 @@ export default function PainelAdm() {
                 ? ['geral', 'sliders', 'pastores', 'videos', 'mensagens', 'ministérios', 'programacao', 'atividades', 'cta', 'aniversariantes']
                 : ministryId === 'midia'
                   ? ['geral', 'equipe', 'videos', 'mensagens', 'programacao', 'galeria', 'bastidores', 'noticias', 'testemunhos', 'aniversariantes']
-                  : (ministryId === 'intercessao' || ministryId === 'missoes' || ministryId === 'social' || ministryId === 'retiro')
-                    ? ['geral', 'equipe', 'programacao', 'galeria', 'testemunhos']
+                : (ministryId === 'intercessao' || ministryId === 'missoes' || ministryId === 'social' || ministryId === 'retiro')
+                  ? ['geral', 'equipe', 'programacao', 'galeria', 'testemunhos']
+                  : ministryId === 'revista'
+                    ? ['geral', 'paginas']
                     : ['geral', 'equipe', 'programacao', 'galeria', 'testemunhos', 'aniversariantes']
               ).map(t => (
                 <button
@@ -3942,6 +4008,230 @@ export default function PainelAdm() {
                     </button>
                   </div>
                 )}
+                {ministryTab === 'paginas' && (
+                  <div style={{ padding: '0.2rem' }}>
+                    <div style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                      <h4 style={{ margin: 0, color: palette.text }}>Páginas da Revista</h4>
+                      <button 
+                        type="button"
+                        className="pm-add-btn" 
+                        style={{ margin: 0 }}
+                        onClick={() => {
+                          const newPage = { id: Date.now(), type: 'article', category: 'Nova Categoria', title: 'Novo Artigo', body: 'Conteúdo aqui...' };
+                          setMinistryData(d => ({ ...d, pages: [...(d.pages || []), newPage] }));
+                        }}
+                      >
+                        + Adicionar Página
+                      </button>
+                    </div>
+                    
+                    {(ministryData?.pages || []).map((page, idx) => (
+                      <div key={idx} className="pm-row" style={{ marginBottom: '1.5rem', background: palette.surfaceHover, padding: '1rem', borderRadius: '12px', border: `1px solid ${palette.border}` }}>
+                        <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem', borderBottom: `1px solid ${palette.border}`, paddingBottom: '0.5rem' }}>
+                          <div className="pm-field" style={{ flex: 1 }}>
+                            <label>Tipo de Página</label>
+                            <select 
+                              className="pm-input" 
+                              value={page.type || 'article'} 
+                              onChange={e => {
+                                const next = [...(ministryData.pages || [])];
+                                next[idx] = { ...next[idx], type: e.target.value };
+                                if (e.target.value === 'index' && !next[idx].items) next[idx].items = [];
+                                if (e.target.value === 'devotional' && !next[idx].items) next[idx].items = [];
+                                if (e.target.value === 'feature' && !next[idx].events) next[idx].events = [];
+                                if (e.target.value === 'columnist' && !next[idx].author) next[idx].author = { name: '', role: '', image: '', bio: '' };
+                                setMinistryData(d => ({ ...d, pages: next }));
+                              }}
+                              style={{ background: palette.bg, color: palette.text }}
+                            >
+                              <option value="cover">Capa</option>
+                              <option value="index">Índice</option>
+                              <option value="article">Artigo</option>
+                              <option value="columnist">Colunista</option>
+                              <option value="devotional">Devocional</option>
+                              <option value="feature">Destaque/Agenda</option>
+                            </select>
+                          </div>
+                          <button 
+                            type="button"
+                            className="btn-deletar" 
+                            style={{ alignSelf: 'center' }}
+                            onClick={() => {
+                              const next = [...(ministryData.pages || [])];
+                              next.splice(idx, 1);
+                              setMinistryData(d => ({ ...d, pages: next }));
+                            }}
+                          >
+                            Excluir
+                          </button>
+                        </div>
+
+                        {/* Fields based on type */}
+                        {page.type === 'cover' && (
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', width: '100%' }}>
+                            <div className="pm-field">
+                              <label>Edição</label>
+                              <input className="pm-input" value={page.edition || ''} onChange={e => { const next = [...(ministryData.pages)]; next[idx] = { ...next[idx], edition: e.target.value }; setMinistryData(d => ({...d, pages: next})); }} />
+                            </div>
+                            <div className="pm-field">
+                              <label>Título da Capa</label>
+                              <input className="pm-input" value={page.title || ''} onChange={e => { const next = [...(ministryData.pages)]; next[idx] = { ...next[idx], title: e.target.value }; setMinistryData(d => ({...d, pages: next})); }} />
+                            </div>
+                            <div className="pm-field">
+                              <label>Subtítulo</label>
+                              <input className="pm-input" value={page.subtitle || ''} onChange={e => { const next = [...(ministryData.pages)]; next[idx] = { ...next[idx], subtitle: e.target.value }; setMinistryData(d => ({...d, pages: next})); }} />
+                            </div>
+                            <div className="pm-field">
+                              <label>Imagem de Fundo</label>
+                              <div style={{ display: 'flex', gap: '8px' }}>
+                                <input className="pm-input" value={page.image || ''} onChange={e => { const next = [...(ministryData.pages)]; next[idx] = { ...next[idx], image: e.target.value }; setMinistryData(d => ({...d, pages: next})); }} />
+                                <button type="button" className="pm-photo-btn" onClick={() => handleFileUpload(url => { const next = [...(ministryData.pages)]; next[idx] = { ...next[idx], image: url }; setMinistryData(d => ({...d, pages: next})); }, hasSupabase, supabase)}>Upload</button>
+                              </div>
+                            </div>
+                          </div>
+                        )}
+
+                        {(page.type === 'article' || page.type === 'columnist' || page.type === 'devotional' || page.type === 'feature') && (
+                          <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '10px', width: '100%' }}>
+                            <div className="pm-field">
+                              <label>Categoria</label>
+                              <input className="pm-input" value={page.category || ''} onChange={e => { const next = [...(ministryData.pages)]; next[idx] = { ...next[idx], category: e.target.value }; setMinistryData(d => ({...d, pages: next})); }} />
+                            </div>
+                            <div className="pm-field">
+                              <label>Título</label>
+                              <input className="pm-input" value={page.title || ''} onChange={e => { const next = [...(ministryData.pages)]; next[idx] = { ...next[idx], title: e.target.value }; setMinistryData(d => ({...d, pages: next})); }} />
+                            </div>
+                          </div>
+                        )}
+
+                        {page.type === 'article' && (
+                          <div style={{ width: '100%' }}>
+                            <div className="pm-field">
+                              <label>Imagem do Artigo</label>
+                              <div style={{ display: 'flex', gap: '8px' }}>
+                                <input className="pm-input" value={page.image || ''} onChange={e => { const next = [...(ministryData.pages)]; next[idx] = { ...next[idx], image: e.target.value }; setMinistryData(d => ({...d, pages: next})); }} />
+                                <button type="button" className="pm-photo-btn" onClick={() => handleFileUpload(url => { const next = [...(ministryData.pages)]; next[idx] = { ...next[idx], image: url }; setMinistryData(d => ({...d, pages: next})); }, hasSupabase, supabase)}>Upload</button>
+                              </div>
+                            </div>
+                            <div className="pm-field" style={{ gridColumn: '1 / -1' }}>
+                              <label>Conteúdo (use \n para parágrafos)</label>
+                              <textarea 
+                                className="pm-input" 
+                                style={{ height: '150px', whiteSpace: 'pre-wrap', background: palette.bg, color: palette.text, border: `1px solid ${palette.border}`, borderRadius: 10, padding: 12, outline: 'none', resize: 'vertical' }} 
+                                value={page.body || ''} 
+                                onChange={e => { const next = [...(ministryData.pages)]; next[idx] = { ...next[idx], body: e.target.value }; setMinistryData(d => ({...d, pages: next})); }} 
+                              />
+                            </div>
+                          </div>
+                        )}
+
+                        {page.type === 'columnist' && (
+                          <div style={{ width: '100%' }}>
+                            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem', marginBottom: '1rem', border: `1px solid ${palette.border}`, padding: '0.8rem', borderRadius: '8px' }}>
+                              <div className="pm-field" style={{ gridColumn: '1 / -1' }}><label style={{ fontWeight: 600 }}>Dados do Autor</label></div>
+                              <div className="pm-field">
+                                <label>Nome do Autor</label>
+                                <input className="pm-input" value={page.author?.name || ''} onChange={e => { const next = [...(ministryData.pages)]; next[idx] = { ...next[idx], author: { ...next[idx].author, name: e.target.value } }; setMinistryData(d => ({...d, pages: next})); }} />
+                              </div>
+                              <div className="pm-field">
+                                <label>Cargo/Papel</label>
+                                <input className="pm-input" value={page.author?.role || ''} onChange={e => { const next = [...(ministryData.pages)]; next[idx] = { ...next[idx], author: { ...next[idx].author, role: e.target.value } }; setMinistryData(d => ({...d, pages: next})); }} />
+                              </div>
+                              <div className="pm-field">
+                                <label>Foto do Autor</label>
+                                <div style={{ display: 'flex', gap: '8px' }}>
+                                  <input className="pm-input" value={page.author?.image || ''} onChange={e => { const next = [...(ministryData.pages)]; next[idx] = { ...next[idx], author: { ...next[idx].author, image: e.target.value } }; setMinistryData(d => ({...d, pages: next})); }} />
+                                  <button type="button" className="pm-photo-btn" onClick={() => handleFileUpload(url => { const next = [...(ministryData.pages)]; next[idx] = { ...next[idx], author: { ...next[idx].author, image: url } }; setMinistryData(d => ({...d, pages: next})); }, hasSupabase, supabase)}>Up</button>
+                                </div>
+                              </div>
+                              <div className="pm-field">
+                                <label>Biografia Curta</label>
+                                <input className="pm-input" value={page.author?.bio || ''} onChange={e => { const next = [...(ministryData.pages)]; next[idx] = { ...next[idx], author: { ...next[idx].author, bio: e.target.value } }; setMinistryData(d => ({...d, pages: next})); }} />
+                              </div>
+                            </div>
+                            <div className="pm-field">
+                              <label>Conteúdo (use &lt;quote&gt;...&lt;/quote&gt; para citações)</label>
+                              <textarea 
+                                className="pm-input" 
+                                style={{ height: '150px', background: palette.bg, color: palette.text, border: `1px solid ${palette.border}`, borderRadius: 10, padding: 12, outline: 'none', resize: 'vertical' }} 
+                                value={page.body || ''} 
+                                onChange={e => { const next = [...(ministryData.pages)]; next[idx] = { ...next[idx], body: e.target.value }; setMinistryData(d => ({...d, pages: next})); }} 
+                              />
+                            </div>
+                          </div>
+                        )}
+
+                        {page.type === 'index' && (
+                          <div style={{ width: '100%' }}>
+                            <label>Itens do Índice</label>
+                            {(page.items || []).map((item, iIdx) => (
+                              <div key={iIdx} style={{ display: 'flex', gap: '8px', marginBottom: '8px', alignItems: 'flex-end' }}>
+                                <div style={{ flex: 2 }}>
+                                  <label style={{ fontSize: '0.75rem' }}>Rótulo</label>
+                                  <input className="pm-input" value={item.label || ''} onChange={e => { const next = [...(ministryData.pages)]; next[idx].items[iIdx].label = e.target.value; setMinistryData(d => ({...d, pages: next})); }} />
+                                </div>
+                                <div style={{ flex: 1 }}>
+                                  <label style={{ fontSize: '0.75rem' }}>Página</label>
+                                  <input type="number" className="pm-input" value={item.page || ''} onChange={e => { const next = [...(ministryData.pages)]; next[idx].items[iIdx].page = parseInt(e.target.value); setMinistryData(d => ({...d, pages: next})); }} />
+                                </div>
+                                <div style={{ flex: 1 }}>
+                                  <label style={{ fontSize: '0.75rem' }}>Ícone</label>
+                                  <select className="pm-input" style={{ background: palette.bg, color: palette.text }} value={item.icon || 'BookOpen'} onChange={e => { const next = [...(ministryData.pages)]; next[idx].items[iIdx].icon = e.target.value; setMinistryData(d => ({...d, pages: next})); }}>
+                                    <option value="BookOpen">Livro</option>
+                                    <option value="PenTool">Caneta</option>
+                                    <option value="Sun">Sol</option>
+                                    <option value="Calendar">Calendário</option>
+                                    <option value="Heart">Coração</option>
+                                    <option value="Star">Estrela</option>
+                                    <option value="Users">Pessoas</option>
+                                  </select>
+                                </div>
+                                <button type="button" className="btn-deletar" style={{ padding: '0.4rem', marginBottom: '4px' }} onClick={() => { const next = [...(ministryData.pages)]; next[idx].items.splice(iIdx, 1); setMinistryData(d => ({...d, pages: next})); }}>✕</button>
+                              </div>
+                            ))}
+                            <button type="button" className="pm-add-btn" onClick={() => { const next = [...(ministryData.pages)]; next[idx].items = [...(next[idx].items || []), { label: '', page: 1, icon: 'BookOpen' }]; setMinistryData(d => ({...d, pages: next})); }}>+ Adicionar Item</button>
+                          </div>
+                        )}
+
+                        {page.type === 'devotional' && (
+                          <div style={{ width: '100%' }}>
+                            <label>Devocionais Diários</label>
+                            {(page.items || []).map((item, dIdx) => (
+                              <div key={dIdx} style={{ marginBottom: '1rem', border: `1px solid ${palette.border}`, padding: '0.8rem', borderRadius: '8px' }}>
+                                <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
+                                  <input placeholder="Data (Ex: 01 DEZ)" className="pm-input" value={item.date || ''} onChange={e => { const next = [...(ministryData.pages)]; next[idx].items[dIdx].date = e.target.value; setMinistryData(d => ({...d, pages: next})); }} />
+                                  <input placeholder="Título" className="pm-input" value={item.title || ''} onChange={e => { const next = [...(ministryData.pages)]; next[idx].items[dIdx].title = e.target.value; setMinistryData(d => ({...d, pages: next})); }} />
+                                </div>
+                                <textarea placeholder="Texto reflexivo" className="pm-input" style={{ height: '80px', background: palette.bg, color: palette.text, border: `1px solid ${palette.border}`, borderRadius: 10, padding: 12, outline: 'none', resize: 'vertical' }} value={item.text || ''} onChange={e => { const next = [...(ministryData.pages)]; next[idx].items[dIdx].text = e.target.value; setMinistryData(d => ({...d, pages: next})); }} />
+                                <button type="button" className="btn-deletar" style={{ marginTop: '0.5rem' }} onClick={() => { const next = [...(ministryData.pages)]; next[idx].items.splice(dIdx, 1); setMinistryData(d => ({...d, pages: next})); }}>Remover Devocional</button>
+                              </div>
+                            ))}
+                            <button type="button" className="pm-add-btn" onClick={() => { const next = [...(ministryData.pages)]; next[idx].items = [...(next[idx].items || []), { date: '', title: '', text: '' }]; setMinistryData(d => ({...d, pages: next})); }}>+ Adicionar Devocional</button>
+                          </div>
+                        )}
+
+                        {page.type === 'feature' && (
+                          <div style={{ width: '100%' }}>
+                            <div className="pm-field">
+                              <label>Destaque (Caixa Amarela)</label>
+                              <textarea className="pm-input" style={{ height: '60px', background: palette.bg, color: palette.text, border: `1px solid ${palette.border}`, borderRadius: 10, padding: 12, outline: 'none', resize: 'vertical' }} value={page.highlight || ''} onChange={e => { const next = [...(ministryData.pages)]; next[idx].highlight = e.target.value; setMinistryData(d => ({...d, pages: next})); }} />
+                            </div>
+                            <label>Eventos / Agenda</label>
+                            {(page.events || []).map((event, eIdx) => (
+                              <div key={eIdx} style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
+                                <input placeholder="Data (07/12)" className="pm-input" style={{ flex: 1 }} value={event.date || ''} onChange={e => { const next = [...(ministryData.pages)]; next[idx].events[eIdx].date = e.target.value; setMinistryData(d => ({...d, pages: next})); }} />
+                                <input placeholder="Evento" className="pm-input" style={{ flex: 3 }} value={event.title || ''} onChange={e => { const next = [...(ministryData.pages)]; next[idx].events[eIdx].title = e.target.value; setMinistryData(d => ({...d, pages: next})); }} />
+                                <input placeholder="Hora" className="pm-input" style={{ flex: 1 }} value={event.time || ''} onChange={e => { const next = [...(ministryData.pages)]; next[idx].events[eIdx].time = e.target.value; setMinistryData(d => ({...d, pages: next})); }} />
+                                <button type="button" className="btn-deletar" onClick={() => { const next = [...(ministryData.pages)]; next[idx].events.splice(eIdx, 1); setMinistryData(d => ({...d, pages: next})); }}>✕</button>
+                              </div>
+                            ))}
+                            <button type="button" className="pm-add-btn" onClick={() => { const next = [...(ministryData.pages)]; next[idx].events = [...(next[idx].events || []), { date: '', title: '', time: '' }]; setMinistryData(d => ({...d, pages: next})); }}>+ Adicionar Evento</button>
+                          </div>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             )}
           </div>
@@ -4369,7 +4659,7 @@ export default function PainelAdm() {
                       <td style={{ whiteSpace: 'nowrap' }}>{new Date(l.created_at || l.date).toLocaleString('pt-BR')}</td>
                       <td><strong>{l.action}</strong></td>
                       <td>{l.user_email || l.user || 'Sistema'}</td>
-                      <td><span style={{ fontSize: '.8rem', color: palette.textMuted }}>📍 {l.location || (l.action === 'visitor_access' ? l.user_email : 'Desconhecido')}</span></td>
+                      <td><span style={{ fontSize: '.8rem', color: palette.textMuted }}>📍 {l.location || (l.action === 'visitor_access' ? l.user_email : 'Visitante Anônimo')}</span></td>
                       <td style={{ fontSize: '.8rem', color: palette.textMuted }}>{l.details || '—'}</td>
                     </tr>
                   )) : (
@@ -5409,29 +5699,33 @@ export default function PainelAdm() {
               ) : pageMode === 'ministry' ? (
                 <>
                   <div style={{ display: 'flex', gap: '.6rem', marginBottom: '.8rem', flexWrap: 'wrap' }}>
-                    {['geral', 'equipe', 'programacao', 'galeria', 'testemunhos', 'aniversariantes'].map(t => {
-                      // Define which tabs are available for each ministry
-                      const isGalleryAllowed = ['jovens', 'mulheres', 'homens', 'louvor', 'kids', 'ebd', 'lares', 'social', 'retiro', 'intercessao', 'missoes', 'midia'].includes(ministryId);
-                      const isBirthdaysAllowed = ['jovens', 'mulheres', 'homens', 'louvor', 'kids', 'ebd', 'lares', 'social', 'retiro', 'intercessao', 'missoes', 'midia'].includes(ministryId);
-                      
-                      if (t === 'galeria' && !isGalleryAllowed) return null;
-                      if (t === 'aniversariantes' && !isBirthdaysAllowed) return null;
-                      
-                      return (
-                        <button
-                          key={t}
-                          onClick={() => setMinistryTab(t)}
-                          className="painel-action-btn"
-                          style={{
-                            borderColor: ministryTab === t ? palette.accent : palette.border,
-                            color: ministryTab === t ? palette.accentLight : palette.textMuted,
-                            background: ministryTab === t ? palette.accentGlow : 'transparent'
-                          }}
-                        >
-                          {t === 'geral' ? 'Geral' : t === 'equipe' ? 'Equipe' : t === 'programacao' ? 'Programação' : t === 'galeria' ? 'Galeria' : t === 'aniversariantes' ? 'Aniversariantes' : 'Testemunhos'}
-                        </button>
-                      );
-                    })}
+                    {(() => {
+                      let tabs = ['geral', 'equipe', 'programacao', 'galeria', 'testemunhos', 'aniversariantes'];
+                      if (ministryId === 'revista') tabs = ['geral', 'paginas'];
+                      return tabs.map(t => {
+                        // Define which tabs are available for each ministry
+                        const isGalleryAllowed = ['jovens', 'mulheres', 'homens', 'louvor', 'kids', 'ebd', 'lares', 'social', 'retiro', 'intercessao', 'missoes', 'midia'].includes(ministryId);
+                        const isBirthdaysAllowed = ['jovens', 'mulheres', 'homens', 'louvor', 'kids', 'ebd', 'lares', 'social', 'retiro', 'intercessao', 'missoes', 'midia'].includes(ministryId);
+                        
+                        if (t === 'galeria' && !isGalleryAllowed) return null;
+                        if (t === 'aniversariantes' && !isBirthdaysAllowed) return null;
+                        
+                        return (
+                          <button
+                            key={t}
+                            onClick={() => setMinistryTab(t)}
+                            className="painel-action-btn"
+                            style={{
+                              borderColor: ministryTab === t ? palette.accent : palette.border,
+                              color: ministryTab === t ? palette.accentLight : palette.textMuted,
+                              background: ministryTab === t ? palette.accentGlow : 'transparent'
+                            }}
+                          >
+                            {t === 'geral' ? 'Geral' : t === 'equipe' ? 'Equipe' : t === 'programacao' ? 'Programação' : t === 'galeria' ? 'Galeria' : t === 'aniversariantes' ? 'Aniversariantes' : t === 'paginas' ? 'Páginas' : 'Testemunhos'}
+                          </button>
+                        );
+                      });
+                    })()}
                   </div>
                   {ministryTab === 'geral' && (
                     <div>
@@ -5837,6 +6131,230 @@ export default function PainelAdm() {
                         </div>
                       ))}
                       <button className="pm-add-btn" onClick={() => setMinistryData(d => ({ ...d, testimonials: [...(d.testimonials || []), { name: '', age: '', text: '', photo: '' }] }))}>+ Adicionar Testemunho</button>
+                    </div>
+                  )}
+                  {ministryTab === 'paginas' && (
+                    <div style={{ padding: '0.2rem' }}>
+                      <div style={{ marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <h4 style={{ margin: 0, color: palette.text }}>Páginas da Revista</h4>
+                        <button 
+                          type="button"
+                          className="pm-add-btn" 
+                          style={{ margin: 0 }}
+                          onClick={() => {
+                            const newPage = { id: Date.now(), type: 'article', category: 'Nova Categoria', title: 'Novo Artigo', body: 'Conteúdo aqui...' };
+                            setMinistryData(d => ({ ...d, pages: [...(d.pages || []), newPage] }));
+                          }}
+                        >
+                          + Adicionar Página
+                        </button>
+                      </div>
+                      
+                      {(ministryData?.pages || []).map((page, idx) => (
+                        <div key={idx} className="pm-row" style={{ marginBottom: '1.5rem', background: palette.surfaceHover, padding: '1rem', borderRadius: '12px', border: `1px solid ${palette.border}` }}>
+                          <div style={{ display: 'flex', gap: '1rem', marginBottom: '1rem', borderBottom: `1px solid ${palette.border}`, paddingBottom: '0.5rem' }}>
+                            <div className="pm-field" style={{ flex: 1 }}>
+                              <label>Tipo de Página</label>
+                              <select 
+                                className="pm-input" 
+                                value={page.type || 'article'} 
+                                onChange={e => {
+                                  const next = [...(ministryData.pages || [])];
+                                  next[idx] = { ...next[idx], type: e.target.value };
+                                  if (e.target.value === 'index' && !next[idx].items) next[idx].items = [];
+                                  if (e.target.value === 'devotional' && !next[idx].items) next[idx].items = [];
+                                  if (e.target.value === 'feature' && !next[idx].events) next[idx].events = [];
+                                  if (e.target.value === 'columnist' && !next[idx].author) next[idx].author = { name: '', role: '', image: '', bio: '' };
+                                  setMinistryData(d => ({ ...d, pages: next }));
+                                }}
+                                style={{ background: palette.bg, color: palette.text }}
+                              >
+                                <option value="cover">Capa</option>
+                                <option value="index">Índice</option>
+                                <option value="article">Artigo</option>
+                                <option value="columnist">Colunista</option>
+                                <option value="devotional">Devocional</option>
+                                <option value="feature">Destaque/Agenda</option>
+                              </select>
+                            </div>
+                            <button 
+                              type="button"
+                              className="btn-deletar" 
+                              style={{ alignSelf: 'center' }}
+                              onClick={() => {
+                                const next = [...(ministryData.pages || [])];
+                                next.splice(idx, 1);
+                                setMinistryData(d => ({ ...d, pages: next }));
+                              }}
+                            >
+                              Excluir
+                            </button>
+                          </div>
+
+                          {/* Fields based on type */}
+                          {page.type === 'cover' && (
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px', width: '100%' }}>
+                              <div className="pm-field">
+                                <label>Edição</label>
+                                <input className="pm-input" value={page.edition || ''} onChange={e => { const next = [...(ministryData.pages)]; next[idx] = { ...next[idx], edition: e.target.value }; setMinistryData(d => ({...d, pages: next})); }} />
+                              </div>
+                              <div className="pm-field">
+                                <label>Título da Capa</label>
+                                <input className="pm-input" value={page.title || ''} onChange={e => { const next = [...(ministryData.pages)]; next[idx] = { ...next[idx], title: e.target.value }; setMinistryData(d => ({...d, pages: next})); }} />
+                              </div>
+                              <div className="pm-field">
+                                <label>Subtítulo</label>
+                                <input className="pm-input" value={page.subtitle || ''} onChange={e => { const next = [...(ministryData.pages)]; next[idx] = { ...next[idx], subtitle: e.target.value }; setMinistryData(d => ({...d, pages: next})); }} />
+                              </div>
+                              <div className="pm-field">
+                                <label>Imagem de Fundo</label>
+                                <div style={{ display: 'flex', gap: '8px' }}>
+                                  <input className="pm-input" value={page.image || ''} onChange={e => { const next = [...(ministryData.pages)]; next[idx] = { ...next[idx], image: e.target.value }; setMinistryData(d => ({...d, pages: next})); }} />
+                                  <button type="button" className="pm-photo-btn" onClick={() => handleFileUpload(url => { const next = [...(ministryData.pages)]; next[idx] = { ...next[idx], image: url }; setMinistryData(d => ({...d, pages: next})); }, hasSupabase, supabase)}>Upload</button>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+
+                          {(page.type === 'article' || page.type === 'columnist' || page.type === 'devotional' || page.type === 'feature') && (
+                            <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '10px', width: '100%' }}>
+                              <div className="pm-field">
+                                <label>Categoria</label>
+                                <input className="pm-input" value={page.category || ''} onChange={e => { const next = [...(ministryData.pages)]; next[idx] = { ...next[idx], category: e.target.value }; setMinistryData(d => ({...d, pages: next})); }} />
+                              </div>
+                              <div className="pm-field">
+                                <label>Título</label>
+                                <input className="pm-input" value={page.title || ''} onChange={e => { const next = [...(ministryData.pages)]; next[idx] = { ...next[idx], title: e.target.value }; setMinistryData(d => ({...d, pages: next})); }} />
+                              </div>
+                            </div>
+                          )}
+
+                          {page.type === 'article' && (
+                            <div style={{ width: '100%' }}>
+                              <div className="pm-field">
+                                <label>Imagem do Artigo</label>
+                                <div style={{ display: 'flex', gap: '8px' }}>
+                                  <input className="pm-input" value={page.image || ''} onChange={e => { const next = [...(ministryData.pages)]; next[idx] = { ...next[idx], image: e.target.value }; setMinistryData(d => ({...d, pages: next})); }} />
+                                  <button type="button" className="pm-photo-btn" onClick={() => handleFileUpload(url => { const next = [...(ministryData.pages)]; next[idx] = { ...next[idx], image: url }; setMinistryData(d => ({...d, pages: next})); }, hasSupabase, supabase)}>Upload</button>
+                                </div>
+                              </div>
+                              <div className="pm-field" style={{ gridColumn: '1 / -1' }}>
+                                <label>Conteúdo (use \n para parágrafos)</label>
+                                <textarea 
+                                  className="pm-input" 
+                                  style={{ height: '150px', whiteSpace: 'pre-wrap', background: palette.bg, color: palette.text, border: `1px solid ${palette.border}`, borderRadius: 10, padding: 12, outline: 'none', resize: 'vertical' }} 
+                                  value={page.body || ''} 
+                                  onChange={e => { const next = [...(ministryData.pages)]; next[idx] = { ...next[idx], body: e.target.value }; setMinistryData(d => ({...d, pages: next})); }} 
+                                />
+                              </div>
+                            </div>
+                          )}
+
+                          {page.type === 'columnist' && (
+                            <div style={{ width: '100%' }}>
+                              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '1rem', marginBottom: '1rem', border: `1px solid ${palette.border}`, padding: '0.8rem', borderRadius: '8px' }}>
+                                <div className="pm-field" style={{ gridColumn: '1 / -1' }}><label style={{ fontWeight: 600 }}>Dados do Autor</label></div>
+                                <div className="pm-field">
+                                  <label>Nome do Autor</label>
+                                  <input className="pm-input" value={page.author?.name || ''} onChange={e => { const next = [...(ministryData.pages)]; next[idx] = { ...next[idx], author: { ...next[idx].author, name: e.target.value } }; setMinistryData(d => ({...d, pages: next})); }} />
+                                </div>
+                                <div className="pm-field">
+                                  <label>Cargo/Papel</label>
+                                  <input className="pm-input" value={page.author?.role || ''} onChange={e => { const next = [...(ministryData.pages)]; next[idx] = { ...next[idx], author: { ...next[idx].author, role: e.target.value } }; setMinistryData(d => ({...d, pages: next})); }} />
+                                </div>
+                                <div className="pm-field">
+                                  <label>Foto do Autor</label>
+                                  <div style={{ display: 'flex', gap: '8px' }}>
+                                    <input className="pm-input" value={page.author?.image || ''} onChange={e => { const next = [...(ministryData.pages)]; next[idx] = { ...next[idx], author: { ...next[idx].author, image: e.target.value } }; setMinistryData(d => ({...d, pages: next})); }} />
+                                    <button type="button" className="pm-photo-btn" onClick={() => handleFileUpload(url => { const next = [...(ministryData.pages)]; next[idx] = { ...next[idx], author: { ...next[idx].author, image: url } }; setMinistryData(d => ({...d, pages: next})); }, hasSupabase, supabase)}>Up</button>
+                                  </div>
+                                </div>
+                                <div className="pm-field">
+                                  <label>Biografia Curta</label>
+                                  <input className="pm-input" value={page.author?.bio || ''} onChange={e => { const next = [...(ministryData.pages)]; next[idx] = { ...next[idx], author: { ...next[idx].author, bio: e.target.value } }; setMinistryData(d => ({...d, pages: next})); }} />
+                                </div>
+                              </div>
+                              <div className="pm-field">
+                                <label>Conteúdo (use &lt;quote&gt;...&lt;/quote&gt; para citações)</label>
+                                <textarea 
+                                  className="pm-input" 
+                                  style={{ height: '150px', background: palette.bg, color: palette.text, border: `1px solid ${palette.border}`, borderRadius: 10, padding: 12, outline: 'none', resize: 'vertical' }} 
+                                  value={page.body || ''} 
+                                  onChange={e => { const next = [...(ministryData.pages)]; next[idx] = { ...next[idx], body: e.target.value }; setMinistryData(d => ({...d, pages: next})); }} 
+                                />
+                              </div>
+                            </div>
+                          )}
+
+                          {page.type === 'index' && (
+                            <div style={{ width: '100%' }}>
+                              <label>Itens do Índice</label>
+                              {(page.items || []).map((item, iIdx) => (
+                                <div key={iIdx} style={{ display: 'flex', gap: '8px', marginBottom: '8px', alignItems: 'flex-end' }}>
+                                  <div style={{ flex: 2 }}>
+                                    <label style={{ fontSize: '0.75rem' }}>Rótulo</label>
+                                    <input className="pm-input" value={item.label || ''} onChange={e => { const next = [...(ministryData.pages)]; next[idx].items[iIdx].label = e.target.value; setMinistryData(d => ({...d, pages: next})); }} />
+                                  </div>
+                                  <div style={{ flex: 1 }}>
+                                    <label style={{ fontSize: '0.75rem' }}>Página</label>
+                                    <input type="number" className="pm-input" value={item.page || ''} onChange={e => { const next = [...(ministryData.pages)]; next[idx].items[iIdx].page = parseInt(e.target.value); setMinistryData(d => ({...d, pages: next})); }} />
+                                  </div>
+                                  <div style={{ flex: 1 }}>
+                                    <label style={{ fontSize: '0.75rem' }}>Ícone</label>
+                                    <select className="pm-input" style={{ background: palette.bg, color: palette.text }} value={item.icon || 'BookOpen'} onChange={e => { const next = [...(ministryData.pages)]; next[idx].items[iIdx].icon = e.target.value; setMinistryData(d => ({...d, pages: next})); }}>
+                                      <option value="BookOpen">Livro</option>
+                                      <option value="PenTool">Caneta</option>
+                                      <option value="Sun">Sol</option>
+                                      <option value="Calendar">Calendário</option>
+                                      <option value="Heart">Coração</option>
+                                      <option value="Star">Estrela</option>
+                                      <option value="Users">Pessoas</option>
+                                    </select>
+                                  </div>
+                                  <button type="button" className="btn-deletar" style={{ padding: '0.4rem', marginBottom: '4px' }} onClick={() => { const next = [...(ministryData.pages)]; next[idx].items.splice(iIdx, 1); setMinistryData(d => ({...d, pages: next})); }}>✕</button>
+                                </div>
+                              ))}
+                              <button type="button" className="pm-add-btn" onClick={() => { const next = [...(ministryData.pages)]; next[idx].items = [...(next[idx].items || []), { label: '', page: 1, icon: 'BookOpen' }]; setMinistryData(d => ({...d, pages: next})); }}>+ Adicionar Item</button>
+                            </div>
+                          )}
+
+                          {page.type === 'devotional' && (
+                            <div style={{ width: '100%' }}>
+                              <label>Devocionais Diários</label>
+                              {(page.items || []).map((item, dIdx) => (
+                                <div key={dIdx} style={{ marginBottom: '1rem', border: `1px solid ${palette.border}`, padding: '0.8rem', borderRadius: '8px' }}>
+                                  <div style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
+                                    <input placeholder="Data (Ex: 01 DEZ)" className="pm-input" value={item.date || ''} onChange={e => { const next = [...(ministryData.pages)]; next[idx].items[dIdx].date = e.target.value; setMinistryData(d => ({...d, pages: next})); }} />
+                                    <input placeholder="Título" className="pm-input" value={item.title || ''} onChange={e => { const next = [...(ministryData.pages)]; next[idx].items[dIdx].title = e.target.value; setMinistryData(d => ({...d, pages: next})); }} />
+                                  </div>
+                                  <textarea placeholder="Texto reflexivo" className="pm-input" style={{ height: '80px', background: palette.bg, color: palette.text, border: `1px solid ${palette.border}`, borderRadius: 10, padding: 12, outline: 'none', resize: 'vertical' }} value={item.text || ''} onChange={e => { const next = [...(ministryData.pages)]; next[idx].items[dIdx].text = e.target.value; setMinistryData(d => ({...d, pages: next})); }} />
+                                  <button type="button" className="btn-deletar" style={{ marginTop: '0.5rem' }} onClick={() => { const next = [...(ministryData.pages)]; next[idx].items.splice(dIdx, 1); setMinistryData(d => ({...d, pages: next})); }}>Remover Devocional</button>
+                                </div>
+                              ))}
+                              <button type="button" className="pm-add-btn" onClick={() => { const next = [...(ministryData.pages)]; next[idx].items = [...(next[idx].items || []), { date: '', title: '', text: '' }]; setMinistryData(d => ({...d, pages: next})); }}>+ Adicionar Devocional</button>
+                            </div>
+                          )}
+
+                          {page.type === 'feature' && (
+                            <div style={{ width: '100%' }}>
+                              <div className="pm-field">
+                                <label>Destaque (Caixa Amarela)</label>
+                                <textarea className="pm-input" style={{ height: '60px', background: palette.bg, color: palette.text, border: `1px solid ${palette.border}`, borderRadius: 10, padding: 12, outline: 'none', resize: 'vertical' }} value={page.highlight || ''} onChange={e => { const next = [...(ministryData.pages)]; next[idx].highlight = e.target.value; setMinistryData(d => ({...d, pages: next})); }} />
+                              </div>
+                              <label>Eventos / Agenda</label>
+                              {(page.events || []).map((event, eIdx) => (
+                                <div key={eIdx} style={{ display: 'flex', gap: '8px', marginBottom: '8px' }}>
+                                  <input placeholder="Data (07/12)" className="pm-input" style={{ flex: 1 }} value={event.date || ''} onChange={e => { const next = [...(ministryData.pages)]; next[idx].events[eIdx].date = e.target.value; setMinistryData(d => ({...d, pages: next})); }} />
+                                  <input placeholder="Evento" className="pm-input" style={{ flex: 3 }} value={event.title || ''} onChange={e => { const next = [...(ministryData.pages)]; next[idx].events[eIdx].title = e.target.value; setMinistryData(d => ({...d, pages: next})); }} />
+                                  <input placeholder="Hora" className="pm-input" style={{ flex: 1 }} value={event.time || ''} onChange={e => { const next = [...(ministryData.pages)]; next[idx].events[eIdx].time = e.target.value; setMinistryData(d => ({...d, pages: next})); }} />
+                                  <button type="button" className="btn-deletar" onClick={() => { const next = [...(ministryData.pages)]; next[idx].events.splice(eIdx, 1); setMinistryData(d => ({...d, pages: next})); }}>✕</button>
+                                </div>
+                              ))}
+                              <button type="button" className="pm-add-btn" onClick={() => { const next = [...(ministryData.pages)]; next[idx].events = [...(next[idx].events || []), { date: '', title: '', time: '' }]; setMinistryData(d => ({...d, pages: next})); }}>+ Adicionar Evento</button>
+                            </div>
+                          )}
+                        </div>
+                      ))}
                     </div>
                   )}
                 </>

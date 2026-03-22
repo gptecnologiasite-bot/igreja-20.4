@@ -13,8 +13,41 @@ export const useVisitorTracker = () => {
         if (hasTracked.current) return;
         
         const fetchLocation = async () => {
+            // APIs HTTPS de geolocalização por IP (em ordem de confiabilidade)
+            // ATENÇÃO: ip-api.com usa HTTP puro e é bloqueado em sites HTTPS (mixed content)
             const APIS = [
                 {
+                    // ipwho.is — gratuito, HTTPS, sem limites agressivos
+                    url: 'https://ipwho.is/',
+                    parse: (d) => {
+                        if (d.success && d.city && d.region) {
+                            return {
+                                city: d.city,
+                                region: d.region,
+                                country: d.country,
+                                label: `${d.city}, ${d.region} - ${d.country}`
+                            };
+                        }
+                        return null;
+                    }
+                },
+                {
+                    // ipapi.co — gratuito, HTTPS, 30k req/mês
+                    url: 'https://ipapi.co/json/',
+                    parse: (d) => {
+                        if (d.city && d.region && !d.error) {
+                            return {
+                                city: d.city,
+                                region: d.region,
+                                country: d.country_name,
+                                label: `${d.city}, ${d.region} - ${d.country_name}`
+                            };
+                        }
+                        return null;
+                    }
+                },
+                {
+                    // freeipapi.com — gratuito, HTTPS
                     url: 'https://freeipapi.com/api/json',
                     parse: (d) => {
                         if (d.cityName && d.regionName) {
@@ -29,28 +62,15 @@ export const useVisitorTracker = () => {
                     }
                 },
                 {
-                    url: 'http://ip-api.com/json/',
+                    // ip-api.com — só HTTPS funciona em sites seguros via query param
+                    url: 'https://ip-api.com/json/?fields=status,city,regionName,country',
                     parse: (d) => {
-                        if (d.status === 'success') {
+                        if (d.status === 'success' && d.city) {
                             return {
                                 city: d.city,
-                                region: d.regionName || d.region,
+                                region: d.regionName,
                                 country: d.country,
-                                label: `${d.city}, ${d.regionName || d.region} - ${d.country}`
-                            };
-                        }
-                        return null;
-                    }
-                },
-                {
-                    url: 'https://ipapi.co/json/',
-                    parse: (d) => {
-                        if (d.city && d.region) {
-                            return {
-                                city: d.city,
-                                region: d.region,
-                                country: d.country_name,
-                                label: `${d.city}, ${d.region} - ${d.country_name}`
+                                label: `${d.city}, ${d.regionName} - ${d.country}`
                             };
                         }
                         return null;
@@ -60,7 +80,7 @@ export const useVisitorTracker = () => {
 
             for (const api of APIS) {
                 try {
-                    const res = await fetch(api.url, { signal: AbortSignal.timeout(3000) });
+                    const res = await fetch(api.url, { signal: AbortSignal.timeout(5000) });
                     if (!res.ok) continue;
                     const data = await res.json();
                     const parsed = api.parse(data);
@@ -69,7 +89,7 @@ export const useVisitorTracker = () => {
                     console.warn(`[Tracker] Falha na API ${api.url}:`, e.message);
                 }
             }
-            return { label: 'Desconhecido', city: '', region: '', country: '' };
+            return { label: 'Visitante Anônimo', city: '', region: '', country: '' };
         };
 
         const trackVisit = async () => {
