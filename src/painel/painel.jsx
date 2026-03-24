@@ -2355,8 +2355,10 @@ export default function PainelAdm() {
                 ? ['geral', 'sliders', 'pastores', 'videos', 'mensagens', 'ministérios', 'programacao', 'atividades', 'cta', 'aniversariantes']
                 : ministryId === 'midia'
                   ? ['geral', 'equipe', 'videos', 'mensagens', 'programacao', 'galeria', 'bastidores', 'noticias', 'testemunhos', 'aniversariantes']
-                : (ministryId === 'intercessao' || ministryId === 'missoes' || ministryId === 'social' || ministryId === 'retiro')
+                : (ministryId === 'intercessao' || ministryId === 'social' || ministryId === 'retiro')
                   ? ['geral', 'equipe', 'programacao', 'galeria', 'testemunhos']
+                : ministryId === 'missoes'
+                  ? ['geral', 'estatisticas', 'missionarios', 'projetos', 'equipe', 'galeria', 'testemunhos']
                   : ministryId === 'revista'
                     ? ['geral', 'paginas']
                     : ['geral', 'equipe', 'programacao', 'galeria', 'testemunhos', 'aniversariantes']
@@ -2385,7 +2387,10 @@ export default function PainelAdm() {
                                         : t === 'bastidores' ? 'Bastidores'
                                           : t === 'noticias' ? 'Notícias'
                                             : t === 'videos' ? 'Vídeos'
-                                              : 'Testemunhos'}
+                                              : t === 'estatisticas' ? 'Estatísticas'
+                                                : t === 'missionarios' ? 'Missionários'
+                                                  : t === 'projetos' ? 'Projetos'
+                                                    : 'Testemunhos'}
                 </button>
               ))}
             </div>
@@ -3751,6 +3756,238 @@ export default function PainelAdm() {
                       onClick={() => setMinistryData(d => ({ ...d, gallery: [...(d.gallery || []), { url: '', caption: '' }] }))}
                     >
                       + Adicionar Foto
+                    </button>
+                  </div>
+                )}
+                {ministryTab === 'estatisticas' && (
+                  <div style={{ padding: '1.2rem' }}>
+                    <p style={{ color: palette.textMuted, fontSize: '.85rem', marginBottom: '1rem' }}>
+                      Defina os números de impacto para as quatro caixas de destaque da página de Missões.
+                    </p>
+                    {(ministryData?.stats || []).map((s, idx) => (
+                      <div key={idx} className="pm-row" style={{ marginBottom: '.8rem', display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.8rem' }}>
+                        <div className="pm-field">
+                          <label>Ícone (Lucide)</label>
+                          <select 
+                            className="pm-input" 
+                            value={s.icon || 'Globe'} 
+                            onChange={e => {
+                              const next = [...(ministryData.stats || [])];
+                              next[idx] = { ...next[idx], icon: e.target.value };
+                              setMinistryData(d => ({ ...d, stats: next }));
+                            }}
+                            style={{ background: palette.bg, color: palette.text }}
+                          >
+                            <option value="Globe">Globo</option>
+                            <option value="Users">Pessoas</option>
+                            <option value="Heart">Coração</option>
+                            <option value="Award">Troféu</option>
+                            <option value="Target">Alvo</option>
+                            <option value="TrendingUp">Gráfico</option>
+                            <option value="Droplets">Água/Gota</option>
+                            <option value="Book">Livro</option>
+                          </select>
+                        </div>
+                        <div className="pm-field">
+                          <label>Número/Valor</label>
+                          <input 
+                            className="pm-input" 
+                            value={s.number || ''} 
+                            onChange={e => {
+                              const next = [...(ministryData.stats || [])];
+                              next[idx] = { ...next[idx], number: e.target.value };
+                              setMinistryData(d => ({ ...d, stats: next }));
+                            }} 
+                            placeholder="Ex: 500+" 
+                          />
+                        </div>
+                        <div className="pm-field">
+                          <label>Rótulo</label>
+                          <div style={{ display: 'flex', gap: '8px' }}>
+                            <input 
+                              className="pm-input" 
+                              value={s.label || ''} 
+                              onChange={e => {
+                                const next = [...(ministryData.stats || [])];
+                                next[idx] = { ...next[idx], label: e.target.value };
+                                setMinistryData(d => ({ ...d, stats: next }));
+                              }} 
+                              placeholder="Ex: Vidas Impactadas" 
+                            />
+                            <button 
+                              type="button" 
+                              className="btn-deletar" 
+                              style={{ padding: '0.4rem' }}
+                              onClick={() => {
+                                const next = [...(ministryData.stats || [])];
+                                next.splice(idx, 1);
+                                setMinistryData(d => ({ ...d, stats: next }));
+                              }}
+                            >✕</button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                    <button 
+                      className="pm-add-btn" 
+                      onClick={() => setMinistryData(d => ({ ...d, stats: [...(d.stats || []), { icon: 'Globe', number: '', label: '' }] }))}
+                    >
+                      + Adicionar Estatística
+                    </button>
+                  </div>
+                )}
+                {ministryTab === 'missionarios' && (
+                  <div style={{ padding: '1.2rem' }}>
+                    {(ministryData?.missionaries || []).map((m, idx) => (
+                      <div key={idx} className="pm-row" style={{ marginBottom: '1.5rem', background: palette.surfaceHover, padding: '1rem', borderRadius: '12px', border: `1px solid ${palette.border}` }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                          <div className="pm-field">
+                            <label>Nome do Missionário(a) / Família</label>
+                            <input className="pm-input" value={m.name || ''} onChange={e => {
+                              const next = [...(ministryData.missionaries || [])];
+                              next[idx] = { ...next[idx], name: e.target.value };
+                              setMinistryData(d => ({ ...d, missionaries: next }));
+                            }} />
+                          </div>
+                          <div className="pm-field">
+                            <label>País / Atuação</label>
+                            <input className="pm-input" value={m.country || ''} onChange={e => {
+                              const next = [...(ministryData.missionaries || [])];
+                              next[idx] = { ...next[idx], country: e.target.value };
+                              setMinistryData(d => ({ ...d, missionaries: next }));
+                            }} />
+                          </div>
+                          <div className="pm-field" style={{ gridColumn: '1 / -1' }}>
+                            <label>Breve Descrição do Trabalho</label>
+                            <textarea 
+                              className="pm-input" 
+                              style={{ height: '70px', background: palette.bg, color: palette.text, border: `1px solid ${palette.border}`, borderRadius: 10, padding: 12, outline: 'none', resize: 'vertical' }} 
+                              value={m.description || ''} 
+                              onChange={e => {
+                                const next = [...(ministryData.missionaries || [])];
+                                next[idx] = { ...next[idx], description: e.target.value };
+                                setMinistryData(d => ({ ...d, missionaries: next }));
+                              }} 
+                            />
+                          </div>
+                          <div className="pm-field">
+                            <label>Foto (URL)</label>
+                            <div style={{ display: 'flex', gap: '8px' }}>
+                              <input className="pm-input" value={m.photo || ''} onChange={e => {
+                                const next = [...(ministryData.missionaries || [])];
+                                next[idx] = { ...next[idx], photo: e.target.value };
+                                setMinistryData(d => ({ ...d, missionaries: next }));
+                              }} />
+                              <button type="button" className="pm-photo-btn" onClick={() => handleFileUpload(url => {
+                                const next = [...(ministryData.missionaries || [])];
+                                next[idx] = { ...next[idx], photo: url };
+                                setMinistryData(d => ({ ...d, missionaries: next }));
+                              }, hasSupabase, supabase)}>Up</button>
+                            </div>
+                          </div>
+                          <div className="pm-field">
+                            <label>Anos no Campo</label>
+                            <input type="number" className="pm-input" value={m.yearsOnField || ''} onChange={e => {
+                              const next = [...(ministryData.missionaries || [])];
+                              next[idx] = { ...next[idx], yearsOnField: parseInt(e.target.value) || 0 };
+                              setMinistryData(d => ({ ...d, missionaries: next }));
+                            }} />
+                          </div>
+                        </div>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1rem' }}>
+                          {m.photo ? <img src={transformImageLink(m.photo)} alt="" style={{ width: 48, height: 48, borderRadius: '50%', objectFit: 'cover' }} /> : <span>Sem foto</span>}
+                          <button 
+                            type="button" 
+                            className="btn-deletar" 
+                            onClick={() => {
+                              const next = [...(ministryData.missionaries || [])];
+                              next.splice(idx, 1);
+                              setMinistryData(d => ({ ...d, missionaries: next }));
+                            }}
+                          >Excluir Missionário</button>
+                        </div>
+                      </div>
+                    ))}
+                    <button 
+                      className="pm-add-btn" 
+                      onClick={() => setMinistryData(d => ({ ...d, missionaries: [...(d.missionaries || []), { name: '', country: '', description: '', photo: '', yearsOnField: 0 }] }))}
+                    >
+                      + Adicionar Missionário
+                    </button>
+                  </div>
+                )}
+                {ministryTab === 'projetos' && (
+                  <div style={{ padding: '1.2rem' }}>
+                    {(ministryData?.projects || []).map((p, idx) => (
+                      <div key={idx} className="pm-row" style={{ marginBottom: '1.5rem', background: palette.surfaceHover, padding: '1rem', borderRadius: '12px', border: `1px solid ${palette.border}` }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '1rem' }}>
+                          <div className="pm-field">
+                            <label>Ícone</label>
+                            <select 
+                              className="pm-input" 
+                              value={p.icon || 'Target'} 
+                              onChange={e => {
+                                const next = [...(ministryData.projects || [])];
+                                next[idx] = { ...next[idx], icon: e.target.value };
+                                setMinistryData(d => ({ ...d, projects: next }));
+                              }}
+                              style={{ background: palette.bg, color: palette.text }}
+                            >
+                              <option value="Target">Alvo</option>
+                              <option value="Water">Água</option>
+                              <option value="Book">Livro/Educação</option>
+                              <option value="Heart">Coração/Social</option>
+                              <option value="Globe">Global</option>
+                            </select>
+                          </div>
+                          <div className="pm-field">
+                            <label>Título do Projeto</label>
+                            <input className="pm-input" value={p.title || ''} onChange={e => {
+                              const next = [...(ministryData.projects || [])];
+                              next[idx] = { ...next[idx], title: e.target.value };
+                              setMinistryData(d => ({ ...d, projects: next }));
+                            }} />
+                          </div>
+                          <div className="pm-field" style={{ gridColumn: '1 / -1' }}>
+                            <label>Descrição do Impacto / Objetivos</label>
+                            <textarea 
+                              className="pm-input" 
+                              style={{ height: '70px', background: palette.bg, color: palette.text, border: `1px solid ${palette.border}`, borderRadius: 10, padding: 12, outline: 'none', resize: 'vertical' }} 
+                              value={p.description || ''} 
+                              onChange={e => {
+                                const next = [...(ministryData.projects || [])];
+                                next[idx] = { ...next[idx], description: e.target.value };
+                                setMinistryData(d => ({ ...d, projects: next }));
+                              }} 
+                            />
+                          </div>
+                          <div className="pm-field" style={{ gridColumn: '1 / -1' }}>
+                            <label>Resumo de Impacto (Ex: 5 poços construídos)</label>
+                            <input className="pm-input" value={p.impact || ''} onChange={e => {
+                              const next = [...(ministryData.projects || [])];
+                              next[idx] = { ...next[idx], impact: e.target.value };
+                              setMinistryData(d => ({ ...d, projects: next }));
+                            }} />
+                          </div>
+                        </div>
+                        <div style={{ textAlign: 'right', marginTop: '1rem' }}>
+                          <button 
+                            type="button" 
+                            className="btn-deletar" 
+                            onClick={() => {
+                              const next = [...(ministryData.projects || [])];
+                              next.splice(idx, 1);
+                              setMinistryData(d => ({ ...d, projects: next }));
+                            }}
+                          >Remover Projeto</button>
+                        </div>
+                      </div>
+                    ))}
+                    <button 
+                      className="pm-add-btn" 
+                      onClick={() => setMinistryData(d => ({ ...d, projects: [...(d.projects || []), { icon: 'Target', title: '', description: '', impact: '' }] }))}
+                    >
+                      + Adicionar Projeto
                     </button>
                   </div>
                 )}
