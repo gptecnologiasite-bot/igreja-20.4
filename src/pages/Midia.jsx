@@ -75,7 +75,6 @@ const Midia = () => {
             text: "Celebrando a vida daqueles que tornam nossa missão possível!",
             people: []
         },
-        testimonials = [],
         schedule = [],
         videos = [],
         news = [],
@@ -188,31 +187,6 @@ const Midia = () => {
                                 ))}
                             </div>
                         )}
-                    </div>
-                </div>
-            </section>
-
-            {/* --- 3. TESTIMONIALS --- */}
-            <section className="midia-testimonials">
-                <div className="container">
-                    <div className="section-header">
-                        <MessageSquare className="section-icon" />
-                        <h2>Depoimentos</h2>
-                        <p>Impacto do nosso ministério na vida das pessoas.</p>
-                    </div>
-                    <div className="testimonial-grid">
-                        {testimonials && testimonials.map((t, idx) => (
-                            <motion.div key={idx} className="testimonial-card" {...fadeIn} transition={{ delay: idx * 0.2 }}>
-                                <p>"{t.text}"</p>
-                                <div className="testimonial-author">
-                                    <img src={transformImageLink(t.photo) || `https://ui-avatars.com/api/?name=${encodeURIComponent(t.name)}`} alt={t.name} className="author-photo" />
-                                    <div className="author-info">
-                                        <h4>{t.name}</h4>
-                                        <span>{t.role}</span>
-                                    </div>
-                                </div>
-                            </motion.div>
-                        ))}
                     </div>
                 </div>
             </section>

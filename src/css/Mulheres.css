@@ -544,80 +544,7 @@
   font-size: 1rem;
 }
 
-/* Testimonial Form Section */
-.mulheres-page .testimonial-form-section {
-  padding: 4rem 1rem;
-  background: #1a1a1a;
-}
 
-.mulheres-page .form-wrapper {
-  max-width: 700px;
-  margin: 0 auto;
-}
-
-.mulheres-page .testimonial-form {
-  background: #2a2a2a;
-  padding: 2.5rem;
-  border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-}
-
-.mulheres-page .form-group {
-  margin-bottom: 1.5rem;
-}
-
-.mulheres-page .form-group label {
-  display: block;
-  margin-bottom: 0.5rem;
-  color: var(--text-color);
-  font-weight: 500;
-}
-
-.mulheres-page .form-group input,
-.mulheres-page .form-group textarea {
-  width: 100%;
-  padding: 12px;
-  background-color: var(--bg-color);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 6px;
-  color: var(--text-color);
-  font-family: inherit;
-  transition: border-color 0.3s;
-}
-
-.mulheres-page .form-group input:focus,
-.mulheres-page .form-group textarea:focus {
-  outline: none;
-  border-color: #e91e63;
-}
-
-.mulheres-page .form-group textarea {
-  resize: vertical;
-  min-height: 120px;
-}
-
-.mulheres-page .submit-btn {
-  width: 100%;
-  padding: 1.2rem;
-  background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%);
-  color: #fff;
-  border: none;
-  border-radius: 12px;
-  font-weight: 800;
-  font-size: 1.1rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 10px 20px rgba(184, 134, 11, 0.2);
-}
-
-.mulheres-page .submit-btn:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 15px 30px rgba(184, 134, 11, 0.3);
-}
 
 /* CTA Section */
 .mulheres-page .mulheres-cta {
@@ -702,9 +629,7 @@
     align-items: center;
   }
   
-  .mulheres-page .testimonial-form {
-    padding: 1.5rem;
-  }
+
 }
 
 @media (max-width: 480px) {
@@ -732,4 +657,91 @@
     padding: 0.75rem 1.5rem;
     font-size: 1rem;
   }
+}
+/* Birthdays Section */
+.mulheres-page .birthdays-section {
+  padding: 4rem 1rem;
+  background: var(--bg-color);
+}
+
+.mulheres-page .birthdays-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 2rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.mulheres-page .birthday-card {
+  background: rgba(255, 255, 255, 0.03);
+  padding: 2.5rem;
+  border-radius: 20px;
+  text-align: center;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  border: 1px solid rgba(212, 175, 55, 0.1);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+.mulheres-page .birthday-card:hover {
+  transform: translateY(-10px);
+  border-color: #d4af37;
+  box-shadow: 0 20px 40px rgba(212, 175, 55, 0.1);
+}
+
+.mulheres-page .birthday-photo-wrap {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  margin: 0 auto 1.5rem;
+}
+
+.mulheres-page .birthday-photo-wrap img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #d4af37;
+  box-shadow: 0 10px 20px rgba(0,0,0,0.3);
+}
+
+.mulheres-page .birthday-badge {
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%);
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  border: 2px solid #1a1a1a;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+}
+
+.mulheres-page .birthday-card h3 {
+  color: var(--text-color);
+  font-size: 1.3rem;
+  margin-bottom: 0.5rem;
+  font-weight: 700;
+}
+
+.mulheres-page .birthday-date {
+  color: #d4af37;
+  font-weight: 600;
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.mulheres-page .empty-birthdays {
+  grid-column: 1 / -1;
+  text-align: center;
+  color: var(--text-muted);
+  padding: 3rem;
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 16px;
+  border: 1px dashed rgba(255, 255, 255, 0.1);
 }

@@ -444,79 +444,6 @@
   font-size: 0.85rem;
 }
 
-/* Testimonial Form Section */
-.homens-page .testimonial-form-section {
-  padding: 4rem 1rem;
-  background: #1a1a1a;
-}
-
-.homens-page .form-wrapper {
-  max-width: 700px;
-  margin: 0 auto;
-}
-
-.homens-page .testimonial-form {
-  background: #2a2a2a;
-  padding: 2.5rem;
-  border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-}
-
-.homens-page .form-group {
-  margin-bottom: 1.5rem;
-}
-
-.homens-page .form-group label {
-  display: block;
-  margin-bottom: 0.5rem;
-  color: var(--text-color);
-  font-weight: 500;
-}
-
-.homens-page .form-group input,
-.homens-page .form-group textarea {
-  width: 100%;
-  padding: 12px;
-  background-color: var(--bg-color);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 6px;
-  color: var(--text-color);
-  font-family: inherit;
-  transition: border-color 0.3s;
-}
-
-.homens-page .form-group input:focus,
-.homens-page .form-group textarea:focus {
-  outline: none;
-  border-color: #2c3e50;
-}
-
-.homens-page .form-group textarea {
-  resize: vertical;
-  min-height: 120px;
-}
-
-.homens-page .submit-btn {
-  width: 100%;
-  padding: 1rem;
-  background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  font-weight: bold;
-  font-size: 1rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
-  cursor: pointer;
-  transition: transform 0.3s;
-}
-
-.homens-page .submit-btn:hover {
-  transform: scale(1.02);
-}
-
 /* CTA Section */
 .homens-page .homens-cta {
   padding: 4rem 2rem;
@@ -589,11 +516,6 @@
     align-items: center;
   }
   
-  .homens-page .testimonial-form {
-    padding: 1.5rem;
-  }
-}
-
   .homens-page .testimonials-grid {
     grid-template-columns: 1fr;
     gap: 1.5rem;
@@ -636,7 +558,6 @@
   .homens-page .schedule-section,
   .homens-page .team-section,
   .homens-page .gallery-section,
-  .homens-page .testimonial-form-section,
   .homens-page .homens-cta,
   .homens-page .video-section {
     padding: 2rem 1rem;
@@ -647,9 +568,6 @@
   .homens-page .section-subtitle {
     font-size: 1rem;
     margin-bottom: 2rem;
-  }
-  .homens-page .testimonial-form {
-    padding: 1.25rem;
   }
   .homens-page .schedule-card {
     padding: 1rem;
@@ -663,4 +581,3 @@
     padding: 1.5rem;
   }
 }
-

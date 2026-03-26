@@ -6,23 +6,30 @@ import { useMinistryData } from '../hooks/useMinistryData';
 
 const Kids = () => {
   const [data] = useMinistryData('kids');
+  const {
+    hero = { title: 'Ministério Kids', subtitle: 'Lugar de criança feliz!' },
+    info = { schedule: [], location: '', age: '' },
+    schedule = [],
+    gallery = []
+  } = data || {};
+  
   const [currentSlide, setCurrentSlide] = useState(0);
 
   useEffect(() => {
-    if (data.gallery && data.gallery.length > 0) {
+    if (gallery && gallery.length > 0) {
       const timer = setInterval(() => {
-        setCurrentSlide((prev) => (prev + 1) % data.gallery.length);
+        setCurrentSlide((prev) => (prev + 1) % gallery.length);
       }, 5000);
       return () => clearInterval(timer);
     }
-  }, [data.gallery]);
+  }, [gallery]);
 
   return (
     <div className="kids-page">
       {/* Hero Section */}
       <div className="kids-hero">
         <div className="hero-slideshow">
-          {(data.gallery && data.gallery.length > 0 ? data.gallery : [
+          {(gallery && gallery.length > 0 ? gallery : [
             { url: 'https://images.unsplash.com/photo-1472162072942-cd5147eb3902?w=1600&h=900&fit=crop' },
             { url: 'https://images.unsplash.com/photo-1489710437720-ebb67ec84dd2?w=1600&h=900&fit=crop' },
             { url: 'https://images.unsplash.com/photo-1502086223501-7ea6ecd79368?w=1600&h=900&fit=crop' }
@@ -36,8 +43,8 @@ const Kids = () => {
         </div>
         <div className="hero-overlay"></div>
         <div className="hero-content">
-          <h1>{data.hero.title}</h1>
-          <p className="hero-subtitle">{data.hero.subtitle}</p>
+          <h1>{hero.title}</h1>
+          <p className="hero-subtitle">{hero.subtitle}</p>
           <div className="hero-stats">
             <div className="stat-card">
               <Users size={32} />
@@ -71,19 +78,19 @@ const Kids = () => {
             <div className="info-card">
               <Clock className="info-icon" />
               <h3>Horários</h3>
-              {data.info.schedule.map((time, index) => (
+              {(info.schedule || []).map((time, index) => (
                 <p key={index}>{time}</p>
               ))}
             </div>
             <div className="info-card">
               <MapPin className="info-icon" />
               <h3>Local</h3>
-              <p>{data.info.location}</p>
+              <p>{info.location}</p>
             </div>
             <div className="info-card">
               <Users className="info-icon" />
               <h3>Idade</h3>
-              <p>{data.info.age}</p>
+              <p>{info.age}</p>
             </div>
           </div>
         </div>
@@ -96,7 +103,7 @@ const Kids = () => {
           <p className="section-subtitle">Não perca as atividades especiais do Kids!</p>
 
           <div className="events-grid">
-            {data.schedule.map((event, index) => (
+            {(schedule || []).map((event, index) => (
               <div key={index} className="event-card">
                 <div className="event-image" style={{ backgroundImage: `url(${transformImageLink(event.image)})` }}>
                   <div className="event-badge">
@@ -135,39 +142,11 @@ const Kids = () => {
           <p className="section-subtitle">Momentos especiais do nosso ministério</p>
 
           <div className="gallery-grid">
-            {data.gallery.map((photo, index) => (
+            {(gallery || []).map((photo, index) => (
               <div key={index} className="gallery-item">
                 <img src={transformImageLink(photo.url)} alt={photo.caption} />
                 <div className="gallery-overlay">
                   <span>{photo.caption}</span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonials Section */}
-      <section className="testimonials-section">
-        <div className="container">
-          <h2>O Que as Crianças Dizem</h2>
-          <p className="section-subtitle">Depoimentos dos nossos pequenos</p>
-
-          <div className="testimonials-grid">
-            {data.testimonials.map((testimonial, index) => (
-              <div key={index} className="testimonial-card">
-                <div className="stars">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} size={16} fill="var(--primary-color)" color="var(--primary-color)" />
-                  ))}
-                </div>
-                <p className="testimonial-text">"{testimonial.text}"</p>
-                <div className="testimonial-author">
-                  <img src={transformImageLink(testimonial.photo)} alt={testimonial.name} />
-                  <div>
-                    <strong>{testimonial.name}</strong>
-                    <span>{testimonial.age} anos</span>
-                  </div>
                 </div>
               </div>
             ))}

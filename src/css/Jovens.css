@@ -424,16 +424,7 @@
   font-size: 0.85rem;
 }
 
-/* Testimonial Form Section */
-.jovens-page .testimonial-form-section {
-  padding: 4rem 1rem;
-  background-color: var(--bg-color);
-}
 
-.jovens-page .form-wrapper {
-  max-width: 700px;
-  margin: 0 auto;
-}
 
 @media (max-width: 768px) {
   .jovens-page .testimonials-grid {
@@ -460,73 +451,7 @@
   }
 }
 
-.jovens-page .testimonial-form {
-  background: #2a2a2a;
-  padding: 2.5rem;
-  border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-}
 
-.jovens-page .form-row {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 1.5rem;
-}
-
-.jovens-page .form-group {
-  margin-bottom: 1.5rem;
-}
-
-.jovens-page .form-group label {
-  display: block;
-  margin-bottom: 0.5rem;
-  color: var(--text-color);
-  font-weight: 500;
-}
-
-.jovens-page .form-group input,
-.jovens-page .form-group textarea {
-  width: 100%;
-  padding: 12px;
-  background-color: var(--bg-color);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 6px;
-  color: var(--text-color);
-  font-family: inherit;
-  transition: border-color 0.3s;
-}
-
-.jovens-page .form-group input:focus,
-.jovens-page .form-group textarea:focus {
-  outline: none;
-  border-color: #e67e22;
-}
-
-.jovens-page .form-group textarea {
-  resize: vertical;
-  min-height: 120px;
-}
-
-.jovens-page .submit-btn {
-  width: 100%;
-  padding: 1rem;
-  background: linear-gradient(135deg, #e67e22 0%, #d35400 100%);
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  font-weight: bold;
-  font-size: 1rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
-  cursor: pointer;
-  transition: transform 0.3s;
-}
-
-.jovens-page .submit-btn:hover {
-  transform: scale(1.02);
-}
 
 /* CTA Section */
 .jovens-page .jovens-cta {
@@ -599,11 +524,7 @@
     align-items: center;
   }
   
-  .jovens-page .form-row {
-    grid-template-columns: 1fr;
-  }
+
   
-  .jovens-page .testimonial-form {
-    padding: 1.5rem;
-  }
+
 }

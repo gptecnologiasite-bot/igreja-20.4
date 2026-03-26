@@ -409,78 +409,7 @@
   padding: 2rem;
 }
 
-/* Testimonial Form Section */
-.louvor-page .testimonial-form-section {
-  padding: 4rem 1rem;
-  background-color: var(--bg-color);
-}
 
-.louvor-page .form-wrapper {
-  max-width: 700px;
-  margin: 0 auto;
-}
-
-.louvor-page .testimonial-form {
-  background: #2a2a2a;
-  padding: 2.5rem;
-  border-radius: 12px;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-}
-
-.louvor-page .form-group {
-  margin-bottom: 1.5rem;
-}
-
-.louvor-page .form-group label {
-  display: block;
-  margin-bottom: 0.5rem;
-  color: var(--text-color);
-  font-weight: 500;
-}
-
-.louvor-page .form-group input,
-.louvor-page .form-group textarea {
-  width: 100%;
-  padding: 12px;
-  background-color: var(--bg-color);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 6px;
-  color: var(--text-color);
-  font-family: inherit;
-  transition: border-color 0.3s;
-}
-
-.louvor-page .form-group input:focus,
-.louvor-page .form-group textarea:focus {
-  outline: none;
-  border-color: #9b59b6;
-}
-
-.louvor-page .form-group textarea {
-  resize: vertical;
-  min-height: 120px;
-}
-
-.louvor-page .submit-btn {
-  width: 100%;
-  padding: 1rem;
-  background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
-  color: #fff;
-  border: none;
-  border-radius: 8px;
-  font-weight: bold;
-  font-size: 1rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.75rem;
-  cursor: pointer;
-  transition: transform 0.3s;
-}
-
-.louvor-page .submit-btn:hover {
-  transform: scale(1.02);
-}
 
 /* CTA Section */
 .louvor-page .louvor-cta {
@@ -553,9 +482,7 @@
     align-items: center;
   }
   
-  .louvor-page .testimonial-form {
-    padding: 1.5rem;
-  }
+
 }
 
 @media (max-width: 480px) {

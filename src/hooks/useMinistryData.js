@@ -100,5 +100,28 @@ export const useMinistryData = (ministryId) => {
         return () => { activeCallback = false; };
     });
 
-    return [data, setData];
+    const updateMinistryData = async (newData) => {
+        try {
+            const merged = deepMerge(data, newData);
+            const { error } = await supabase
+                .from('site_settings')
+                .upsert({
+                    key: `ministry_${ministryId}`,
+                    data: merged,
+                    updated_at: new Date().toISOString()
+                });
+
+            if (error) throw error;
+            
+            setData(merged);
+            localStorage.setItem(`admac_site_settings:ministry_${ministryId}`, JSON.stringify(merged));
+            broadcastUpdate(`ministry_${ministryId}`);
+            return { success: true };
+        } catch (err) {
+            console.error(`[useMinistryData] Erro ao atualizar ${ministryId}:`, err);
+            return { success: false, error: err };
+        }
+    };
+
+    return [data, setData, updateMinistryData];
 };

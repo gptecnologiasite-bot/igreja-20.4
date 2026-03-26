@@ -156,42 +156,6 @@ const Intercessao = () => {
         </div>
       </section>
 
-      {/* Testimonials Section */}
-      <section className="testimonials-section" style={{ background: 'var(--nav-bg)', padding: '4rem 0' }}>
-        <div className="container">
-          <div className="section-header">
-            <Star size={32} />
-            <h2>Testemunhos</h2>
-          </div>
-          <p className="section-subtitle">Veja o que Deus tem feito através da oração</p>
-
-          <div className="testimonials-grid" style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))',
-            gap: '2rem',
-            marginTop: '3rem'
-          }}>
-            {(data?.testimonials || []).map((testimonial, index) => (
-              <div key={index} className="testimonial-card" style={{
-                background: 'rgba(255, 255, 255, 0.05)',
-                border: '1px solid rgba(212, 175, 55, 0.2)',
-                borderRadius: '12px',
-                padding: '2rem',
-                position: 'relative'
-              }}>
-                <MessageSquare size={32} color="var(--primary-color)" style={{ marginBottom: '1rem' }} />
-                <p style={{ fontStyle: 'italic', marginBottom: '1.5rem', lineHeight: '1.8' }}>
-                  "{testimonial.text}"
-                </p>
-                <p style={{ color: 'var(--primary-color)', fontWeight: 'bold' }}>
-                  - {testimonial.author}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* Prayer Request Form */}
       <section className="registration-section">
         <div className="container">
