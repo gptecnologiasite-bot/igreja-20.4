@@ -1755,6 +1755,7 @@ export default function PainelAdm() {
           subtitle: pageData.description || '',
           address: pageData.address || '',
           phone: pageData.phone || '',
+          whatsapp: pageData.whatsapp || '',
           email: pageData.email || '',
           schedule: pageData.schedule || '',
         };
@@ -1769,6 +1770,10 @@ export default function PainelAdm() {
             phone: fields.phone,
             email: fields.email,
             cultos: fields.schedule
+          },
+          social: {
+            ...footerData.social,
+            whatsapp: fields.whatsapp
           }
         };
 
@@ -5048,6 +5053,18 @@ export default function PainelAdm() {
               </div>
             </div>
             <div className="pm-field" style={{ marginBottom: '1.5rem' }}>
+              <label>Link Direto do WhatsApp (Ex: https://wa.me/...)</label>
+              <div className="pm-field-wrap">
+                <span className="pm-icon">💬</span>
+                <input
+                  className="pm-input"
+                  value={footerData?.social?.whatsapp || ''}
+                  onChange={e => setFooterData(d => ({ ...d, social: { ...d.social, whatsapp: e.target.value } }))}
+                  placeholder="https://wa.me/5561993241084"
+                />
+              </div>
+            </div>
+            <div className="pm-field" style={{ marginBottom: '1.5rem' }}>
               <label>Música / TikTok / Spotify (Link)</label>
               <div className="pm-field-wrap">
                 <span className="pm-icon">🎵</span>
@@ -5552,6 +5569,19 @@ export default function PainelAdm() {
                           placeholder="contato@igreja.com"
                         />
                       </div>
+                    </div>
+                  </div>
+
+                  <div className="pm-field">
+                    <label>Link Direto do WhatsApp (Ex: https://wa.me/...)</label>
+                    <div className="pm-field-wrap">
+                      <span className="pm-icon">💬</span>
+                      <input
+                        className="pm-input"
+                        value={pageData.whatsapp || ''}
+                        onChange={e => setPageData(d => ({ ...d, whatsapp: e.target.value }))}
+                        placeholder="https://wa.me/5561993241084"
+                      />
                     </div>
                   </div>
 

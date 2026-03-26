@@ -542,6 +542,7 @@ export const INITIAL_FOOTER_DATA = {
     facebook: 'admac', 
     instagram: '@admac', 
     youtube: 'ADMAC TV',
+    whatsapp: 'https://wa.me/5561993241084',
     spotify: 'https://open.spotify.com/show/2lzm9pXbj4PCoWcxsFzDtf'
   }
 };
