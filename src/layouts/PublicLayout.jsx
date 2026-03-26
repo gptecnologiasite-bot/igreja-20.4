@@ -4,6 +4,7 @@ import Header from '../components/Header';
 import Footer from '../components/Footer';
 import { supabase } from '../lib/supabase';
 import { parseSafeJson } from '../lib/dbUtils';
+import { INITIAL_FOOTER_DATA } from '../lib/constants';
 
 const PublicLayout = () => {
     const location = useLocation();
@@ -45,6 +46,33 @@ const PublicLayout = () => {
         checkStatus();
     }, [location.pathname]);
 
+    const [footerData, setFooterData] = React.useState(null);
+    const [headerData, setHeaderData] = React.useState(null);
+
+    React.useEffect(() => {
+        const loadGlobals = async () => {
+            try {
+                const [fRes, hRes] = await Promise.all([
+                    supabase.from('site_settings').select('data').eq('key', 'footer').single(),
+                    supabase.from('site_settings').select('data').eq('key', 'header').single()
+                ]);
+
+                if (fRes.data) {
+                    const parsed = typeof fRes.data.data === 'string' ? JSON.parse(fRes.data.data) : fRes.data.data;
+                    setFooterData(parsed);
+                }
+                if (hRes.data) {
+                    const parsed = typeof hRes.data.data === 'string' ? JSON.parse(hRes.data.data) : hRes.data.data;
+                    setHeaderData(parsed);
+                }
+            } catch (err) {
+                console.warn('Error loading globals in layout:', err);
+            }
+        };
+        loadGlobals();
+    }, []);
+
+    const whatsappLink = footerData?.social?.whatsapp || INITIAL_FOOTER_DATA.social.whatsapp;
     const isInactive = !loading && isActive === false;
 
     if (isInactive) {
@@ -58,6 +86,17 @@ const PublicLayout = () => {
                     <a href="/" style={{ marginTop: '2rem', color: '#6c63ff', textDecoration: 'none', fontWeight: 'bold' }}>← Voltar para a Início</a>
                 </main>
                 <Footer />
+                {whatsappLink && (
+                    <a 
+                        href={whatsappLink} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="whatsapp-float-btn"
+                        title="Fale conosco no WhatsApp"
+                    >
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp" />
+                    </a>
+                )}
             </>
         );
     }
@@ -69,6 +108,17 @@ const PublicLayout = () => {
                 <Outlet />
             </main>
             <Footer />
+            {whatsappLink && (
+                <a 
+                    href={whatsappLink} 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="whatsapp-float-btn"
+                    title="Fale conosco no WhatsApp"
+                >
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp" />
+                </a>
+            )}
         </>
     );
 };
