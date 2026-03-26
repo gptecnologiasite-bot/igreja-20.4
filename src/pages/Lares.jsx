@@ -138,31 +138,6 @@ const Lares = () => {
         </div>
       </section>
 
-      {/* Testimonials Section */}
-      <section className="testimonials-section">
-        <div className="container">
-          <h2>Testemunhos</h2>
-          <p className="section-subtitle">Veja o que os participantes dizem</p>
-
-          <div className="testimonials-grid">
-            {(data?.testimonials || []).map((testimonial, index) => (
-              <div key={index} className="testimonial-card">
-                <div className="stars">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} size={16} fill="#3498db" color="#3498db" />
-                  ))}
-                </div>
-                <p className="testimonial-text">"{testimonial.text}"</p>
-                <div className="testimonial-author">
-                  <img src={transformImageLink(testimonial?.photo) || `https://ui-avatars.com/api/?name=${encodeURIComponent(testimonial?.name || 'Membro')}&background=random`} alt={testimonial?.name} />
-                  <strong>{testimonial.name}</strong>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
       {/* Registration Form Section */}
       <section className="registration-form-section">
         <div className="container">

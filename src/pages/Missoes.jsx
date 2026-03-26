@@ -1,11 +1,11 @@
 import React, { useState } from 'react';
 import { transformImageLink } from '../utils/imageUtils';
-import { Globe, Users, Heart, MapPin, Send, Calendar, DollarSign, Play, Target, TrendingUp, Award, Droplets, Book } from 'lucide-react';
+import { Globe, Users, Heart, MapPin, Send, Calendar, DollarSign, Play, Target, TrendingUp, Award, Droplets, Book, Clock, Image as ImageIcon, Star, MessageSquare } from 'lucide-react';
 import { useMinistryData } from '../hooks/useMinistryData';
 import '../css/Missoes.css';
 
 const IconMap = {
-  Globe, Users, Heart, MapPin, Send, Calendar, DollarSign, Play, Target, TrendingUp, Award, Droplets, Book
+  Globe, Users, Heart, MapPin, Send, Calendar, DollarSign, Play, Target, TrendingUp, Award, Droplets, Book, Clock, ImageIcon
 };
 
 // Missoes.jsx - Página de Missões (Corrigido e Padronizado)
@@ -28,7 +28,9 @@ const Missoes = () => {
     stats = [],
     missionaries = [],
     projects = [],
-    team = []
+    team = [],
+    schedule = [],
+    gallery = []
   } = data || {};
 
   const handleSubmit = (e) => {
@@ -101,10 +103,14 @@ const Missoes = () => {
 
       {/* Video Section */}
       {(() => {
-        const rawUrl = hero.videoUrl || 'https://www.youtube.com/embed/dQw4w9WgXcQ';
-        const finalUrl = rawUrl.includes('watch?v=') 
-          ? rawUrl.replace('watch?v=', 'embed/').split('&')[0] 
-          : rawUrl;
+        let finalUrl = hero.videoUrl || 'https://www.youtube.com/embed/dQw4w9WgXcQ';
+        if (finalUrl && !finalUrl.includes('/embed/')) {
+          const wMatch = finalUrl.match(/[?&]v=([a-zA-Z0-9_-]+)/);
+          const yMatch = finalUrl.match(/youtu\.be\/([a-zA-Z0-9_-]+)/);
+          const lMatch = finalUrl.match(/youtube\.com\/live\/([a-zA-Z0-9_-]+)/);
+          const vidId = (wMatch || yMatch || lMatch || [])[1];
+          if (vidId) finalUrl = `https://www.youtube.com/embed/${vidId}`;
+        }
         
         return finalUrl ? (
           <section className="video-section" style={{ padding: '6rem 0', background: '#0f111a' }}>
@@ -250,6 +256,118 @@ const Missoes = () => {
                   </div>
                 );
               })}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Schedule Section */}
+      {schedule && schedule.length > 0 && (
+        <section className="schedule-section" style={{ padding: '6rem 0', background: '#161a29' }}>
+          <div className="container">
+            <div className="section-header">
+              <Calendar size={32} color="var(--primary-color)" />
+              <h2>Programação Geral</h2>
+            </div>
+            <p className="section-subtitle" style={{ textAlign: 'center', marginBottom: '3rem', color: 'rgba(255, 255, 255, 0.6)' }}>
+              Fique por dentro das nossas atividades e reuniões
+            </p>
+            
+            <div className="schedule-grid" style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+              gap: '2rem',
+              marginTop: '1rem'
+            }}>
+              {schedule.map((item, index) => (
+                <div key={index} className="schedule-card" style={{
+                  background: 'rgba(255, 255, 255, 0.02)',
+                  border: '1px solid rgba(255, 255, 255, 0.05)',
+                  borderRadius: '24px',
+                  padding: '2.5rem',
+                  transition: 'all 0.3s ease'
+                }}>
+                  <h3 style={{ color: 'var(--primary-color)', marginBottom: '1.2rem', fontSize: '1.3rem' }}>{item.activity || item.title}</h3>
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', color: 'rgba(255,255,255,0.8)' }}>
+                      <Calendar size={18} color="var(--primary-color)" />
+                      <span>{item.day || item.date}</span>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', color: 'rgba(255,255,255,0.8)' }}>
+                      <Clock size={18} color="var(--primary-color)" />
+                      <span>{item.time}</span>
+                    </div>
+                    {item.location && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', color: 'rgba(255,255,255,0.8)' }}>
+                        <MapPin size={18} color="var(--primary-color)" />
+                        <span>{item.location}</span>
+                      </div>
+                    )}
+                  </div>
+                  {item.description && (
+                    <p style={{ marginTop: '1.2rem', color: 'rgba(255,255,255,0.6)', fontSize: '0.95rem', lineHeight: '1.5' }}>
+                      {item.description}
+                    </p>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
+
+      {/* Gallery Section */}
+      {gallery && gallery.length > 0 && (
+        <section className="gallery-section" style={{ padding: '6rem 0', background: '#0f111a' }}>
+          <div className="container">
+            <div className="section-header">
+              <ImageIcon size={32} color="var(--primary-color)" />
+              <h2>Galeria de Missões</h2>
+            </div>
+            <p className="section-subtitle" style={{ textAlign: 'center', marginBottom: '3rem', color: 'rgba(255, 255, 255, 0.6)' }}>
+              Registros de momentos preciosos no campo missionário
+            </p>
+            
+            <div className="gallery-grid" style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))',
+              gap: '1.5rem',
+              marginTop: '1rem'
+            }}>
+              {gallery.map((img, index) => (
+                <div key={index} className="gallery-item" style={{
+                  height: '240px',
+                  borderRadius: '16px',
+                  overflow: 'hidden',
+                  boxShadow: '0 10px 30px rgba(0,0,0,0.3)',
+                  border: '1px solid rgba(255,255,255,0.05)',
+                  position: 'relative'
+                }}>
+                  <img 
+                    src={transformImageLink(img.url)} 
+                    alt={img.description || 'Galeria Missões'} 
+                    style={{ 
+                      width: '100%', 
+                      height: '100%', 
+                      objectFit: 'cover'
+                    }}
+                  />
+                  {img.description && (
+                    <div style={{
+                      position: 'absolute',
+                      bottom: 0,
+                      left: 0,
+                      right: 0,
+                      background: 'linear-gradient(transparent, rgba(0,0,0,0.8))',
+                      padding: '1.5rem 1rem 1rem',
+                      color: '#fff',
+                      fontSize: '0.9rem'
+                    }}>
+                      {img.description}
+                    </div>
+                  )}
+                </div>
+              ))}
             </div>
           </div>
         </section>

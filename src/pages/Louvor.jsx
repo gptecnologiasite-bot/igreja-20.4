@@ -1,20 +1,12 @@
 import React, { useState } from 'react';
 import { transformImageLink } from '../lib/dbUtils';
 import { supabase } from '../lib/supabase';
-import { Music, Calendar, Clock, Users, MessageSquare, Send, Mic, Guitar, Headphones, Heart, Camera, Gift } from 'lucide-react';
+import { Music, Calendar, Clock, Users, MessageSquare, Send, Mic, Guitar, Headphones, Heart, Camera, Gift, Star } from 'lucide-react';
 import { useMinistryData } from '../hooks/useMinistryData';
 import '../css/Louvor.css';
 
 const Louvor = () => {
-  const [testimonial, setTestimonial] = useState({
-    name: '',
-    email: '',
-    message: ''
-  });
-  const [photoFile, setPhotoFile] = useState(null);
-  const [uploading, setUploading] = useState(false);
-
-  const [data] = useMinistryData('louvor');
+  const [data, , updateMinistryData] = useMinistryData('louvor');
 
   const {
     hero = {
@@ -37,58 +29,7 @@ const Louvor = () => {
     }
   } = data || {};
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    setUploading(true);
-    let photoUrl = '';
 
-    if (photoFile) {
-      try {
-        const fileExt = photoFile.name.split('.').pop();
-        const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${fileExt}`;
-        const filePath = `uploads/${fileName}`;
-
-        const { error: uploadError } = await supabase.storage
-          .from('site-images')
-          .upload(filePath, photoFile);
-        
-        if (!uploadError) {
-          const { data: publicUrlData } = supabase.storage
-            .from('site-images')
-            .getPublicUrl(filePath);
-          if (publicUrlData) photoUrl = publicUrlData.publicUrl;
-        }
-      } catch (err) {
-        console.error('Error uploading photo:', err);
-      }
-    }
-
-    const payload = {
-      type: 'testimonial_submission',
-      category: 'louvor',
-      ...testimonial,
-      photo_url: photoUrl,
-      created_at: new Date().toISOString()
-    };
-
-    try {
-      const { error } = await supabase.from('site_messages').insert(payload);
-      if (error) throw error;
-      alert('Testemunho enviado com sucesso! Obrigado por compartilhar.');
-      setTestimonial({ name: '', email: '', message: '' });
-      setPhotoFile(null);
-    } catch (err) {
-      console.error('Error sending:', err);
-      const backups = JSON.parse(localStorage.getItem('admac_messages_backup') || '[]');
-      backups.push(payload);
-      localStorage.setItem('admac_messages_backup', JSON.stringify(backups));
-      alert('Testemunho salvo localmente com sucesso! Obrigado por compartilhar.');
-      setTestimonial({ name: '', email: '', message: '' });
-      setPhotoFile(null);
-    } finally {
-      setUploading(false);
-    }
-  };
 
   return (
     <div className="louvor-page">
@@ -240,80 +181,6 @@ const Louvor = () => {
         </div>
       </section>
 
-      {/* Testimonials Form Section */}
-      <section className="testimonial-form-section">
-        <div className="container">
-          <div className="section-header">
-            <MessageSquare size={32} />
-            <h2>Compartilhe Seu Testemunho</h2>
-          </div>
-          <p className="section-subtitle">Como o louvor tem impactado sua vida? Conte para nós!</p>
-
-          <div className="form-wrapper">
-            <form onSubmit={handleSubmit} className="testimonial-form">
-              <div className="form-group">
-                <label htmlFor="name">Nome Completo</label>
-                <input
-                  type="text"
-                  id="name"
-                  value={testimonial.name}
-                  onChange={(e) => setTestimonial({ ...testimonial, name: e.target.value })}
-                  placeholder="Seu nome"
-                  required
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="email">Email (Opcional)</label>
-                <input
-                  type="email"
-                  id="email"
-                  value={testimonial.email}
-                  onChange={(e) => setTestimonial({ ...testimonial, email: e.target.value })}
-                  placeholder="seu@email.com"
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="photo">Sua Foto (Opcional)</label>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginTop: '0.5rem' }}>
-                  <label style={{ cursor: 'pointer', padding: '0.6rem 1.2rem', background: 'var(--surface-color)', borderRadius: '8px', border: '1px dashed var(--border-color)', display: 'inline-block', fontSize: '0.9rem', color: 'var(--text-color)', transition: 'all 0.2s ease' }}>
-                    {photoFile ? 'Trocar Foto' : 'Escolher Foto'}
-                    <input
-                      type="file"
-                      id="photo"
-                      accept="image/*"
-                      style={{ display: 'none' }}
-                      onChange={(e) => {
-                        if (e.target.files && e.target.files[0]) {
-                          setPhotoFile(e.target.files[0]);
-                        }
-                      }}
-                    />
-                  </label>
-                  {photoFile && <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{photoFile.name}</span>}
-                </div>
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="message">Seu Testemunho</label>
-                <textarea
-                  id="message"
-                  value={testimonial.message}
-                  onChange={(e) => setTestimonial({ ...testimonial, message: e.target.value })}
-                  placeholder="Compartilhe como o louvor tem tocado seu coração..."
-                  rows="6"
-                  required
-                ></textarea>
-              </div>
-
-              <button type="submit" className="submit-btn" disabled={uploading}>
-                <Send size={18} /> {uploading ? 'Enviando...' : 'Enviar Testemunho'}
-              </button>
-            </form>
-          </div>
-        </div>
-      </section>
 
       {/* CTA Section */}
       <section className="louvor-cta">

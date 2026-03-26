@@ -8,7 +8,7 @@
 }
 
 /* Hero Section */
-.missoes-hero {
+.missoes-page .missoes-hero {
   position: relative;
   height: 80vh;
   display: flex;
@@ -19,7 +19,7 @@
   background-attachment: fixed;
 }
 
-.missoes-hero .hero-overlay {
+.missoes-page .missoes-hero .hero-overlay {
   position: absolute;
   top: 0;
   left: 0;
@@ -29,7 +29,7 @@
   z-index: 1;
 }
 
-.missoes-hero .hero-content {
+.missoes-page .missoes-hero .hero-content {
   position: relative;
   z-index: 2;
   text-align: center;
@@ -38,7 +38,7 @@
   animation: fadeInDown 1s ease-out;
 }
 
-.missoes-hero h1 {
+.missoes-page .missoes-hero h1 {
   font-size: clamp(2.5rem, 8vw, 4.5rem);
   font-weight: 800;
   margin-bottom: 1rem;
@@ -49,14 +49,14 @@
   line-height: 1.1;
 }
 
-.missoes-hero .hero-subtitle {
+.missoes-page .missoes-hero .hero-subtitle {
   font-size: clamp(1.1rem, 3vw, 1.5rem);
   color: rgba(255, 255, 255, 0.9);
   margin-bottom: 2rem;
   font-weight: 300;
 }
 
-.missoes-hero .hero-verse {
+.missoes-page .missoes-hero .hero-verse {
   display: inline-block;
   padding: 1rem 2rem;
   background: rgba(212, 175, 55, 0.1);
@@ -68,7 +68,7 @@
 }
 
 /* Sections Common */
-.section-header {
+.missoes-page .section-header {
   text-align: center;
   margin-bottom: 3rem;
   display: flex;
@@ -77,33 +77,29 @@
   gap: 1rem;
 }
 
-.section-header h2 {
+.missoes-page .section-header h2 {
   font-size: 2.5rem;
   font-weight: 700;
   color: var(--primary-color, #d4af37);
 }
 
-.section-subtitle {
+.missoes-page .section-subtitle {
   text-align: center;
   color: rgba(255, 255, 255, 0.6);
   margin-top: -2rem;
   margin-bottom: 3rem;
 }
 
-.container {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 0 20px;
-}
+/* Removed redundant .container scoping to allow global index.css rules */
 
 /* Mission Section */
-.mission-section {
+.missoes-page .mission-section {
   padding: 6rem 0;
   background: linear-gradient(to bottom, #0f111a, #161a29);
   text-align: center;
 }
 
-.mission-text {
+.missoes-page .mission-text {
   font-size: 1.25rem;
   line-height: 1.8;
   color: rgba(255, 255, 255, 0.85);
@@ -112,33 +108,33 @@
 }
 
 /* Video Section */
-.video-section {
+.missoes-page .video-section {
   position: relative;
   z-index: 1;
 }
 
-.video-wrapper {
+.missoes-page .video-wrapper {
   transition: all 0.4s ease;
 }
 
-.video-wrapper:hover {
+.missoes-page .video-wrapper:hover {
   transform: scale(1.01);
   box-shadow: 0 30px 60px rgba(0,0,0,0.7);
 }
 
 /* Stats Section */
-.stats-section {
+.missoes-page .stats-section {
   padding: 5rem 0;
   background: #0f111a;
 }
 
-.stats-grid {
+.missoes-page .stats-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
   gap: 2rem;
 }
 
-.stat-card {
+.missoes-page .stat-card {
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid rgba(212, 175, 55, 0.1);
   padding: 3rem 2rem;
@@ -148,7 +144,7 @@
   backdrop-filter: blur(5px);
 }
 
-.stat-card:hover {
+.missoes-page .stat-card:hover {
   transform: translateY(-10px);
   background: rgba(212, 175, 55, 0.05);
   border-color: var(--primary-color, #d4af37);
@@ -156,12 +152,12 @@
 }
 
 /* Missionaries Section */
-.missionaries-section {
+.missoes-page .missionaries-section {
   padding: 6rem 0;
   background: #0f111a;
 }
 
-.missionary-card {
+.missoes-page .missionary-card {
   position: relative;
   background: rgba(255, 255, 255, 0.03);
   border: 1px solid rgba(255, 255, 255, 0.05);
@@ -172,12 +168,12 @@
   overflow: hidden;
 }
 
-.missionary-card:hover {
+.missoes-page .missionary-card:hover {
   background: rgba(255, 255, 255, 0.05);
   border-color: rgba(212, 175, 55, 0.3);
 }
 
-.missionary-card img {
+.missoes-page .missionary-card img {
   width: 150px;
   height: 150px;
   border-radius: 50%;
@@ -188,7 +184,7 @@
 }
 
 /* Projects Section */
-.project-card {
+.missoes-page .project-card {
   background: linear-gradient(135deg, rgba(255, 255, 255, 0.05) 0%, rgba(255, 255, 255, 0.01) 100%);
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 20px;
@@ -200,12 +196,12 @@
 }
 
 /* Form Section */
-.registration-section {
+.missoes-page .registration-section {
   padding: 6rem 0;
   background: #161a29;
 }
 
-.registration-form {
+.missoes-page .registration-form {
   background: rgba(255, 255, 255, 0.02);
   padding: 3.5rem;
   border-radius: 30px;
@@ -214,16 +210,16 @@
   margin: 0 auto;
 }
 
-.form-group label {
+.missoes-page .form-group label {
   display: block;
   margin-bottom: 0.8rem;
   font-weight: 500;
   color: rgba(255, 255, 255, 0.8);
 }
 
-.form-group input, 
-.form-group select, 
-.form-group textarea {
+.missoes-page .form-group input, 
+.missoes-page .form-group select, 
+.missoes-page .form-group textarea {
   width: 100%;
   padding: 1rem 1.2rem;
   background: rgba(15, 17, 26, 0.5);
@@ -234,15 +230,15 @@
   transition: all 0.3s ease;
 }
 
-.form-group input:focus, 
-.form-group select:focus {
+.missoes-page .form-group input:focus, 
+.missoes-page .form-group select:focus {
   outline: none;
   border-color: var(--primary-color, #d4af37);
   background: rgba(15, 17, 26, 0.8);
   box-shadow: 0 0 0 4px rgba(212, 175, 55, 0.1);
 }
 
-.submit-btn {
+.missoes-page .submit-btn {
   width: 100%;
   padding: 1.2rem;
   background: var(--primary-color, #d4af37);
@@ -260,7 +256,7 @@
   margin-top: 2rem;
 }
 
-.submit-btn:hover {
+.missoes-page .submit-btn:hover {
   transform: translateY(-3px);
   filter: brightness(1.1);
   box-shadow: 0 10px 20px rgba(212, 175, 55, 0.2);
@@ -280,11 +276,11 @@
 
 /* Responsive */
 @media (max-width: 768px) {
-  .registration-form {
+  .missoes-page .registration-form {
     padding: 2rem 1.5rem;
   }
   
-  .form-row {
+  .missoes-page .form-row {
     grid-template-columns: 1fr !important;
   }
 }
