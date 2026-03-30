@@ -6,7 +6,7 @@
 // atualizados automaticamente ao detectar mudanças no localStorage.
 // ================================================================
 
-import React, { useState, useCallback, useMemo, useEffect, useRef } from 'react';
+import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import {
   Instagram,
@@ -27,7 +27,6 @@ import { INITIAL_HEADER_DATA } from '../lib/constants';
 import { deepMerge, parseSafeJson, transformImageLink } from '../lib/dbUtils';
 import { usePageUpdate } from '../hooks/usePageUpdate';
 
-const locations = ['São Paulo / SP', 'Rio de Janeiro / RJ', 'Goiânia / GO', 'Brasília / DF', 'Belo Horizonte / MG', 'Curitiba / PR', 'Salvador / BA'];
 
 const Header = ({ theme, toggleTheme }) => {
   // ── Estado do menu mobile ─────────────────────────────────────
@@ -134,106 +133,7 @@ const Header = ({ theme, toggleTheme }) => {
     }
   }, [headerData?.logo?.icon]);
 
-  // ── Estado do cabeçalho (redes sociais, tema, admin) ──
-  const [visitorCount, setVisitorCount] = useState(0);
-  const prevVisitorCount = useRef(0);
-  const [showNotifications, setShowNotifications] = useState(false);
-  const [notifications, setNotifications] = useState([
-    { id: 1, title: 'Bem-vindo ao Painel', text: 'Você agora pode ler avisos e alertas aqui no sino.', time: '01m atrás', read: false }
-  ]);
   const [isConnected, setIsConnected] = useState(hasSupabaseConfigured);
-
-  const playBellSound = useCallback((location = null) => {
-    try {
-      const audio = new Audio('https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3');
-      audio.volume = 0.5;
-      audio.play().catch(e => console.warn('Audio play blocked by browser policy. Click anywhere to enable.'));
-      
-      // Adiciona uma nova notificação de visitante (usa localização real se disponível)
-      const finalLoc = location || locations[Math.floor(Math.random() * locations.length)];
-      const newNotif = {
-        id: Date.now(),
-        title: 'Novo Visitante',
-        text: `Neste momento há 1 pessoa de ${finalLoc} visitando o site. Clique para saber mais.`,
-        time: 'Agora',
-        read: false
-      };
-      setNotifications(prev => [newNotif, ...prev].slice(0, 10)); // Mantém as últimas 10
-    } catch (err) {
-      console.error('Error playing sound:', err);
-    }
-  }, []);
-
-  const checkVisitors = useCallback(async () => {
-    try {
-      // 1. Check total count
-      const { data: statsData } = await supabase
-        .from('site_settings')
-        .select('data')
-        .eq('key', 'visitor_stats')
-        .single();
-
-      if (statsData && statsData.data && typeof statsData.data.value === 'number') {
-        const newCount = statsData.data.value;
-        prevVisitorCount.current = newCount;
-        setVisitorCount(newCount);
-      }
-
-      // 2. Fetch last visit to populate initial notifications
-      const { data: lastVisitData } = await supabase
-        .from('site_settings')
-        .select('data')
-        .eq('key', 'last_visit')
-        .single();
-      
-      if (lastVisitData && lastVisitData.data && lastVisitData.data.location) {
-        // Se já houver uma visita recente no banco, pode inicializar a lista com ela
-      }
-    } catch (err) {
-      console.warn('[Header] Falha ao verificar visitantes:', err.message);
-    }
-  }, []);
-
-  useEffect(() => {
-    // Inicializa o contador
-    checkVisitors();
-
-    // Configura o Realtime do Supabase para monitorar a tabela site_settings
-    const channel = supabase
-      .channel('visitor_updates')
-      .on(
-        'postgres_changes',
-        {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'site_settings'
-        },
-        (payload) => {
-          // Monitora atualizações no contador total
-          if (payload.new && payload.new.key === 'visitor_stats') {
-            const newCount = payload.new.data?.value;
-            if (newCount !== undefined) setVisitorCount(newCount);
-          }
-          
-          // Monitora atualizações de visitas individuais (Sino e Notificação de Localização)
-          if (payload.new && payload.new.key === 'last_visit') {
-            const loc = payload.new.data?.location;
-            if (loc) {
-              playBellSound(loc);
-            }
-          }
-        }
-      )
-      .subscribe();
-
-    // Polling de segurança a cada 2 minutos
-    const interval = setInterval(checkVisitors, 120000);
-    
-    return () => {
-      supabase.removeChannel(channel);
-      clearInterval(interval);
-    };
-  }, [checkVisitors, playBellSound]);
 
   // Alterna o menu mobile aberto/fechado
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
@@ -389,6 +289,7 @@ const Header = ({ theme, toggleTheme }) => {
     { name: 'EBD', path: '/edb' },
     { name: 'Missões', path: '/missoes' },
     { name: 'Intercessão', path: '/intercessao' },
+    { name: 'Casais', path: '/casais' },
   ];
 
   const mediaLinks = [
@@ -568,94 +469,30 @@ const Header = ({ theme, toggleTheme }) => {
             {currentTheme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
           </button>
 
-          {/* Link para a Área Administrativa com ícone de sino e contador */}
-          <div className="admin-actions-wrap" style={{ display: 'flex', alignItems: 'center', gap: '8px', position: 'relative' }}>
-            <div 
-              className="visitor-bell" 
-              title={`${visitorCount} visitas registradas`} 
-              style={{ color: '#f1c40f', display: 'flex', alignItems: 'center', cursor: 'pointer', gap: '4px' }}
-              onClick={() => setShowNotifications(!showNotifications)}
-            >
-              <span style={{ fontSize: '1.2rem' }}>🔔</span>
-              {visitorCount > 0 && <span style={{ fontSize: '.75rem', fontWeight: 700 }}>{visitorCount}</span>}
-            </div>
-
-            {/* Caixa de Notificações */}
-            {showNotifications && (
-              <div 
-                className="notifications-popover" 
-                style={{
-                  position: 'absolute',
-                  top: '120%',
-                  right: 0,
-                  width: '320px',
-                  backgroundColor: '#1a1d27',
-                  border: '1px solid #2a2f45',
-                  borderRadius: '12px',
-                  boxShadow: '0 10px 25px rgba(0,0,0,0.5)',
-                  zIndex: 1000,
-                  overflow: 'hidden'
-                }}
-              >
-                <div style={{ padding: '12px 16px', borderBottom: '1px solid #2a2f45', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#0f1117' }}>
-                  <span style={{ fontWeight: 600, fontSize: '.9rem', color: '#e8eaf0' }}>Notificações</span>
-                  <button 
-                    style={{ background: 'none', border: 'none', color: '#8b84ff', fontSize: '.75rem', cursor: 'pointer' }}
-                    onClick={() => setNotifications([])}
-                  >
-                    Limpar tudo
-                  </button>
-                </div>
-                <div style={{ maxHeight: '300px', overflowY: 'auto' }}>
-                  {notifications.length === 0 ? (
-                    <div style={{ padding: '2rem', textAlign: 'center', color: '#7c82a0', fontSize: '.85rem' }}>
-                      Nenhuma notificação por enquanto.
-                    </div>
-                  ) : notifications.map(n => (
-                    <div 
-                      key={n.id} 
-                      style={{ 
-                        padding: '12px 16px', 
-                        borderBottom: '1px solid #2a2f45', 
-                        cursor: 'pointer',
-                        background: n.read ? 'transparent' : 'rgba(108, 99, 255, 0.05)',
-                        transition: 'background .2s'
-                      }}
-                      onClick={() => {
-                        setNotifications(prev => prev.map(item => item.id === n.id ? { ...item, read: true } : item));
-                      }}
-                    >
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '4px' }}>
-                        <span style={{ fontWeight: 600, fontSize: '.85rem', color: '#8b84ff' }}>{n.title}</span>
-                        <span style={{ fontSize: '.7rem', color: '#7c82a0' }}>{n.time}</span>
-                      </div>
-                      <p style={{ fontSize: '.8rem', color: '#e8eaf0', margin: 0, lineHeight: 1.4 }}>{n.text}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
-
-            <Link to="/painel" className="cta-button" style={{ position: 'relative' }}>
-              <ShieldCheck size={16} style={{ marginRight: '8px' }} />
-              Área Administrativa
-              {/* Indicador de Conexão */}
-              <span 
-                title={isConnected ? "Conectado ao Supabase" : "Desconectado do Supabase"}
-                style={{
-                  position: 'absolute',
-                  top: '-4px',
-                  right: '-4px',
-                  width: '8px',
-                  height: '8px',
-                  borderRadius: '50%',
-                  background: isConnected ? '#22c55e' : '#ef4444',
-                  border: '2px solid var(--surface)',
-                  boxShadow: isConnected ? '0 0 8px rgba(34,197,94,0.5)' : '0 0 8px rgba(239,68,68,0.5)'
-                }} 
-              />
-            </Link>
-          </div>
+          {/* Link para a Área Administrativa - Restaurado conforme imagem */}
+          <Link 
+            to="/painel" 
+            className="admin-cta-button"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '8px',
+              padding: '10px 24px',
+              background: 'linear-gradient(135deg, #c19a6b 0%, #8b6b4a 100%)',
+              color: '#fff',
+              borderRadius: '50px',
+              textDecoration: 'none',
+              fontWeight: '600',
+              fontSize: '0.9rem',
+              boxShadow: '0 4px 15px rgba(0,0,0,0.2)',
+              transition: 'transform 0.2s, box-shadow 0.2s'
+            }}
+            onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-2px)'; e.currentTarget.style.boxShadow = '0 6px 20px rgba(0,0,0,0.3)'; }}
+            onMouseOut={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 15px rgba(0,0,0,0.2)'; }}
+          >
+            <ShieldCheck size={18} />
+            Área Administrativa
+          </Link>
 
           {/* Botão hamburguer para menu mobile */}
           <button className="mobile-menu-btn" onClick={toggleMenu} aria-label="Menu">
@@ -725,55 +562,30 @@ const Header = ({ theme, toggleTheme }) => {
             <Link key={idx} to={item.path} onClick={toggleMenu}>{item.name}</Link>
           ))}
 
-          {/* Link para área admin no mobile com sino */}
-          <div className="mobile-admin-wrap" style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '10px 15px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-              <Link to="/painel" className="mobile-admin-link" onClick={toggleMenu} style={{ flex: 1, display: 'flex', alignItems: 'center', padding: '12px', background: 'rgba(34, 197, 94, 0.1)', borderRadius: '8px', color: '#22c55e', textDecoration: 'none', fontWeight: 600, position: 'relative' }}>
-                <ShieldCheck size={18} style={{ marginRight: '8px' }} />
-                Área Administrativa
-                <span 
-                  style={{
-                    position: 'absolute',
-                    top: '10px',
-                    right: '10px',
-                    width: '8px',
-                    height: '8px',
-                    borderRadius: '50%',
-                    background: isConnected ? '#22c55e' : '#ef4444'
-                  }} 
-                />
-              </Link>
-              <button 
-                onClick={(e) => { e.stopPropagation(); setShowNotifications(!showNotifications); }}
-                style={{ marginLeft: '10px', background: 'rgba(241, 196, 15, 0.1)', border: 'none', borderRadius: '8px', padding: '10px', color: '#f1c40f', display: 'flex', alignItems: 'center', gap: '6px', cursor: 'pointer' }}
-              >
-                <span>🔔</span>
-                {visitorCount > 0 && <span style={{ fontSize: '.8rem', fontWeight: 700 }}>{visitorCount}</span>}
-              </button>
-            </div>
-
-            {/* Notificações Mobile */}
-            {showNotifications && (
-              <div style={{ background: '#1a1d27', border: '1px solid #2a2f45', borderRadius: '8px', marginTop: '8px', overflow: 'hidden' }}>
-                <div style={{ padding: '10px', borderBottom: '1px solid #2a2f45', display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#0f1117' }}>
-                  <span style={{ fontSize: '.85rem', fontWeight: 600 }}>Notificações</span>
-                  <button onClick={() => setNotifications([])} style={{ background: 'none', border: 'none', color: '#8b84ff', fontSize: '.7rem' }}>Limpar</button>
-                </div>
-                <div style={{ maxHeight: '200px', overflowY: 'auto' }}>
-                  {notifications.length === 0 ? (
-                    <div style={{ padding: '15px', textAlign: 'center', color: '#7c82a0', fontSize: '.8rem' }}>Sem notificações</div>
-                  ) : notifications.map(n => (
-                    <div key={n.id} style={{ padding: '10px', borderBottom: '1px solid #2a2f45', background: n.read ? 'transparent' : 'rgba(108, 99, 255, 0.05)' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '2px' }}>
-                        <span style={{ fontWeight: 600, fontSize: '.8rem', color: '#8b84ff' }}>{n.title}</span>
-                        <span style={{ fontSize: '.65rem', color: '#7c82a0' }}>{n.time}</span>
-                      </div>
-                      <p style={{ fontSize: '.75rem', color: '#e8eaf0', margin: 0 }}>{n.text}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
+          {/* Link para área admin no mobile - Restaurado conforme imagem */}
+          <div className="mobile-admin-wrap" style={{ padding: '15px' }}>
+            <Link 
+              to="/painel" 
+              className="mobile-admin-link" 
+              onClick={toggleMenu} 
+              style={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                justifyContent: 'center',
+                gap: '10px',
+                padding: '14px', 
+                background: 'linear-gradient(135deg, #c19a6b 0%, #8b6b4a 100%)', 
+                borderRadius: '50px', 
+                color: '#fff', 
+                textDecoration: 'none', 
+                fontWeight: 700,
+                fontSize: '1rem',
+                boxShadow: '0 4px 12px rgba(0,0,0,0.2)'
+              }}
+            >
+              <ShieldCheck size={20} />
+              Área Administrativa
+            </Link>
           </div>
         </nav>
       )}
