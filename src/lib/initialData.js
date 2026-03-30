@@ -86,7 +86,8 @@ export const INITIAL_HOME_DATA = {
     { title: "Lares", description: "Comunhão e crescimento nos lares", link: "/lares", icon: "🏠", color: "#3498db" },
     { title: "Retiro", description: "Momentos de renovação espiritual", link: "/retiro", icon: "⛰️", color: "#27ae60" },
     { title: "Mídia", description: "Comunicação e tecnologia a serviço do Reino", link: "/midia", icon: "🎬", color: "#d4af37" },
-    { title: "Intercessão", description: "Clamando ao Senhor em todo o tempo", link: "/intercessao", icon: "🙏", color: "#d4af37" }
+    { title: "Intercessão", description: "Clamando ao Senhor em todo o tempo", link: "/intercessao", icon: "🙏", color: "#d4af37" },
+    { title: "Casais", description: "Edificando famílias sobre a Rocha", link: "/casais", icon: "💑", color: "#c19a6b" }
   ]
 };
 
@@ -509,6 +510,26 @@ export const INITIAL_MINISTRIES_DATA = {
       { url: 'https://images.unsplash.com/photo-1510936111840-65e151ad71bb?auto=format&fit=crop&w=1200&q=80', caption: 'Nossa sede' },
       { url: 'https://images.unsplash.com/photo-1438232992991-995b7058bbb3?auto=format&fit=crop&w=1200&q=80', caption: 'Comunhão' }
     ]
+  },
+  casais: {
+    hero: { title: 'Ministério de Casais', subtitle: 'Edificando famílias sobre a Rocha', verse: '"Portanto, o que Deus ajuntou não o separe o homem." - Mateus 19:6', image: 'https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=1200&h=400&fit=crop' },
+    mission: { title: 'Nossa Missão', text: 'Fortalecer o vínculo matrimonial através do ensino bíblico, comunhão e apoio mútuo, visando lares centralizados em Cristo.' },
+    schedule: [
+      { activity: 'Culto de Casais', day: 'Último Sábado do Mês', time: '19:30', location: 'Templo Principal', description: 'Uma noite especial de ministração, louvor e renovação para casais.' },
+      { activity: 'Reunião de Casais (Lares)', day: 'Quinzenal', time: '20:00', location: 'Nas Casas', description: 'Pequenos grupos para compartilhar experiências e estudar a Palavra.' }
+    ],
+    team: [
+      { name: 'Pr. Roberto & Pra. Ana', role: 'Pastores Presidentes', photo: 'https://ui-avatars.com/api/?name=Roberto+Ana&background=d4af37&color=000&size=200&bold=true' }
+    ],
+    gallery: [
+      { url: 'https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=800&h=600&fit=crop', caption: 'Encontro de Casais 2024' }
+    ],
+    birthdays: {
+      title: 'Aniversários de Casamento',
+      text: 'Celebrando a união de nossos casais!',
+      videoUrl: '',
+      people: []
+    }
   }
 };
 
@@ -565,6 +586,7 @@ export const INITIAL_PAGES_DATA = [
   { id: 'midia', name: 'Midia', path: '/midia', status: 'online', type: 'system' },
   { id: 'missoes', name: 'Missões', path: '/missoes', status: 'online', type: 'system' },
   { id: 'intercessao', name: 'Intercessão', path: '/intercessao', status: 'online', type: 'system' },
+  { id: 'casais', name: 'Casais', path: '/casais', status: 'online', type: 'system' },
   { id: 'contact', name: 'Contato', path: '/contato', status: 'online', type: 'system' }
 ];
 

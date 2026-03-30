@@ -651,6 +651,7 @@ export default function PainelAdm() {
     { id: 'revista', label: 'Revista' },
     { id: 'sobre', label: 'Sobre' },
     { id: 'contact', label: 'Contato' },
+    { id: 'casais', label: 'Casais' },
   ];
   const pageToMinistry = {
     'Home': 'home',
@@ -679,7 +680,8 @@ export default function PainelAdm() {
     'Revista': 'revista',
     'Revista Admac': 'revista',
     'Sobre': 'sobre',
-    'Contact': 'contact'
+    'Contact': 'contact',
+    'Casais': 'casais'
   };
 
   // Carrega configurações do menu do painel (se existirem)

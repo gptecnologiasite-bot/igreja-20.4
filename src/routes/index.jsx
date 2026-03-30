@@ -31,6 +31,7 @@ const Retiro = lazy(() => import('../pages/Retiro'));
 const Sobre = lazy(() => import('../pages/Sobre'));
 const Midia = lazy(() => import('../pages/Midia')); // Restaurado p/ Midia.jsx
 const Intercessao = lazy(() => import('../pages/Intercessao'));
+const Casais = lazy(() => import('../pages/casais'));
 // Painel administrativo completo (sincroniza pasta pages via serviços)
 const PainelApp = lazy(() => import('../painel/painel'));
 
@@ -65,6 +66,7 @@ export const routes = [
             { path: 'sobre', element: <Suspense fallback={pageLoader}><Sobre /></Suspense> },
             { path: 'midia', element: <Suspense fallback={pageLoader}><Midia /></Suspense> },
             { path: 'intercessao', element: <Suspense fallback={pageLoader}><Intercessao /></Suspense> },
+            { path: 'casais', element: <Suspense fallback={pageLoader}><Casais /></Suspense> },
             { path: 'contato', element: <Suspense fallback={pageLoader}><Contact /></Suspense> },
         ]
     },
