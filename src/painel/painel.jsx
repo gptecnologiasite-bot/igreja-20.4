@@ -1523,7 +1523,8 @@ export default function PainelAdm() {
           { name: 'Contact', file: 'Contact.jsx' },
           { name: 'Missões', file: 'Missoes.jsx' },
           { name: 'Revista Admac', file: 'RevistaAdmac.jsx' },
-          { name: 'Intercessão', file: 'Intercessao.jsx' }
+          { name: 'Intercessão', file: 'Intercessao.jsx' },
+          { name: 'Casais', file: 'casais.jsx' }
         ];
       }
 
