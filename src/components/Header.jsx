@@ -381,6 +381,7 @@ const Header = ({ theme, toggleTheme }) => {
     { name: 'Homens', path: '/homens' },
     { name: 'Lares', path: '/lares' },
     { name: 'Retiros', path: '/retiro' },
+    { name: 'Casais', path: '/casais' },
   ];
 
   const socialLinks = [
