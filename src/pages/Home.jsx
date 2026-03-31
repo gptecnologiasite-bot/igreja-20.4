@@ -14,6 +14,7 @@ import {
   Book,     // Ícone padrão de fallback para eventos
   Phone,    // Ícone de telefone nos botões CTA
   ArrowRight, // Seta nos cards de ministérios
+  Bell,     // Sino de notificações (Home)
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import "../css/Home.css";
@@ -24,6 +25,7 @@ import { supabase } from "../lib/supabase";
 import { INITIAL_HOME_DATA } from "../lib/constants";
 import { deepMerge, transformImageLink, parseSafeJson } from "../lib/dbUtils";
 import { usePageUpdate } from "../hooks/usePageUpdate";
+
 
 const Home = () => {
   // Estado principal com os dados da home (carrossel, welcome, agenda, etc.)
@@ -83,8 +85,11 @@ const Home = () => {
     }, 0);
   }, []);
 
+
   // Sincronização automática via usePageUpdate
   usePageUpdate(['home', 'videos'], loadData);
+
+
 
   // Carrega aniversariantes de todas as áreas do site para exibir na Home
   useEffect(() => {
@@ -125,6 +130,8 @@ const Home = () => {
 
   return (
     <div className="home">
+
+
       {/* ── Carrossel Hero ── */}
       <HeroCarousel slides={data.carousel} />
 

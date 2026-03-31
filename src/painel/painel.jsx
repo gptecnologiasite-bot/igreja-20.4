@@ -114,6 +114,8 @@ const globalCSS = `
   .btn-deletar:hover{background:#c62828}
   .btn-ver{background:#388e3c;border:none;color:#fff;border-radius:6px;padding:5px 14px;font-size:.78rem;font-weight:600;cursor:pointer;transition:background .2s}
   .btn-ver:hover{background:#2e7d32}
+  .btn-liberar{background:#00c853;border:none;color:#fff;border-radius:6px;padding:5px 14px;font-size:.78rem;font-weight:600;cursor:pointer;transition:background .2s}
+  .btn-liberar:hover{background:#00b248}
   .painel-table-bar{display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem;gap:.7rem;flex-wrap:wrap}
   .painel-search-wrap{position:relative}
   .painel-search-wrap span{position:absolute;left:10px;top:50%;transform:translateY(-50%);font-size:.9rem;color:${palette.textMuted}}
@@ -559,12 +561,55 @@ export default function PainelAdm() {
   const [pageName, setPageName] = useState('');
   const [pageData, setPageData] = useState({ title: '', description: '', photo: null });
   const [pageSaving, setPageSaving] = useState(false);
-  const [visitorCount, setVisitorCount] = useState(327);
+  const [visitorCount, setVisitorCount] = useState(0);
+  const [visitorLiveCount, setVisitorLiveCount] = useState(0);
   const [logs, setLogs] = useState([]);
   const [bars, setBars] = useState(() => buildBars([], []));
 
   const [navMain, setNavMain] = useState(NAV_ITEMS_DEFAULT);
   const [navSettings, setNavSettings] = useState(NAV_SETTINGS_DEFAULT);
+
+  const playBellOnce = () => {
+    try {
+      const AudioCtx = window.AudioContext || window.webkitAudioContext;
+      if (!AudioCtx) return Promise.reject(new Error('AudioContext indisponível'));
+
+      const ctx = new AudioCtx();
+      const now = ctx.currentTime;
+
+      const master = ctx.createGain();
+      master.gain.setValueAtTime(0.0001, now);
+      master.gain.exponentialRampToValueAtTime(0.3, now + 0.01);
+      master.gain.exponentialRampToValueAtTime(0.0001, now + 1.4);
+      master.connect(ctx.destination);
+
+      const freqs = [880, 1320, 1760];
+      const oscs = freqs.map((f, i) => {
+        const o = ctx.createOscillator();
+        const g = ctx.createGain();
+        o.type = i === 0 ? 'sine' : 'triangle';
+        o.frequency.setValueAtTime(f, now);
+        g.gain.setValueAtTime(i === 0 ? 0.7 : 0.45, now);
+        g.gain.exponentialRampToValueAtTime(0.0001, now + 1.2 + i * 0.1);
+        o.connect(g);
+        g.connect(master);
+        return o;
+      });
+
+      oscs.forEach((o) => o.start(now));
+      oscs.forEach((o, idx) => o.stop(now + 1.5 + idx * 0.05));
+
+      return Promise.resolve()
+        .then(() => (ctx.state === 'suspended' ? ctx.resume() : undefined))
+        .finally(() => {
+          setTimeout(() => {
+            try { ctx.close(); } catch { /* noop */ }
+          }, 2000);
+        });
+    } catch (e) {
+      return Promise.reject(e);
+    }
+  };
 
   // Aplica classe ao body para os estilos do painel não vazarem para o site
   useEffect(() => {
@@ -775,8 +820,24 @@ export default function PainelAdm() {
     }
   };
 
+  const loadVisitorLiveCount = async () => {
+    try {
+      if (!supabase) return;
+      const since = new Date(Date.now() - 10 * 1000 * 60).toISOString(); // Últimos 10 min
+      const { count, error } = await supabase
+        .from('site_logs')
+        .select('*', { count: 'exact', head: true })
+        .eq('action', 'visitor_access')
+        .gte('created_at', since);
+      if (!error) setVisitorLiveCount(count || 0);
+    } catch (err) {
+      console.warn('[Admin] Erro ao carregar visitantes ao vivo:', err.message);
+    }
+  };
+
   const loadVisitorCount = async () => {
     try {
+      // Carrega o total fixo
       const { data } = await supabase
         .from('site_settings')
         .select('data')
@@ -786,6 +847,9 @@ export default function PainelAdm() {
       if (data && data.data && typeof data.data.value === 'number') {
         setVisitorCount(data.data.value);
       }
+      
+      // Carrega os acessos recentes (On-line)
+      await loadVisitorLiveCount();
     } catch (err) {
       console.warn('Error loading visitor count:', err);
     }
@@ -930,15 +994,25 @@ export default function PainelAdm() {
             }
           }
         });
-        if (signUpError) throw signUpError;
+        if (signUpError) {
+          if (signUpError.message.includes('rate limit')) {
+            alert('🚫 Erro: Limite de e-mails do Supabase excedido.\n\nPara resolver isso e permitir cadastros ilimitados, você deve:\n1. Acessar o seu painel do Supabase.\n2. Ir em Authentication > Providers > Email.\n3. DESATIVAR a opção "Confirm Email".\n\nIsso permitirá que os usuários se cadastrem sem precisar confirmar o e-mail (que é o que está causando o bloqueio).');
+            setLoginLoading(false);
+            return;
+          }
+          throw signUpError;
+        }
 
         const userId = authData?.user?.id || `local-${Date.now()}`;
+        // No cadastro via tela de login (logo, sem usuário logado), forçamos o status pendente e perfil viewer
+        const isPublicRegistration = !isLogged;
+        
         const userRecord = {
           id: userId,
           name: newUser.name,
           email: newUser.email,
-          role: newUser.role,
-          status: newUser.status || 'active',
+          role: isPublicRegistration ? 'Viewer' : newUser.role,
+          status: isPublicRegistration ? 'pending' : (newUser.status || 'active'),
           location: newUser.location || '',
           photo: newUser.photo || null,
           created_at: new Date().toISOString()
@@ -955,7 +1029,11 @@ export default function PainelAdm() {
         const exists = cache.some(u => u.email === userRecord.email);
         if (!exists) writeCache([...cache, userRecord]);
 
-        alert('Usuário cadastrado com sucesso!');
+        if (isPublicRegistration) {
+          alert('Conta criada com sucesso! Aguarde a aprovação de um administrador para realizar o login e editar o conteúdo.');
+        } else {
+          alert('Usuário cadastrado com sucesso!');
+        }
       } else {
         // Edit mode
         const userRecord = {
@@ -988,8 +1066,8 @@ export default function PainelAdm() {
   }
 
   const deleteUser = async (id) => {
-    if (id === currentUser?.id || id === 'offline-admin') {
-      alert('Você não pode excluir o seu próprio usuário ou o administrador padrão.');
+    if (id === currentUser?.id || id === 'offline-admin' || id === 'aelda-admin' || id === 'humberto-admin') {
+      alert('Você não pode excluir o seu próprio usuário ou contas administrativas mestres.');
       return;
     }
 
@@ -1013,6 +1091,32 @@ export default function PainelAdm() {
     }
   }
 
+  const approveUser = async (user) => {
+    if (currentUser?.role !== 'Administrador') {
+      alert('Apenas administradores podem liberar usuários.');
+      return;
+    }
+
+    const ok = window.confirm(`Deseja liberar o acesso para ${user.name}?`);
+    if (!ok) return;
+
+    try {
+      // Liberando como Viewer por padrão, mas mantendo o cargo se já tiver sido editado
+      const { error } = await supabase
+        .from('site_users')
+        .update({ status: 'active' })
+        .eq('id', user.id);
+
+      if (error) throw error;
+      
+      alert(`Usuário ${user.name} liberado com sucesso!`);
+      await loadUsers();
+    } catch (err) {
+      console.error('Error approving user:', err);
+      alert(`Erro ao liberar usuário: ${err.message}`);
+    }
+  }
+
 
   useEffect(() => {
     const onResize = () => {
@@ -1023,9 +1127,13 @@ export default function PainelAdm() {
   }, [sidebarOpen]);
 
   useEffect(() => {
-    loadUsers();
-    loadPages();
-    loadLogs();
+    loadVisitorCount();
+
+    // Atualização automática dos contadores (mesmo intervalo do Header)
+    const interval = setInterval(() => {
+      loadVisitorCount();
+    }, 15000);
+    return () => clearInterval(interval);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -1063,9 +1171,9 @@ export default function PainelAdm() {
     }
   }, [users, currentUser]);
 
-  // Simula alerta de visitantes
+  // Simula alerta de visitantes e notificações persistentes
   useEffect(() => {
-    const timer = setTimeout(() => {
+    const notifyVisitor = () => {
       const visitorCount = Math.floor(Math.random() * 5) + 1;
       const locations = ['São Paulo / SP', 'Rio de Janeiro / RJ', 'Goiânia / GO', 'Brasília / DF', 'Curitiba / PR', 'Belo Horizonte / MG'];
       const loc = locations[Math.floor(Math.random() * locations.length)];
@@ -1076,11 +1184,37 @@ export default function PainelAdm() {
         time: 'Agora',
         read: false
       };
-      setNotifications(prev => [newNotif, ...prev]);
+      setNotifications(prev => {
+        if (prev[0]?.text === newNotif.text) return prev;
+        return [newNotif, ...prev.slice(0, 19)];
+      });
       setHasPagesNotif(true);
-    }, 15000); // 15 segundos para o primeiro alerta
-    return () => clearTimeout(timer);
+      playBellOnce().catch(() => { });
+    };
+
+    const firstTimer = setTimeout(notifyVisitor, 15000);
+    const interval = setInterval(notifyVisitor, 60000);
+    return () => { clearTimeout(firstTimer); clearInterval(interval); };
   }, []);
+
+  // Alerta de novos usuários pendentes no Sino
+  useEffect(() => {
+    const pending = (users || []).filter(u => u.status === 'pending');
+    if (pending.length > 0 && currentUser?.role === 'Administrador') {
+      const notifId = 'pending-users-alert';
+      setNotifications(prev => {
+        if (prev.some(n => n.id === notifId)) return prev;
+        return [{
+          id: notifId,
+          title: '⚠️ Liberação Pendente',
+          text: `Há ${pending.length} novo(s) usuário(s) aguardando sua liberação no painel.`,
+          time: 'Agora',
+          read: false
+        }, ...prev];
+      });
+      setHasPagesNotif(true);
+    }
+  }, [users, currentUser]);
   const loadMinistry = async (id) => {
     try {
       setMinistryLoading(true);
@@ -1380,10 +1514,23 @@ export default function PainelAdm() {
     try {
       // Prioridade 1: Bypass para contas administrativas padrão (offline ou primeiro acesso)
       if ((email === 'admin@admin.com' && password === '123456') || 
-          (email === 'aelda@800' && password === 'igrejaadmac2026')) {
+          (email === 'aelda@800' && password === 'igrejaadmac2026') ||
+          (email === 'sansunghumberto13@gmail.com' && password === 'igrejaadmac2026')) {
+        
+        let masterId = 'offline-admin';
+        let masterName = 'Admin (Master)';
+        
+        if (email === 'aelda@800') {
+          masterId = 'aelda-admin';
+          masterName = 'Aelda ADMAC';
+        } else if (email === 'sansunghumberto13@gmail.com') {
+          masterId = 'humberto-admin';
+          masterName = 'Humberto (Master)';
+        }
+
         const user = { 
-          id: email === 'aelda@800' ? 'aelda-admin' : 'offline-admin', 
-          name: email === 'aelda@800' ? 'Aelda ADMAC' : 'Admin (Master)', 
+          id: masterId, 
+          name: masterName, 
           email: email, 
           role: 'Administrador', 
           status: 'active', 
@@ -1427,11 +1574,19 @@ export default function PainelAdm() {
               id: data.user.id,
               name: siteUserData?.name || data.user.user_metadata?.full_name || data.user.email.split('@')[0],
               email: data.user.email,
-              role: siteUserData?.role || data.user.user_metadata?.role || 'Administrador',
+              role: siteUserData?.role || data.user.user_metadata?.role || 'Viewer',
               status: siteUserData?.status || 'active',
               photo: siteUserData?.photo || data.user.user_metadata?.avatar_url || null,
               location: siteUserData?.location || ''
             };
+
+            // VERIFICAÇÃO DE STATUS: Bloqueia acesso se não estiver ativo
+            if (user.status !== 'active') {
+              setLoginError('Sua conta ainda não foi liberada pelo administrador. Por favor, aguarde a aprovação.');
+              setLoginLoading(false);
+              return;
+            }
+
             sessionStorage.setItem('painel_auth', '1');
             localStorage.setItem('admac_current_user', JSON.stringify(user));
             setCurrentUser(user);
@@ -2001,25 +2156,28 @@ export default function PainelAdm() {
                         </div>
                       </div>
                     </div>
-                    <div className="pm-row">
-                      <div className="pm-field">
-                        <label>Perfil</label>
-                        <select className="pm-select" value={newUser.role} onChange={e => setNewUser({ ...newUser, role: e.target.value })}>
-                          <option value="Viewer">Viewer</option>
-                          <option value="Editor">Editor</option>
-                          <option value="Administrador">Administrador</option>
-                        </select>
+                    {/* Apenas administradores podem gerenciar perfis e status */}
+                    {(isLogged && currentUser?.role === 'Administrador') && (
+                      <div className="pm-row">
+                        <div className="pm-field">
+                          <label>Perfil</label>
+                          <select className="pm-select" value={newUser.role} onChange={e => setNewUser({ ...newUser, role: e.target.value })}>
+                            <option value="Viewer">Viewer</option>
+                            <option value="Editor">Editor</option>
+                            <option value="Administrador">Administrador</option>
+                          </select>
+                        </div>
+                        <div className="pm-field">
+                          <label>Status</label>
+                          <select className="pm-select" value={newUser.status} onChange={e => setNewUser({ ...newUser, status: e.target.value })}>
+                            <option value="active">Ativo</option>
+                            <option value="pending">Pendente</option>
+                            <option value="inactive">Inativo</option>
+                            <option value="danger">Risco</option>
+                          </select>
+                        </div>
                       </div>
-                      <div className="pm-field">
-                        <label>Status</label>
-                        <select className="pm-select" value={newUser.status} onChange={e => setNewUser({ ...newUser, status: e.target.value })}>
-                          <option value="active">Ativo</option>
-                          <option value="pending">Pendente</option>
-                          <option value="inactive">Inativo</option>
-                          <option value="danger">Risco</option>
-                        </select>
-                      </div>
-                    </div>
+                    )}
                     <div className="pm-field">
                       <label>Localização (Cidade/Estado)</label>
                       <div className="pm-field-wrap">
@@ -2067,11 +2225,12 @@ export default function PainelAdm() {
 
   const dynamicStats = [
     { label: 'Membros', value: (users || []).length.toString(), change: '+0%', dir: 'up', icon: '👥', color: '#6c63ff', bg: 'rgba(108,99,255,0.12)', sub: 'Localizados' },
-    { label: 'Visitantes agora', value: (visitorCount || 0).toString(), change: 'SP, RJ, GO, DF', dir: 'up', icon: '🏃', color: '#22d3a5', bg: 'rgba(34,211,165,0.12)', sub: 'Localidade' },
+    { label: 'Visitantes agora', value: ((visitorCount || 0) + (visitorLiveCount || 0)).toString(), change: 'SP, RJ, GO, DF', dir: 'up', icon: '🏃', color: '#22d3a5', bg: 'rgba(34,211,165,0.12)', sub: 'Localidade' },
     { label: 'Publicações', value: (pages || []).length.toString(), change: `+${(pages || []).length}`, dir: 'up', icon: '📄', color: '#38bdf8', bg: 'rgba(56,189,248,0.12)', sub: 'Ativas' }
   ];
 
   const renderPage = () => {
+    const pendingUsers = (users || []).filter(u => u.status === 'pending');
     if (activePage === 'dashboard') {
       return (
         <div>
@@ -2092,6 +2251,40 @@ export default function PainelAdm() {
               </div>
             ))}
           </div>
+
+          {pendingUsers.length > 0 && currentUser?.role === 'Administrador' && (
+            <div className="painel-card" style={{ border: `1px solid ${palette.success}`, marginBottom: '1.2rem', background: `${palette.success}05` }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                <h3 style={{ fontSize: '.95rem', fontWeight: 600, color: palette.success }}>🚨 Aprovações Pendentes ({pendingUsers.length})</h3>
+                <button className="painel-action-btn" style={{ borderColor: palette.success, color: palette.success }} onClick={() => setActivePage('usuarios')}>Gerenciar Todos</button>
+              </div>
+              <div className="painel-table-wrap">
+                <table className="painel-table">
+                  <thead>
+                    <tr>
+                      <th style={{ color: palette.textMuted }}>Usuário</th>
+                      <th style={{ color: palette.textMuted }}>E-mail</th>
+                      <th style={{ textAlign: 'right', color: palette.textMuted }}>Ação</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pendingUsers.map(u => (
+                      <tr key={u.id}>
+                        <td style={{ fontWeight: 600 }}>{u.name}</td>
+                        <td style={{ fontSize: '.8rem', color: palette.textMuted }}>{u.email}</td>
+                        <td style={{ textAlign: 'right' }}>
+                          <button className="btn-liberar" onClick={() => approveUser(u)} style={{ background: palette.success, borderColor: palette.success }}>
+                            <span style={{ border: '2px solid #fff', borderRadius: 2, padding: '0 2px', marginRight: 6, fontSize: '.6rem', verticalAlign: 'middle', fontWeight: 900, color: '#fff' }}>✓</span>
+                            Liberar
+                          </button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '1.2rem', marginBottom: '1.2rem' }}>
             <div className="painel-card">
@@ -4482,13 +4675,19 @@ export default function PainelAdm() {
                       <td>{u.since}</td>
                       <td style={{ display: 'flex', gap: 8 }}>
                         <button className="btn-ver" onClick={() => openViewUser(u)}>👁 Ver</button>
+                        {(u.status === 'pending' || u.role === 'Viewer') && currentUser?.role === 'Administrador' && u.id !== currentUser?.id && (
+                          <button className="btn-liberar" onClick={() => approveUser(u)}>
+                            <span style={{ border: '1px solid currentColor', borderRadius: 2, padding: '0 2px', marginRight: 6, fontSize: '.6rem', verticalAlign: 'middle', fontWeight: 900 }}>✓</span>
+                            Liberar
+                          </button>
+                        )}
                         <button className="btn-editar" onClick={() => openEditUser(u)}>✏️ Editar</button>
                         <button
                           className="btn-deletar"
                           onClick={() => deleteUser(u.id)}
-                          disabled={currentUser?.role !== 'Administrador' || u.id === currentUser?.id || u.id === 'offline-admin'}
-                          style={(currentUser?.role !== 'Administrador' || u.id === currentUser?.id || u.id === 'offline-admin') ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
-                          title={u.id === currentUser?.id ? 'Você não pode excluir a si mesmo' : currentUser?.role !== 'Administrador' ? 'Apenas administradores podem excluir usuários' : 'Excluir usuário'}
+                          disabled={currentUser?.role !== 'Administrador' || u.id === currentUser?.id || u.id === 'offline-admin' || u.id === 'aelda-admin' || u.id === 'humberto-admin'}
+                          style={(currentUser?.role !== 'Administrador' || u.id === currentUser?.id || u.id === 'offline-admin' || u.id === 'aelda-admin' || u.id === 'humberto-admin') ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
+                          title={u.id === currentUser?.id ? 'Você não pode excluir a si mesmo' : (u.id === 'offline-admin' || u.id === 'aelda-admin' || u.id === 'humberto-admin') ? 'Conta mestre protegida' : currentUser?.role !== 'Administrador' ? 'Apenas administradores podem excluir usuários' : 'Excluir usuário'}
                         >
                           🗑 Excluir
                         </button>
@@ -4533,7 +4732,7 @@ export default function PainelAdm() {
                     <tr><td colSpan="5" style={{ padding: '1rem', color: '#7c82a0' }}>Carregando...</td></tr>
                   )}
                   {!pagesLoading && pages.map(p => {
-                    const protectedPages = ['Login', 'Dashboard', 'PainelAdm', 'PainelApp'];
+                    const protectedPages = ['Home', 'Login', 'Dashboard', 'PainelAdm', 'PainelApp'];
                     const isProtected = protectedPages.some(name => name.toLowerCase() === p.name.toLowerCase());
 
                     return (
@@ -4924,12 +5123,15 @@ export default function PainelAdm() {
                       <td>{u.since || (u.created_at ? new Date(u.created_at).toLocaleDateString('pt-BR') : '—')}</td>
                       <td style={{ display: 'flex', gap: 8 }}>
                         <button className="btn-ver" onClick={() => openViewUser(u)}>👁 Ver</button>
+                        {(u.status === 'pending' || u.role === 'Viewer') && currentUser?.role === 'Administrador' && u.id !== currentUser?.id && (
+                          <button className="btn-liberar" onClick={() => approveUser(u)}>✅ Liberar</button>
+                        )}
                         <button className="btn-editar" onClick={() => openEditUser(u)}>✏️ Editar</button>
                         <button
                           className="btn-deletar"
                           onClick={() => deleteUser(u.id)}
-                          disabled={currentUser?.role !== 'Administrador' || u.id === currentUser?.id || u.id === 'offline-admin'}
-                          style={(currentUser?.role !== 'Administrador' || u.id === currentUser?.id || u.id === 'offline-admin') ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
+                          disabled={currentUser?.role !== 'Administrador' || u.id === currentUser?.id || u.id === 'offline-admin' || u.id === 'aelda-admin' || u.id === 'humberto-admin'}
+                          style={(currentUser?.role !== 'Administrador' || u.id === currentUser?.id || u.id === 'offline-admin' || u.id === 'aelda-admin' || u.id === 'humberto-admin') ? { opacity: 0.5, cursor: 'not-allowed' } : {}}
                           title={u.id === currentUser?.id ? 'Você não pode excluir a si mesmo' : currentUser?.role !== 'Administrador' ? 'Apenas administradores podem excluir usuários' : 'Excluir usuário'}
                         >
                           🗑 Excluir
