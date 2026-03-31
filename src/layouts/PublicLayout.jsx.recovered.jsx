@@ -1,0 +1,126 @@
+﻿import React from 'react';
+import { Outlet, useLocation } from 'react-router-dom';
+import Header from '../components/Header';
+import Footer from '../components/Footer';
+import { supabase } from '../lib/supabase';
+import { parseSafeJson } from '../lib/dbUtils';
+import { INITIAL_FOOTER_DATA } from '../lib/constants';
+
+const PublicLayout = () => {
+    const location = useLocation();
+    const [isActive, setIsActive] = React.useState(true);
+    const [loading, setLoading] = React.useState(true);
+
+    React.useEffect(() => {
+        const checkStatus = async () => {
+            setLoading(true);
+            try {
+                const rawPath = location.pathname === '/' ? 'home' : location.pathname.split('/').filter(Boolean)[0].toLowerCase();
+
+                // Mapeamento simples para chaves de minist├®rio
+                const keysMap = {
+                    'revista': 'revista',
+                    'contato': 'contact',
+                    'home': 'home'
+                };
+
+                const id = keysMap[rawPath] || rawPath;
+                const key = id === 'home' ? 'home' : `ministry_${id}`;
+
+                const { data } = await supabase.from('site_settings').select('data').eq('key', key).limit(1).limit(1).single();
+
+                const parsed = parseSafeJson(data?.data);
+                if (parsed) {
+                    setIsActive(parsed.active !== false);
+                } else {
+                    setIsActive(true); // Ativo por padr├úo
+                }
+            } catch (err) {
+                console.error('Error checking page status:', err);
+                setIsActive(true);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        checkStatus();
+    }, [location.pathname]);
+
+    const [footerData, setFooterData] = React.useState(null);
+    const [headerData, setHeaderData] = React.useState(null);
+
+    React.useEffect(() => {
+        const loadGlobals = async () => {
+            try {
+                const [fRes, hRes] = await Promise.all([
+                    supabase.from('site_settings').select('data').eq('key', 'footer').single(),
+                    supabase.from('site_settings').select('data').eq('key', 'header').single()
+                ]);
+
+                if (fRes.data) {
+                    const parsed = typeof fRes.data.data === 'string' ? JSON.parse(fRes.data.data) : fRes.data.data;
+                    setFooterData(parsed);
+                }
+                if (hRes.data) {
+                    const parsed = typeof hRes.data.data === 'string' ? JSON.parse(hRes.data.data) : hRes.data.data;
+                    setHeaderData(parsed);
+                }
+            } catch (err) {
+                console.warn('Error loading globals in layout:', err);
+            }
+        };
+        loadGlobals();
+    }, []);
+
+    const whatsappLink = footerData?.social?.whatsapp || INITIAL_FOOTER_DATA.social.whatsapp;
+    const isInactive = !loading && isActive === false;
+
+    if (isInactive) {
+        return (
+            <>
+                <Header />
+                <main style={{ minHeight: '60vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', textAlign: 'center', padding: '2rem', background: '#0f1117', color: '#fff' }}>
+                    <div style={{ fontSize: '4rem', marginBottom: '1rem' }}>­ƒÜº</div>
+                    <h1 style={{ fontSize: '2rem', marginBottom: '0.5rem' }}>P├ígina em Manuten├º├úo</h1>
+                    <p style={{ color: '#7c82a0', maxWidth: '400px' }}>Esta p├ígina est├í sendo atualizada no momento. Por favor, volte mais tarde.</p>
+                    <a href="/" style={{ marginTop: '2rem', color: '#6c63ff', textDecoration: 'none', fontWeight: 'bold' }}>ÔåÉ Voltar para a In├¡cio</a>
+                </main>
+                <Footer />
+                {whatsappLink && (
+                    <a 
+                        href={whatsappLink} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="whatsapp-float-btn"
+                        title="Fale conosco no WhatsApp"
+                    >
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp" />
+                    </a>
+                )}
+            </>
+        );
+    }
+
+    return (
+        <>
+            <Header />
+            <main>
+                <Outlet />
+            </main>
+            <Footer />
+            {whatsappLink && (
+                <a 
+                    href={whatsappLink} 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="whatsapp-float-btn"
+                    title="Fale conosco no WhatsApp"
+                >
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp" />
+                </a>
+            )}
+        </>
+    );
+};
+
+export default PublicLayout;

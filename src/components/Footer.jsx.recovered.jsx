@@ -1,33 +1,96 @@
-import React from 'react';
+﻿import React from 'react';
 import { Link } from 'react-router-dom';
 import { Instagram, Youtube, Facebook, Phone, Music, Mail, MapPin, Clock, Heart, ChevronRight } from 'lucide-react';
 import '../css/Footer.css';
 import { transformImageLink } from '../utils/imageUtils';
+import { supabase } from '../lib/supabase';
+import { INITIAL_FOOTER_DATA, INITIAL_HEADER_DATA } from '../lib/constants';
+import { deepMerge } from '../lib/dbUtils';
 import { usePageUpdate } from '../hooks/usePageUpdate';
-import { useSiteData } from '../context/SiteContext';
 
 const Footer = () => {
-  const { footerData, headerData, refreshData } = useSiteData();
+  const [footerData, setFooterData] = React.useState(INITIAL_FOOTER_DATA);
+  const [headerData, setHeaderData] = React.useState(INITIAL_HEADER_DATA);
 
-  // Sincronização automática via usePageUpdate
-  usePageUpdate(['footer', 'header'], refreshData);
+  const loadData = async () => {
+    try {
+      const [footerRes, headerRes] = await Promise.all([
+        supabase.from('site_settings').select('data').eq('key', 'footer').limit(1).limit(1).single(),
+        supabase.from('site_settings').select('data').eq('key', 'header').limit(1).limit(1).single()
+      ]);
 
-  // Configuração dos links rápidos no centro do rodapé
+      const footerFromDb = footerRes.data?.data;
+      if (footerFromDb) {
+        const parsedFooter = typeof footerFromDb === 'string' ? JSON.parse(footerFromDb) : footerFromDb;
+        setFooterData(deepMerge(INITIAL_FOOTER_DATA, parsedFooter));
+      } else {
+        try {
+          const cached = localStorage.getItem('admac_site_settings:footer');
+          if (cached) {
+            const parsed = JSON.parse(cached);
+            setFooterData(deepMerge(INITIAL_FOOTER_DATA, parsed));
+          } else {
+            setFooterData(INITIAL_FOOTER_DATA);
+          }
+        } catch {
+          setFooterData(INITIAL_FOOTER_DATA);
+        }
+      }
+
+      const headerFromDb = headerRes.data?.data;
+      if (headerFromDb) {
+        const parsedHeader = typeof headerFromDb === 'string' ? JSON.parse(headerFromDb) : headerFromDb;
+        setHeaderData(deepMerge(INITIAL_HEADER_DATA, parsedHeader));
+      } else {
+        try {
+          const cached = localStorage.getItem('admac_site_settings:header');
+          if (cached) {
+            const parsed = JSON.parse(cached);
+            setHeaderData(deepMerge(INITIAL_HEADER_DATA, parsed));
+          } else {
+            setHeaderData(INITIAL_HEADER_DATA);
+          }
+        } catch {
+          setHeaderData(INITIAL_HEADER_DATA);
+        }
+      }
+    } catch (err) {
+      console.error('Error loading footer/header data:', err);
+      try {
+        const fCached = localStorage.getItem('admac_site_settings:footer');
+        const hCached = localStorage.getItem('admac_site_settings:header');
+        setFooterData(fCached ? deepMerge(INITIAL_FOOTER_DATA, JSON.parse(fCached)) : INITIAL_FOOTER_DATA);
+        setHeaderData(hCached ? deepMerge(INITIAL_HEADER_DATA, JSON.parse(hCached)) : INITIAL_HEADER_DATA);
+      } catch {
+        setFooterData(INITIAL_FOOTER_DATA);
+        setHeaderData(INITIAL_HEADER_DATA);
+      }
+    }
+  };
+
+  React.useEffect(() => {
+    loadData();
+  }, []);
+
+  // Sincroniza├º├úo autom├ítica via usePageUpdate
+  usePageUpdate(['footer', 'header'], loadData);
+
+  // Configura├º├úo dos links r├ípidos no centro do rodap├®
   const quickLinks = [
-    { name: 'Início', path: '/' },
-    { name: 'Ministérios', path: '/' },
+    { name: 'In├¡cio', path: '/' },
+    { name: 'Minist├®rios', path: '/' },
     { name: 'Revista', path: '/revista' },
     { name: 'Contato', path: '/contato' }
   ];
 
-  // Atalhos diretos para os principais ministérios
+  // Atalhos diretos para os principais minist├®rios
   const ministries = [
-    { name: 'Mídia', path: '/midia' },
+    { name: 'M├¡dia', path: '/midia' },
     { name: 'Lares', path: '/lares' },
     { name: 'Louvor', path: '/louvor' },
     { name: 'Kids', path: '/kids' },
     { name: 'Jovens', path: '/jovens' },
-    { name: 'Missões', path: '/missoes' }
+    { name: 'Miss├Áes', path: '/missoes' } // Adicionado link de Miss├Áes
   ];
 
   return (
@@ -65,7 +128,7 @@ const Footer = () => {
 
         {/* Quick Links */}
         <div className="footer-section">
-          <h4>Links Rápidos</h4>
+          <h4>Links R├ípidos</h4>
           <ul className="footer-links">
             {quickLinks.map((link, index) => (
               <li key={index}>
@@ -80,7 +143,7 @@ const Footer = () => {
 
         {/* Ministries */}
         <div className="footer-section">
-          <h4>Ministérios</h4>
+          <h4>Minist├®rios</h4>
           <ul className="footer-links">
             {ministries.map((ministry, index) => (
               <li key={index}>
@@ -152,7 +215,7 @@ const Footer = () => {
       <div className="footer-bottom">
         <div className="container">
           <div className="footer-bottom-content">
-            <p>&copy; {new Date().getFullYear()} {footerData?.logo?.text} - Assembleia de Deus Ministério Atos e Conquistas. Todos os direitos reservados.</p>
+            <p>&copy; {new Date().getFullYear()} {footerData?.logo?.text} - Assembleia de Deus Minist├®rio Atos e Conquistas. Todos os direitos reservados.</p>
             <p className="footer-credits">
               Desenvolvido com <Heart size={14} className="heart-icon" /> pela equipe {footerData?.logo?.text}
             </p>

@@ -2,8 +2,7 @@
 // Header.jsx — Cabeçalho principal do site ADMAC
 // Exibe logo, menu de navegação desktop/mobile, redes sociais,
 // botão de tema (claro/escuro) e link para a área administrativa.
-// Os dados são carregados dinamicamente do DatabaseService e
-// atualizados automaticamente ao detectar mudanças no localStorage.
+// Os dados são carregados dinamicamente via SiteContext para performance.
 // ================================================================
 
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
@@ -24,9 +23,9 @@ import {
 } from 'lucide-react';
 import '../css/Header.css';
 import { supabase, hasSupabaseConfigured } from '../lib/supabase';
-import { INITIAL_HEADER_DATA } from '../lib/constants';
-import { deepMerge, parseSafeJson, transformImageLink } from '../lib/dbUtils';
 import { usePageUpdate } from '../hooks/usePageUpdate';
+import { transformImageLink } from '../utils/imageUtils';
+import { useSiteData } from '../context/SiteContext';
 
 function playBellOnce() {
   try {
@@ -70,44 +69,36 @@ function playBellOnce() {
   }
 }
 
-
 const Header = ({ theme, toggleTheme }) => {
-  // ── Estado do menu mobile ─────────────────────────────────────
+  const { headerData, refreshData } = useSiteData();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  // ── Estado do dropdown de Ministérios ────────────────────────
+  // Dropdowns
   const [showMinistries, setShowMinistries] = useState(false);
   const [isMinistriesFixed, setIsMinistriesFixed] = useState(false);
   const [ministriesTimeout, setMinistriesTimeout] = useState(null);
 
-  // ── Estado do dropdown de Mídia ──────────────────────────────
   const [showMedia, setShowMedia] = useState(false);
   const [isMediaFixed, setIsMediaFixed] = useState(false);
   const [mediaTimeout, setMediaTimeout] = useState(null);
 
-  // ── Estado do dropdown de Social ──────────────────────────────
   const [showSocial, setShowSocial] = useState(false);
   const [isSocialFixed, setIsSocialFixed] = useState(false);
   const [socialTimeout, setSocialTimeout] = useState(null);
 
-  // ── Tema interno (fallback quando `theme` não é recebido via props) ──
   const [internalTheme, setInternalTheme] = useState(
     typeof document !== 'undefined'
       ? (document.documentElement.getAttribute('data-theme') || 'dark')
       : 'dark'
   );
 
-  // Usa o tema das props se disponível, senão usa o interno
   const currentTheme = useMemo(() => theme || internalTheme, [theme, internalTheme]);
 
-  // CORREÇÃO: `useCallback` é o hook correto para memorizar funções/handlers.
-  // `useMemo` seria usado apenas para valores calculados, não para callbacks.
   const handleToggleTheme = useCallback(() => {
     if (typeof toggleTheme === 'function') {
       toggleTheme();
       return;
     }
-    // Alterna o tema internamente se a prop `toggleTheme` não foi passada
     const next = currentTheme === 'light' ? 'dark' : 'light';
     if (typeof document !== 'undefined') {
       document.documentElement.setAttribute('data-theme', next);
@@ -115,56 +106,14 @@ const Header = ({ theme, toggleTheme }) => {
     setInternalTheme(next);
   }, [toggleTheme, currentTheme]);
 
-  // ── Dados dinâmicos do cabeçalho (carregados do Supabase) ──
-  const [headerData, setHeaderData] = useState(INITIAL_HEADER_DATA);
-
-  const loadHeaderData = async () => {
-    try {
-      if (!supabase || !hasSupabaseConfigured) {
-        throw new Error('Supabase não configurado');
-      }
-
-      const { data: dbData, error } = await supabase
-        .from('site_settings')
-        .select('data')
-        .eq('key', 'header')
-        .single();
-
-      if (error) throw error;
-
-      if (dbData?.data) {
-        setHeaderData(deepMerge(INITIAL_HEADER_DATA, parseSafeJson(dbData.data)));
-        setIsConnected(true);
-      } else {
-        throw new Error('Dados não encontrados');
-      }
-    } catch (err) {
-      console.warn('[Header] Falha ao carregar dados do Supabase, usando fallback local:', err.message);
-      setIsConnected(false);
-      const raw = localStorage.getItem('admac_site_settings:header');
-      if (raw) {
-        try {
-          const local = JSON.parse(raw);
-          setHeaderData(deepMerge(INITIAL_HEADER_DATA, local));
-        } catch {
-          setHeaderData(INITIAL_HEADER_DATA);
-        }
-      } else {
-        setHeaderData(INITIAL_HEADER_DATA);
-      }
-    }
-  };
-
-  // ── Estado de notificações de visitantes ──────────────────────
+  // Visitor & Notification State
   const [unreadCount, setUnreadCount] = useState(0);
-
-  // ── Contador e localização dos visitantes ────────────────────
   const [visitorLiveCount, setVisitorLiveCount] = useState(0);
   const [lastVisit, setLastVisit] = useState(null);
   const [showVisitorModal, setShowVisitorModal] = useState(false);
   const [showNotifBox, setShowNotifBox] = useState(false);
   const [notifications, setNotifications] = useState([
-    { id: 1, title: 'Bem-vindo ao Painel', text: 'Você agora pode ler avisos e alertas aqui no sino.', time: '01m atrás', read: false }
+    { id: 1, title: 'Bem-vindo ao Site', text: 'Confira nossos avisos e novidades aqui no sino.', time: '01m atrás', read: false }
   ]);
   const [hasPagesNotif, setHasPagesNotif] = useState(false);
   const [selectedNotif, setSelectedNotif] = useState(null);
@@ -173,14 +122,12 @@ const Header = ({ theme, toggleTheme }) => {
   const loadVisitorLiveCount = async () => {
     try {
       if (!supabase || !hasSupabaseConfigured) return;
-
       const since = new Date(Date.now() - 10 * 60 * 1000).toISOString();
       const { count, error } = await supabase
         .from("site_logs")
         .select("*", { count: "exact", head: true })
         .eq("action", "visitor_access")
         .gte("created_at", since);
-
       if (!error) setVisitorLiveCount(count || 0);
     } catch (err) {
       console.warn("[Header] Erro ao carregar visitantes ao vivo:", err.message);
@@ -195,10 +142,8 @@ const Header = ({ theme, toggleTheme }) => {
         .select("data")
         .eq("key", "visitor_stats")
         .single();
-
       if (data?.data) {
-        const raw = data.data;
-        const val = typeof raw === 'object' ? (raw.value ?? 0) : 0;
+        const val = typeof data.data === 'object' ? (data.data.value ?? 0) : 0;
         setVisitorTotal(Number(val));
       }
     } catch (err) {
@@ -209,14 +154,12 @@ const Header = ({ theme, toggleTheme }) => {
   const loadLastVisit = async () => {
     try {
       if (!supabase || !hasSupabaseConfigured) return;
-
       const { data } = await supabase
         .from("site_settings")
         .select("data")
         .eq("key", "last_visit")
         .single();
-
-      if (data && data.data && typeof data.data === "object") {
+      if (data?.data && typeof data.data === "object") {
         setLastVisit(data.data);
       }
     } catch (err) {
@@ -227,27 +170,21 @@ const Header = ({ theme, toggleTheme }) => {
   const fetchUnreadCount = async () => {
     try {
       if (!supabase || !hasSupabaseConfigured) return;
-      
       const { count, error } = await supabase
         .from('site_messages')
         .select('*', { count: 'exact', head: true })
         .eq('type', 'contact');
-
-      if (!error) {
-        setUnreadCount(count || 0);
-      }
+      if (!error) setUnreadCount(count || 0);
     } catch (err) {
-      console.warn('[Header] Erro ao buscar contagem de visitantes:', err.message);
+      console.warn('[Header] Erro ao buscar contagem de mensagens:', err.message);
     }
   };
 
   useEffect(() => {
     fetchUnreadCount();
-    
-    // Atualiza contagem de mensagens a cada 30 segundos
     const msgInterval = setInterval(fetchUnreadCount, 30000);
     
-    // Função para simular atividade de visitantes e notificar no sino
+    // Simulação de atividade para o Sino
     const notifyVisitor = () => {
       const visitorCount = Math.floor(Math.random() * 5) + 1;
       const locations = ['São Paulo / SP', 'Rio de Janeiro / RJ', 'Curitiba / PR', 'Brasília / DF', 'Goiânia / GO'];
@@ -259,17 +196,13 @@ const Header = ({ theme, toggleTheme }) => {
         time: 'Agora',
         read: false
       };
-      setNotifications(prev => {
-        if (prev[0]?.text === newNotif.text) return prev;
-        return [newNotif, ...prev.slice(0, 15)];
-      });
+      setNotifications(prev => (prev[0]?.text === newNotif.text) ? prev : [newNotif, ...prev.slice(0, 15)]);
       setHasPagesNotif(true);
       playBellOnce().catch(() => { });
     };
 
-    // Alerta inicial rápido e depois periódico
-    const firstVisitorTimer = setTimeout(notifyVisitor, 10000);
-    const visitorInterval = setInterval(notifyVisitor, 60000);
+    const firstVisitorTimer = setTimeout(notifyVisitor, 12000);
+    const visitorInterval = setInterval(notifyVisitor, 90000);
 
     return () => {
       clearInterval(msgInterval);
@@ -278,81 +211,26 @@ const Header = ({ theme, toggleTheme }) => {
     };
   }, []);
 
-
   useEffect(() => {
     loadVisitorLiveCount();
     loadLastVisit();
-
-    let lastTs = null;
-    let alive = true;
-
-    const tick = async () => {
-      if (!alive) return;
-      
-      const { data: logs, error } = await supabase
-        .from('site_logs')
-        .select('*')
-        .order('timestamp', { ascending: false })
-        .limit(1);
-
-      if (error) {
-        console.warn('❌ [Header] Erro ao buscar logs:', error.message);
-        return;
-      }
-
-      const lv = logs?.[0];
-      if (lv) {
-        if (lastTs === null) {
-          lastTs = lv.timestamp;
-        } else if (new Date(lv.timestamp) > new Date(lastTs)) {
-          // Detectamos um novo visitante real!
-          const loc = lv.location || 'Brasil';
-          const live = (visitorLiveCount || 1);
-          
-          const newNotif = {
-            id: Date.now(),
-            title: 'Novos Visitantes',
-            text: `Neste momento há ${live} pessoas de ${loc} visitando o site. Clique para saber mais.`,
-            time: 'Agora',
-            read: false
-          };
-          setNotifications(prev => [newNotif, ...prev.slice(0, 19)]);
-          setHasPagesNotif(true);
-          playBellOnce().catch(() => {});
-          lastTs = lv.timestamp;
-          
-          // Atualiza o contador de visitantes ao vivo simultaneamente
-          loadVisitorLiveCount();
-        }
-      }
-    };
-
+    loadVisitorTotal();
+    
     const interval = setInterval(() => {
       loadVisitorLiveCount();
       loadVisitorTotal();
-      tick();
-    }, 15000);
+    }, 20000);
 
-    tick();
-    loadVisitorTotal();
-
-    return () => {
-      alive = false;
-      clearInterval(interval);
-    };
-  }, []);
-
-  useEffect(() => {
-    loadHeaderData();
+    return () => clearInterval(interval);
   }, []);
 
   // Sincronização automática via usePageUpdate
-  usePageUpdate(['header'], loadHeaderData);
+  usePageUpdate(['header'], refreshData);
 
-  // ── Atualiza o favicon dinamicamente se o logo for uma imagem ──
+  // Favicon dinâmico
   useEffect(() => {
     const icon = headerData?.logo?.icon?.trim();
-    if (icon && typeof icon === 'string' && (icon.includes('data:image') || icon.includes('http'))) {
+    if (icon && typeof icon === 'string' && (icon.startsWith('data:image') || icon.startsWith('http'))) {
       let link = document.querySelector("link[rel~='icon']");
       if (!link) {
         link = document.createElement('link');
@@ -363,157 +241,69 @@ const Header = ({ theme, toggleTheme }) => {
     }
   }, [headerData?.logo?.icon]);
 
-  const [isConnected, setIsConnected] = useState(hasSupabaseConfigured);
-
-  // Alterna o menu mobile aberto/fechado
   const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
 
-  // ── Handlers do dropdown de Ministérios ──────────────────────
-
-  // Abre o dropdown ao passar o mouse por cima
+  // Handlers Dropdowns
   const handleMinistriesMouseEnter = () => {
-    if (ministriesTimeout) {
-      clearTimeout(ministriesTimeout);
-      setMinistriesTimeout(null);
-    }
+    if (ministriesTimeout) clearTimeout(ministriesTimeout);
     setShowMinistries(true);
   };
-
-  // Fecha o dropdown com atraso se o mouse sair (evita fechar ao mover para o menu)
   const handleMinistriesMouseLeave = (e) => {
-    // Não fecha se o mouse se mover para dentro do dropdown
-    if (e.relatedTarget && e.relatedTarget.closest('.dropdown-menu')) {
-      return;
-    }
+    if (e.relatedTarget?.closest('.dropdown-menu')) return;
     if (!isMinistriesFixed) {
-      const timeout = setTimeout(() => {
-        setShowMinistries(false);
-      }, 300);
-      setMinistriesTimeout(timeout);
+      const t = setTimeout(() => setShowMinistries(false), 300);
+      setMinistriesTimeout(t);
     }
   };
-
-  // Alterna o estado "fixo" do dropdown ao clicar no botão
   const toggleMinistries = (e) => {
     e.stopPropagation();
-    if (isMinistriesFixed) {
-      setIsMinistriesFixed(false);
-      setShowMinistries(false);
-    } else {
-      setIsMinistriesFixed(true);
-      setShowMinistries(true);
-    }
+    setIsMinistriesFixed(!isMinistriesFixed);
+    setShowMinistries(!isMinistriesFixed);
   };
-
-  // Fecha o dropdown ao clicar em um item do menu
-  const handleMinistryClick = (e) => {
-    e.stopPropagation();
-    setIsMinistriesFixed(false);
-    setShowMinistries(false);
-    if (ministriesTimeout) {
-      clearTimeout(ministriesTimeout);
-      setMinistriesTimeout(null);
-    }
-  };
-
-  // ── Handlers do dropdown de Mídia ───────────────────────────
 
   const handleMediaMouseEnter = () => {
-    if (mediaTimeout) {
-      clearTimeout(mediaTimeout);
-      setMediaTimeout(null);
-    }
+    if (mediaTimeout) clearTimeout(mediaTimeout);
     setShowMedia(true);
   };
-
   const handleMediaMouseLeave = (e) => {
-    if (e.relatedTarget && e.relatedTarget.closest('.media-dropdown-menu')) {
-      return;
-    }
+    if (e.relatedTarget?.closest('.media-dropdown-menu')) return;
     if (!isMediaFixed) {
-      const timeout = setTimeout(() => {
-        setShowMedia(false);
-      }, 300);
-      setMediaTimeout(timeout);
+      const t = setTimeout(() => setShowMedia(false), 300);
+      setMediaTimeout(t);
     }
   };
-
   const toggleMedia = (e) => {
     e.stopPropagation();
-    if (isMediaFixed) {
-      setIsMediaFixed(false);
-      setShowMedia(false);
-    } else {
-      setIsMediaFixed(true);
-      setShowMedia(true);
-    }
+    setIsMediaFixed(!isMediaFixed);
+    setShowMedia(!isMediaFixed);
   };
-
-  const handleMediaClick = (e) => {
-    e.stopPropagation();
-    setIsMediaFixed(false);
-    setShowMedia(false);
-    if (mediaTimeout) {
-      clearTimeout(mediaTimeout);
-      setMediaTimeout(null);
-    }
-  };
-
-  // ── Handlers do dropdown de Social ───────────────────────────
 
   const handleSocialMouseEnter = () => {
-    if (socialTimeout) {
-      clearTimeout(socialTimeout);
-      setSocialTimeout(null);
-    }
+    if (socialTimeout) clearTimeout(socialTimeout);
     setShowSocial(true);
   };
-
   const handleSocialMouseLeave = (e) => {
-    if (e.relatedTarget && e.relatedTarget.closest('.social-dropdown-menu')) {
-      return;
-    }
+    if (e.relatedTarget?.closest('.social-dropdown-menu')) return;
     if (!isSocialFixed) {
-      const timeout = setTimeout(() => {
-        setShowSocial(false);
-      }, 300);
-      setSocialTimeout(timeout);
+      const t = setTimeout(() => setShowSocial(false), 300);
+      setSocialTimeout(t);
     }
   };
-
   const toggleSocial = (e) => {
     e.stopPropagation();
-    if (isSocialFixed) {
-      setIsSocialFixed(false);
-      setShowSocial(false);
-    } else {
-      setIsSocialFixed(true);
-      setShowSocial(true);
-    }
-  };
-
-  const handleSocialClick = (e) => {
-    e.stopPropagation();
-    setIsSocialFixed(false);
-    setShowSocial(false);
-    if (socialTimeout) {
-      clearTimeout(socialTimeout);
-      setSocialTimeout(null);
-    }
+    setIsSocialFixed(!isSocialFixed);
+    setShowSocial(!isSocialFixed);
   };
 
   const handleVisitorBellClick = async (e) => {
-    // Mantém o usuário na Home e mostra a notificação com localização.
     e.preventDefault();
     e.stopPropagation();
     setIsMenuOpen(false);
-
     await loadLastVisit();
     setShowVisitorModal(true);
   };
 
-  // ── Lista estática dos ministérios para o dropdown ────────────
-  const ministries = [
+  const menuMinistries = [
     { name: 'Kids', path: '/kids' },
     { name: 'Jovens', path: '/jovens' },
     { name: 'Louvor', path: '/louvor' },
@@ -524,193 +314,104 @@ const Header = ({ theme, toggleTheme }) => {
     { name: 'Casais', path: '/casais' },
   ];
 
-  const socialLinks = [
-    { name: 'Ação Social', path: '/social' },
-    { name: 'EBD', path: '/edb' },
-    { name: 'Missões', path: '/missoes' },
-    { name: 'Intercessão', path: '/intercessao' },
-    { name: 'Casais', path: '/casais' },
-  ];
-
-  const mediaLinks = [
+  const menuMedia = [
     { name: 'Portal de Mídia', path: '/midia' },
     { name: 'Revista Admac', path: '/revista' },
     { name: 'Vídeos & Lives', path: '/midia#video' },
     { name: 'Galeria de Fotos', path: '/midia#galeria' },
   ];
 
+  const menuSocial = [
+    { name: 'Ação Social', path: '/social' },
+    { name: 'EBD', path: '/edb' },
+    { name: 'Missões', path: '/missoes' },
+    { name: 'Intercessão', path: '/intercessao' },
+  ];
+
   return (
     <header className="header">
       <div className="container header-content">
-
-        {/* ── Logo da Igreja ── */}
         <div className="logo-section">
           <Link to="/" className="logo-link">
             <div className="logo-icon">
-              {/* Exibe imagem se o ícone for uma URL ou base64, senão exibe emoji */}
               {headerData?.logo?.icon && typeof headerData.logo.icon === 'string' && (headerData.logo.icon.includes('data:image') || headerData.logo.icon.includes('http') || headerData.logo.icon.startsWith('/')) ? (
-                <img src={transformImageLink(headerData.logo.icon.trim())} alt="Logo da Igreja" />
+                <img src={transformImageLink(headerData.logo.icon.trim())} alt="Logo" />
               ) : (
                 <span>{headerData?.logo?.icon || '⛪'}</span>
               )}
             </div>
-            <span className="logo-text">{headerData?.logo?.text}</span>
+            <span className="logo-text">{headerData?.logo?.text || 'ADMAC'}</span>
           </Link>
         </div>
 
-        {/* ── Navegação Desktop ── */}
         <nav className="desktop-nav">
-          {/* 1. Início */}
-          {headerData?.menu?.slice(0, 1).map((item, idx) => (
-            <Link key={idx} to={item.path} className="nav-link">{item.name}</Link>
-          ))}
-
-          {/* 2. Dropdown de Mídia */}
-          <div
-            className="nav-dropdown"
-            onMouseEnter={handleMediaMouseEnter}
-            onMouseLeave={handleMediaMouseLeave}
-          >
-            <button
-              className={`dropdown-trigger ${isMediaFixed ? 'active' : ''}`}
-              onClick={toggleMedia}
-              aria-haspopup="true"
-              aria-expanded={showMedia}
-            >
-              Mídia <ChevronDown size={16} />
+          <Link to="/" className="nav-link">Início</Link>
+          
+          {/* Mídia Dropdown */}
+          <div className="nav-dropdown" onMouseEnter={handleMediaMouseEnter} onMouseLeave={handleMediaMouseLeave}>
+            <button className={`dropdown-trigger ${isMediaFixed ? 'active' : ''}`} onClick={toggleMedia}>
+              Mídia <ChevronDown size={14} />
             </button>
             {showMedia && (
-              <div
-                className={`dropdown-menu ${isMediaFixed ? 'fixed' : ''} media-dropdown-menu`}
-                onMouseEnter={handleMediaMouseEnter}
-                onMouseLeave={handleMediaMouseLeave}
-              >
-                {mediaLinks.map((link, idx) => (
-                  <Link
-                    key={idx}
-                    to={link.path}
-                    className="dropdown-item"
-                    onClick={handleMediaClick}
-                  >
-                    {link.name}
-                  </Link>
+              <div className={`dropdown-menu media-dropdown-menu ${isMediaFixed ? 'fixed' : ''}`}>
+                {menuMedia.map((link, idx) => (
+                  <Link key={idx} to={link.path} className="dropdown-item" onClick={() => {setShowMedia(false); setIsMediaFixed(false);}}>{link.name}</Link>
                 ))}
               </div>
             )}
           </div>
 
-          {/* 3. Dropdown de Ministérios */}
-          <div
-            className="nav-dropdown"
-            onMouseEnter={handleMinistriesMouseEnter}
-            onMouseLeave={handleMinistriesMouseLeave}
-          >
-            <button
-              className={`dropdown-trigger ${isMinistriesFixed ? 'active' : ''}`}
-              onClick={toggleMinistries}
-              aria-haspopup="true"
-              aria-expanded={showMinistries}
-            >
-              Ministérios <ChevronDown size={16} />
+          {/* Ministérios Dropdown */}
+          <div className="nav-dropdown" onMouseEnter={handleMinistriesMouseEnter} onMouseLeave={handleMinistriesMouseLeave}>
+            <button className={`dropdown-trigger ${isMinistriesFixed ? 'active' : ''}`} onClick={toggleMinistries}>
+              Ministérios <ChevronDown size={14} />
             </button>
             {showMinistries && (
-              <div
-                className={`dropdown-menu ${isMinistriesFixed ? 'fixed' : ''}`}
-                onMouseEnter={handleMinistriesMouseEnter}
-                onMouseLeave={handleMinistriesMouseLeave}
-              >
-                {ministries.map((ministry, idx) => (
-                  <Link
-                    key={idx}
-                    to={ministry.path}
-                    className="dropdown-item"
-                    onClick={handleMinistryClick}
-                  >
-                    {ministry.name}
-                  </Link>
+              <div className={`dropdown-menu ${isMinistriesFixed ? 'fixed' : ''}`}>
+                {menuMinistries.map((m, idx) => (
+                  <Link key={idx} to={m.path} className="dropdown-item" onClick={() => {setShowMinistries(false); setIsMinistriesFixed(false);}}>{m.name}</Link>
                 ))}
               </div>
             )}
           </div>
 
-          {/* 4. Dropdown de Social */}
-          <div
-            className="nav-dropdown"
-            onMouseEnter={handleSocialMouseEnter}
-            onMouseLeave={handleSocialMouseLeave}
-          >
-            <button
-              className={`dropdown-trigger ${isSocialFixed ? 'active' : ''}`}
-              onClick={toggleSocial}
-              aria-haspopup="true"
-              aria-expanded={showSocial}
-            >
-              Social <ChevronDown size={16} />
+          {/* Social Dropdown */}
+          <div className="nav-dropdown" onMouseEnter={handleSocialMouseEnter} onMouseLeave={handleSocialMouseLeave}>
+            <button className={`dropdown-trigger ${isSocialFixed ? 'active' : ''}`} onClick={toggleSocial}>
+              Social <ChevronDown size={14} />
             </button>
             {showSocial && (
-              <div
-                className={`dropdown-menu ${isSocialFixed ? 'fixed' : ''} social-dropdown-menu`}
-                onMouseEnter={handleSocialMouseEnter}
-                onMouseLeave={handleSocialMouseLeave}
-              >
-                {socialLinks.map((link, idx) => (
-                  <Link
-                    key={idx}
-                    to={link.path}
-                    className="dropdown-item"
-                    onClick={handleSocialClick}
-                  >
-                    {link.name}
-                  </Link>
+              <div className={`dropdown-menu social-dropdown-menu ${isSocialFixed ? 'fixed' : ''}`}>
+                {menuSocial.map((link, idx) => (
+                  <Link key={idx} to={link.path} className="dropdown-item" onClick={() => {setShowSocial(false); setIsSocialFixed(false);}}>{link.name}</Link>
                 ))}
               </div>
             )}
           </div>
 
-          {/* 5 e 6. Sobre e Contato */}
-          {headerData?.menu?.slice(1).map((item, idx) => (
-            <Link key={idx} to={item.path} className="nav-link">{item.name}</Link>
-          ))}
+          <Link to="/sobre" className="nav-link">Sobre</Link>
+          <Link to="/contato" className="nav-link">Contato</Link>
         </nav>
 
-        {/* ── Ações do cabeçalho (redes sociais, tema, admin) ── */}
         <div className="header-actions">
           <div className="social-icons">
-            {/* Links de redes sociais com aria-label para acessibilidade */}
-            {headerData?.social?.instagram && (
-              <a href={headerData.social.instagram} aria-label="Instagram" target="_blank" rel="noopener noreferrer">
-                <Instagram size={18} />
-              </a>
+            {headerData.social?.instagram && (
+              <a href={headerData.social.instagram} target="_blank" rel="noopener noreferrer" aria-label="Instagram"><Instagram size={18} /></a>
             )}
-            {headerData?.social?.youtube && (
-              <a href={headerData.social.youtube} aria-label="YouTube" target="_blank" rel="noopener noreferrer">
-                <Youtube size={18} />
-              </a>
+            {headerData.social?.youtube && (
+              <a href={headerData.social.youtube} target="_blank" rel="noopener noreferrer" aria-label="Youtube"><Youtube size={18} /></a>
             )}
-            {headerData?.social?.facebook && (
-              <a href={headerData.social.facebook} aria-label="Facebook" target="_blank" rel="noopener noreferrer">
-                <Facebook size={18} />
-              </a>
-            )}
-            {headerData?.social?.phone && (
-              <a href={headerData.social.phone.startsWith('http') || headerData.social.phone.startsWith('wa.me') ? (headerData.social.phone.startsWith('http') ? headerData.social.phone : `https://${headerData.social.phone}`) : `tel:${headerData.social.phone.replace(/\D/g, '')}`} aria-label="Telefone">
-                <Phone size={18} />
-              </a>
-            )}
-            {headerData?.social?.music && (
-              <a href={headerData.social.music} aria-label="Música / Podcast" target="_blank" rel="noopener noreferrer">
-                <Music size={18} />
-              </a>
+            {headerData.social?.facebook && (
+              <a href={headerData.social.facebook} target="_blank" rel="noopener noreferrer" aria-label="Facebook"><Facebook size={18} /></a>
             )}
           </div>
 
-          {/* Botão de alternância de tema claro/escuro */}
-          <button className="theme-toggle" onClick={handleToggleTheme} aria-label="Alternar tema">
+          <button className="theme-toggle" onClick={handleToggleTheme} aria-label="Tema">
             {currentTheme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
           </button>
 
-          {/* Notificações de Visitantes (Sino da Foto) */}
-          <div className="nav-notification-area">
+          {/* Sino de Notificações */}
+          <div className="nav-notification-area" style={{ position: 'relative' }}>
             <button
               className="nav-notification-btn"
               title={hasPagesNotif ? 'Há novas notificações' : 'Sem novas notificações'}
@@ -748,7 +449,7 @@ const Header = ({ theme, toggleTheme }) => {
                   <button
                     type="button"
                     style={{ background: 'none', border: 'none', color: '#8b84ff', fontSize: '0.7rem', cursor: 'pointer' }}
-                    onClick={() => { setNotifications([]); setHasPagesNotif(false); }}
+                    onClick={() => { setNotifications([]); setHasPagesNotif(false); setShowNotifBox(false); }}
                   >
                     Limpar tudo
                   </button>
@@ -774,7 +475,7 @@ const Header = ({ theme, toggleTheme }) => {
                         setShowNotifBox(false);
                       }}
                     >
-                      <div style={{ display: 'flex', justifyContext: 'space-between', marginBottom: 4 }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
                         <b style={{ fontSize: '0.8rem', color: '#8b84ff' }}>{n.title}</b>
                         <span style={{ fontSize: '0.65rem', color: '#7c82a0', marginLeft: 'auto' }}>{n.time}</span>
                       </div>
@@ -786,75 +487,8 @@ const Header = ({ theme, toggleTheme }) => {
             )}
           </div>
 
-          {/* Modal de Notificação Expandida */}
-          {selectedNotif && (
-            <div
-              style={{
-                position: 'fixed',
-                inset: 0,
-                background: 'rgba(0,0,0,0.7)',
-                zIndex: 3000,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                padding: 20
-              }}
-              onClick={() => setSelectedNotif(null)}
-            >
-              <div
-                style={{
-                  background: '#1a1d27',
-                  borderRadius: 16,
-                  border: '1px solid #2a2f45',
-                  width: 'min(400px, 100%)',
-                  padding: '24px',
-                  boxShadow: '0 20px 50px rgba(0,0,0,0.5)'
-                }}
-                onClick={e => e.stopPropagation()}
-              >
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-                  <h3 style={{ margin: 0, fontSize: '1.1rem', color: '#fff' }}>{selectedNotif.title}</h3>
-                  <button onClick={() => setSelectedNotif(null)} style={{ background: 'none', border: 'none', color: '#7c82a0', fontSize: '1.2rem', cursor: 'pointer' }}>✕</button>
-                </div>
-                <p style={{ color: '#e8eaf0', lineHeight: 1.5 }}>{selectedNotif.text}</p>
-                <button
-                  onClick={() => setSelectedNotif(null)}
-                  style={{
-                    marginTop: 16,
-                    width: '100%',
-                    padding: '10px',
-                    borderRadius: 8,
-                    background: 'linear-gradient(135deg, #c19a6b 0%, #8b6b4a 100%)',
-                    color: '#fff',
-                    border: 'none',
-                    fontWeight: 700,
-                    cursor: 'pointer'
-                  }}
-                >
-                  Entendi
-                </button>
-              </div>
-            </div>
-          )}
-
-          <Link 
-            to="/painel" 
-            className="admin-cta-button"
-            onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 6px 18px rgba(0,0,0,0.3)'; }}
-            onMouseOut={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.2)'; }}
-          >
-            <ShieldCheck size={14} />
-            Área Administrativa
-          </Link>
-
-          {/* Botão hamburguer para menu mobile — posicionado fixo quando aberto para fácil fechamento */}
-          <button 
-            className={`mobile-menu-btn ${isMenuOpen ? 'open' : ''}`} 
-            onClick={toggleMenu} 
-            aria-label="Menu"
-            style={isMenuOpen ? { position: 'fixed', right: '2rem', top: '1.5rem', zIndex: 1200 } : {}}
-          >
-            {isMenuOpen ? <X size={28} /> : <Menu size={28} />}
+          <button className="mobile-menu-btn" onClick={toggleMenu} aria-label="Menu">
+            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
         </div>
       </div>
@@ -874,67 +508,56 @@ const Header = ({ theme, toggleTheme }) => {
         />
       )}
 
-      {/* ── Navegação Mobile ── */}
+      {/* Menu Mobile */}
       {isMenuOpen && (
         <nav className="mobile-nav">
-          {/* Primeiro item do menu mobile */}
-          {headerData?.menu?.slice(0, 1).map((item, idx) => (
-            <Link key={idx} to={item.path} onClick={toggleMenu}>{item.name}</Link>
-          ))}
-
-          {/* Dropdown de Mídia Mobile */}
+          <Link to="/" onClick={toggleMenu}>Início</Link>
+          
+          {/* Mídia Mobile Dropdown */}
           <div className="mobile-dropdown">
             <button className="mobile-dropdown-trigger" onClick={() => setShowMedia(!showMedia)}>
               Mídia <ChevronDown size={16} />
             </button>
             {showMedia && (
               <div className="mobile-dropdown-content">
-                {mediaLinks.map((link, idx) => (
-                  <Link key={idx} to={link.path} onClick={() => { handleMediaClick({ stopPropagation: () => { } }); toggleMenu(); }}>
-                    {link.name}
-                  </Link>
+                {menuMedia.map((link, idx) => (
+                  <Link key={idx} to={link.path} onClick={toggleMenu}>{link.name}</Link>
                 ))}
               </div>
             )}
           </div>
 
-          {/* Dropdown de ministérios mobile */}
+          {/* Ministérios Mobile Dropdown */}
           <div className="mobile-dropdown">
             <button className="mobile-dropdown-trigger" onClick={() => setShowMinistries(!showMinistries)}>
               Ministérios <ChevronDown size={16} />
             </button>
             {showMinistries && (
               <div className="mobile-dropdown-content">
-                {ministries.map((ministry, idx) => (
-                  <Link key={idx} to={ministry.path} onClick={toggleMenu}>
-                    {ministry.name}
-                  </Link>
+                {menuMinistries.map((m, idx) => (
+                  <Link key={idx} to={m.path} onClick={toggleMenu}>{m.name}</Link>
                 ))}
               </div>
             )}
           </div>
 
-          {/* Dropdown de Social Mobile */}
+          {/* Social Mobile Dropdown */}
           <div className="mobile-dropdown">
             <button className="mobile-dropdown-trigger" onClick={() => setShowSocial(!showSocial)}>
               Social <ChevronDown size={16} />
             </button>
             {showSocial && (
               <div className="mobile-dropdown-content">
-                {socialLinks.map((link, idx) => (
-                  <Link key={idx} to={link.path} onClick={() => { handleSocialClick({ stopPropagation: () => { } }); toggleMenu(); }}>
-                    {link.name}
-                  </Link>
+                {menuSocial.map((link, idx) => (
+                  <Link key={idx} to={link.path} onClick={toggleMenu}>{link.name}</Link>
                 ))}
               </div>
             )}
           </div>
 
-          {/* Demais itens dinâmicos do menu mobile */}
-          {headerData?.menu?.slice(1).map((item, idx) => (
-            <Link key={idx} to={item.path} onClick={toggleMenu}>{item.name}</Link>
-          ))}
-
+          <Link to="/sobre" onClick={toggleMenu}>Sobre</Link>
+          <Link to="/contato" onClick={toggleMenu}>Contato</Link>
+          
           <div className="mobile-admin-wrap" style={{ padding: '12px' }}>
             <Link 
               to="/painel" 
@@ -961,10 +584,10 @@ const Header = ({ theme, toggleTheme }) => {
             </Link>
           </div>
 
-          {/* Sino de Notificações Mobile */}
+          {/* Visit Count / Notification Mobile Sticky Area */}
           <div style={{ display: 'flex', justifyContent: 'center', paddingBottom: '20px' }}>
             <button 
-              onClick={() => { setShowNotifBox(!showNotifBox); setHasPagesNotif(false); }}
+              onClick={(e) => { handleVisitorBellClick(e); }}
               style={{ 
                 display: 'flex', 
                 alignItems: 'center', 
@@ -998,58 +621,94 @@ const Header = ({ theme, toggleTheme }) => {
         </nav>
       )}
 
-      {showVisitorModal && (
-        <div
-          className="visitor-modal-overlay"
-          role="dialog"
-          aria-modal="true"
-          onClick={() => setShowVisitorModal(false)}
-        >
-          <div className="visitor-modal" onClick={(evt) => evt.stopPropagation()}>
-            <div className="visitor-modal-header">
-              <div style={{ fontWeight: 800 }}>Onde você está acessando</div>
-              <button
-                type="button"
-                className="visitor-modal-close"
-                aria-label="Fechar"
-                onClick={() => setShowVisitorModal(false)}
-              >
-                ×
-              </button>
+      {/* Modal de Notificação */}
+      {selectedNotif && (
+        <div className="notif-modal-overlay" onClick={() => setSelectedNotif(null)}>
+          <div
+            className="notif-modal-content"
+            style={{
+              background: '#1a1d27',
+              borderRadius: 16,
+              border: '1px solid #2a2f45',
+              width: 'min(400px, 100%)',
+              padding: '24px',
+              boxShadow: '0 20px 50px rgba(0,0,0,0.5)'
+            }}
+            onClick={e => e.stopPropagation()}
+          >
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+              <h3 style={{ margin: 0, fontSize: '1.1rem', color: '#fff' }}>{selectedNotif.title}</h3>
+              <button onClick={() => setSelectedNotif(null)} style={{ background: 'none', border: 'none', color: '#7c82a0', fontSize: '1.2rem', cursor: 'pointer' }}>×</button>
             </div>
+            <p style={{ color: '#e8eaf0', lineHeight: 1.5 }}>{selectedNotif.text}</p>
+            <button
+              onClick={() => setSelectedNotif(null)}
+              style={{
+                marginTop: 16,
+                width: '100%',
+                padding: '10px',
+                borderRadius: 8,
+                background: 'linear-gradient(135deg, #c19a6b 0%, #8b6b4a 100%)',
+                color: '#fff',
+                border: 'none',
+                fontWeight: 700,
+                cursor: 'pointer'
+              }}
+            >
+              Entendi
+            </button>
+          </div>
+        </div>
+      )}
 
-            <div className="visitor-modal-body">
-              <div className="visitor-modal-location">
-                <span style={{ fontWeight: 700 }}>📍</span>{" "}
-                <span>{lastVisit?.location || "Visitante Anônimo"}</span>
+      {/* Modal de Visitantes */}
+      {showVisitorModal && (
+        <div className="visitor-modal-overlay" onClick={() => setShowVisitorModal(false)}>
+          <div className="visitor-modal" onClick={e => e.stopPropagation()}>
+            <div className="visitor-modal-header" style={{ display: 'flex', justifyContent: 'space-between', padding: '16px 20px', borderBottom: '1px solid #2a2f45' }}>
+              <h3 style={{ margin: 0, fontWeight: 800 }}>Estatísticas de Visitas</h3>
+              <button onClick={() => setShowVisitorModal(false)} style={{ background: 'none', border: 'none', color: '#7c82a0', fontSize: '1.2rem', cursor: 'pointer' }}>×</button>
+            </div>
+            <div className="visitor-modal-body" style={{ padding: '20px' }}>
+              <div style={{ marginBottom: '16px', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '1.2rem' }}>📍</span>
+                <span>{lastVisit?.location || "Localização desconhecida"}</span>
               </div>
-
-              <div className="visitor-modal-map">
-                {lastVisit?.location ? (
+              <div style={{ background: '#0a0a0a', borderRadius: '12px', height: '200px', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+                 {lastVisit?.location ? (
                   <iframe
                     title="Mapa do visitante"
                     loading="lazy"
+                    style={{ border: 0, width: '100%', height: '100%' }}
                     referrerPolicy="no-referrer-when-downgrade"
                     src={`https://www.google.com/maps?q=${encodeURIComponent(lastVisit.location)}&output=embed`}
                   />
                 ) : (
-                  <div className="visitor-modal-empty">Sem dados de localização agora.</div>
+                  <span style={{ color: '#7c82a0' }}>Sem dados de mapa</span>
                 )}
               </div>
+              <div style={{ marginTop: '20px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <div style={{ background: 'rgba(255,255,255,0.05)', padding: '12px', borderRadius: '8px', textAlign: 'center' }}>
+                  <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', color: '#7c82a0' }}>Total</div>
+                  <div style={{ fontSize: '1.2rem', fontWeight: 800 }}>{visitorTotal}</div>
+                </div>
+                <div style={{ background: 'rgba(255,255,255,0.05)', padding: '12px', borderRadius: '8px', textAlign: 'center' }}>
+                  <div style={{ fontSize: '0.65rem', textTransform: 'uppercase', color: '#7c82a0' }}>Online</div>
+                  <div style={{ fontSize: '1.2rem', fontWeight: 800 }}>{visitorLiveCount}</div>
+                </div>
+              </div>
             </div>
-
-            <div className="visitor-modal-actions">
-              <Link
+            <div style={{ padding: '16px 20px', display: 'flex', gap: '12px' }}>
+               <Link
                 to="/painel"
-                className="visitor-modal-open-panel"
                 onClick={() => setShowVisitorModal(false)}
+                style={{ flex: 1, padding: '10px', borderRadius: '8px', background: 'rgba(255,255,255,0.1)', color: '#fff', textAlign: 'center', textDecoration: 'none', fontWeight: 700 }}
               >
                 Ver Painel
               </Link>
               <button
-                type="button"
-                className="visitor-modal-close-btn"
                 onClick={() => setShowVisitorModal(false)}
+                style={{ flex: 1, padding: '10px', borderRadius: '8px', background: 'linear-gradient(135deg, #c19a6b 0%, #8b6b4a 100%)', color: '#fff', border: 'none', fontWeight: 700, cursor: 'pointer' }}
               >
                 Fechar
               </button>
