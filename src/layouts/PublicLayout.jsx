@@ -1,81 +1,19 @@
 import React from 'react';
-import { Outlet, useLocation } from 'react-router-dom';
+import { Outlet } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
-import { supabase } from '../lib/supabase';
-import { parseSafeJson } from '../lib/dbUtils';
-import { INITIAL_FOOTER_DATA } from '../lib/constants';
+import { useSiteData } from '../context/SiteContext';
 
 const PublicLayout = () => {
-    const location = useLocation();
-    const [isActive, setIsActive] = React.useState(true);
-    const [loading, setLoading] = React.useState(true);
+    const { footerData, siteStatus, loading } = useSiteData();
 
-    React.useEffect(() => {
-        const checkStatus = async () => {
-            setLoading(true);
-            try {
-                const rawPath = location.pathname === '/' ? 'home' : location.pathname.split('/').filter(Boolean)[0].toLowerCase();
+    // Link do WhatsApp vindo dos dados globais
+    const whatsappLink = footerData?.social?.whatsapp || 'https://wa.me/5561993241084';
+    
+    // Verificação de Manutenção (simplificada via SiteContext)
+    const isMaintenance = siteStatus?.maintenance?.active === true;
 
-                // Mapeamento simples para chaves de ministério
-                const keysMap = {
-                    'revista': 'revista',
-                    'contato': 'contact',
-                    'home': 'home'
-                };
-
-                const id = keysMap[rawPath] || rawPath;
-                const key = id === 'home' ? 'home' : `ministry_${id}`;
-
-                const { data } = await supabase.from('site_settings').select('data').eq('key', key).limit(1).limit(1).single();
-
-                const parsed = parseSafeJson(data?.data);
-                if (parsed) {
-                    setIsActive(parsed.active !== false);
-                } else {
-                    setIsActive(true); // Ativo por padrão
-                }
-            } catch (err) {
-                console.error('Error checking page status:', err);
-                setIsActive(true);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        checkStatus();
-    }, [location.pathname]);
-
-    const [footerData, setFooterData] = React.useState(null);
-    const [headerData, setHeaderData] = React.useState(null);
-
-    React.useEffect(() => {
-        const loadGlobals = async () => {
-            try {
-                const [fRes, hRes] = await Promise.all([
-                    supabase.from('site_settings').select('data').eq('key', 'footer').single(),
-                    supabase.from('site_settings').select('data').eq('key', 'header').single()
-                ]);
-
-                if (fRes.data) {
-                    const parsed = typeof fRes.data.data === 'string' ? JSON.parse(fRes.data.data) : fRes.data.data;
-                    setFooterData(parsed);
-                }
-                if (hRes.data) {
-                    const parsed = typeof hRes.data.data === 'string' ? JSON.parse(hRes.data.data) : hRes.data.data;
-                    setHeaderData(parsed);
-                }
-            } catch (err) {
-                console.warn('Error loading globals in layout:', err);
-            }
-        };
-        loadGlobals();
-    }, []);
-
-    const whatsappLink = footerData?.social?.whatsapp || INITIAL_FOOTER_DATA.social.whatsapp;
-    const isInactive = !loading && isActive === false;
-
-    if (isInactive) {
+    if (isMaintenance && !loading) {
         return (
             <>
                 <Header />

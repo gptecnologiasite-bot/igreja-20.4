@@ -64,6 +64,26 @@
   gap: 1.5rem;
 }
 
+.mobile-menu-btn {
+  background: none !important;
+  color: #fff !important;
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  border: none !important;
+  padding: 8px;
+  cursor: pointer;
+  transition: opacity 0.2s;
+  outline: none;
+  z-index: 1200; /* Ensure it's above everything */
+}
+
+@media (min-width: 1024px) {
+  .mobile-menu-btn {
+    display: none !important;
+  }
+}
+
 .desktop-nav .nav-link {
   color: var(--text-color);
   text-decoration: none;
@@ -279,12 +299,8 @@
   box-shadow: 0 6px 18px rgba(0,0,0,0.3);
 }
 
-.mobile-menu-btn {
-  background: none;
-  color: white;
-  display: block;
-  border: none;
-  cursor: pointer;
+.mobile-menu-btn:active {
+  opacity: 0.6;
 }
 
 .mobile-nav {
@@ -334,43 +350,44 @@
   .social-icons {
     display: flex;
   }
-
-  .mobile-menu-btn {
-    display: none;
-  }
 }
 
 @media (max-width: 1024px) {
+  .header-actions {
+    gap: 12px;
+  }
+  
+  .desktop-nav {
+    display: none !important;
+  }
+
+  .nav-visitor-stats,
   .admin-cta-button {
     display: none !important;
   }
-}
 
-@media (max-width: 768px) {
-  .nav-visitor-stats, 
-  .theme-toggle,
-  .weather-widget {
-    display: none !important;
-  }
-  
-  .header-content {
-    justify-content: space-between;
-  }
-
-  .logo-link span {
+  .logo-text {
     font-size: 1.1rem;
+    max-width: 160px;
   }
 }
+
 @media (max-width: 480px) {
-  .header-actions {
-    gap: 8px;
+  .logo-text {
+    font-size: 1rem;
+    max-width: 120px;
   }
+
   .mobile-nav {
-    padding: 80px 1.5rem 2rem;
-    gap: 1rem;
+    padding: 70px 1.25rem 1.5rem;
+    width: 100%;
+    max-width: none;
+    gap: 0.75rem;
   }
-  .logo-link span {
-    display: none; /* Hide text logo on very small screens, keep only the image/icon */
+
+  .mobile-dropdown-trigger {
+    font-size: 1rem;
+    padding: 0.75rem 0;
   }
 }
 

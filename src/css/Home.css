@@ -62,7 +62,7 @@
   opacity: 0.85;
 }
 
-.welcome-text h2 {
+.welcome-text h1 {
   color: var(--primary-color);
   font-size: 2.5rem;
   margin-bottom: 1.5rem;
@@ -471,7 +471,7 @@
   .spotify-wrapper iframe {
     height: 200px;
   }
-  .welcome-text h2 {
+  .welcome-text h1 {
     font-size: 1.8rem;
     line-height: 1.2;
   }

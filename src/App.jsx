@@ -9,6 +9,7 @@ import { BrowserRouter as Router, useRoutes } from "react-router-dom";
 import { routes } from "./routes/index";
 import "./css/App.css";
 import { useVisitorTracker } from "./hooks/useVisitorTracker";
+import { SiteDataProvider } from "./context/SiteContext";
 
 // AppContent precisa ser um componente separado de App porque
 // `useRoutes` e `useLocation` precisam estar dentro do contexto do Router
@@ -35,13 +36,16 @@ const AppContent = () => {
   );
 };
 
-// Componente principal que envolve tudo no BrowserRouter
+// Componente principal que envolve tudo no BrowserRouter e SiteDataProvider
 function App() {
   return (
-    <Router>
-      <AppContent />
-    </Router>
+    <SiteDataProvider>
+      <Router>
+        <AppContent />
+      </Router>
+    </SiteDataProvider>
   );
 }
 
 export default App;
+
