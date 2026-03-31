@@ -404,6 +404,14 @@ const Header = ({ theme, toggleTheme }) => {
             {headerData.social?.facebook && (
               <a href={headerData.social.facebook} target="_blank" rel="noopener noreferrer" aria-label="Facebook"><Facebook size={18} /></a>
             )}
+            {headerData.social?.phone && (
+              <a href={headerData.social.phone.startsWith('http') || headerData.social.phone.startsWith('wa.me') ? (headerData.social.phone.startsWith('http') ? headerData.social.phone : `https://${headerData.social.phone}`) : `tel:${headerData.social.phone.replace(/\D/g, '')}`} aria-label="Telefone">
+                <Phone size={18} />
+              </a>
+            )}
+            {headerData.social?.music && (
+              <a href={headerData.social.music} target="_blank" rel="noopener noreferrer" aria-label="Música / Podcast"><Music size={18} /></a>
+            )}
           </div>
 
           <button className="theme-toggle" onClick={handleToggleTheme} aria-label="Tema">
