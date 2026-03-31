@@ -248,6 +248,128 @@
   overflow: hidden;
 }
 
+/* Contact Dropdown Styles */
+.contact-dropdown-container {
+  position: relative;
+  display: inline-block;
+}
+
+.contact-dropdown-menu {
+  position: absolute;
+  top: calc(100% + 10px);
+  left: 50%;
+  transform: translateX(-50%) scale(0.95);
+  width: 280px;
+  background: rgba(26, 29, 39, 0.85);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  border-radius: 16px;
+  padding: 12px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.4);
+  z-index: 1000;
+  opacity: 0;
+  visibility: hidden;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  transform-origin: top center;
+}
+
+.contact-dropdown-menu.active {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(-50%) scale(1);
+}
+
+.contact-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  border-radius: 10px;
+  color: #fff;
+  text-decoration: none;
+  transition: background 0.2s;
+  margin-bottom: 5px;
+}
+
+.contact-item:last-child {
+  margin-bottom: 0;
+}
+
+.contact-item:hover {
+  background: rgba(212, 175, 55, 0.15);
+}
+
+.contact-photo {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid #d4af3722;
+  background: #2a2f45;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.contact-photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.contact-info {
+  flex: 1;
+  min-width: 0;
+}
+
+.contact-name {
+  display: block;
+  font-size: 0.9rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.contact-role {
+  display: block;
+  font-size: 0.72rem;
+  color: #7c82a0;
+  margin-top: 2px;
+}
+
+.contact-whatsapp-icon {
+  color: #25d366;
+  opacity: 0.8;
+}
+
+@media (max-width: 480px) {
+  .contact-dropdown-menu {
+    position: fixed;
+    bottom: 20px;
+    top: auto;
+    left: 10px;
+    right: 10px;
+    width: auto;
+    transform: translateY(20px);
+    transform-origin: bottom center;
+  }
+  
+  .contact-dropdown-menu.active {
+    transform: translateY(0);
+  }
+}
+
+.welcome-section {
+  padding-top: 120px;
+  padding-bottom: 120px;
+  position: relative;
+  overflow: hidden;
+  background-color: #0d0d0d;
+}
+
 .ministry-home-card:hover {
   transform: translateY(-10px);
   box-shadow: 0 12px 24px rgba(0,0,0,0.3);

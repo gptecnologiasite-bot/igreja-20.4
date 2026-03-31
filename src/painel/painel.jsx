@@ -703,6 +703,7 @@ export default function PainelAdm() {
     { id: 'sobre', label: 'Sobre' },
     { id: 'contact', label: 'Contato' },
     { id: 'casais', label: 'Casais' },
+    { id: 'pastors_contacts', label: 'Contatos Pastores' },
   ];
   const pageToMinistry = {
     'Home': 'home',
@@ -1224,7 +1225,7 @@ export default function PainelAdm() {
   const loadMinistry = async (id) => {
     try {
       setMinistryLoading(true);
-      const key = id === 'home' ? 'home' : `ministry_${id}`;
+      const key = id === 'home' ? 'home' : id === 'pastors_contacts' ? 'pastors_contacts' : `ministry_${id}`;
 
       const [settingRes, videoRes] = await Promise.all([
         supabase.from('site_settings').select('data').eq('key', key).single(),
@@ -1248,13 +1249,13 @@ export default function PainelAdm() {
         } catch { }
       }
 
-      const defaultData = id === 'home' ? INITIAL_HOME_DATA : INITIAL_MINISTRIES_DATA[id];
+      const defaultData = id === 'home' ? INITIAL_HOME_DATA : id === 'pastors_contacts' ? INITIAL_PASTORS_CONTACTS : INITIAL_MINISTRIES_DATA[id];
       const parsedRaw = parseSafeJson(rawData);
       
       // Fusão robusta: Garante que nunca seja null
       let data = defaultData;
       if (parsedRaw) {
-        data = typeof deepMerge === 'function' ? deepMerge(defaultData, parsedRaw) : { ...defaultData, ...parsedRaw };
+        data = (id === 'pastors_contacts' || !defaultData) ? parsedRaw : (typeof deepMerge === 'function' ? deepMerge(defaultData, parsedRaw) : { ...defaultData, ...parsedRaw });
       }
       
       vids = parseSafeJson(vids) || [];
@@ -1291,7 +1292,7 @@ export default function PainelAdm() {
     }
     if (!ministryId || !ministryData) return;
     try {
-      const key = ministryId === 'home' ? 'home' : `ministry_${ministryId}`;
+      const key = ministryId === 'home' ? 'home' : ministryId === 'pastors_contacts' ? 'pastors_contacts' : `ministry_${ministryId}`;
 
       const cleanHomeVideos = ministryId === 'home' ? sanitizeVideos(homeVideos) : null;
       const sanitizedVideos = cleanHomeVideos || sanitizeVideos(ministryData?.videos);
@@ -2559,7 +2560,72 @@ export default function PainelAdm() {
             )}
             {!ministryLoading && ministryData && (
               <div className="pm-body" style={{ padding: 0 }}>
-                {ministryTab === 'geral' && (
+                {ministryId === 'pastors_contacts' && (
+                  <div style={{ padding: '1.2rem' }}>
+                    <div className="painel-page-header">
+                      <h4 style={{ fontSize: '1rem', marginBottom: '0.4rem' }}>Gerenciar Contatos dos Pastores</h4>
+                      <p style={{ fontSize: '0.8rem', color: palette.textMuted }}>Estes contatos aparecerão no menu suspenso do botão "Entre em Contato" na Home.</p>
+                    </div>
+                    
+                    {(Array.isArray(ministryData) ? ministryData : INITIAL_PASTORS_CONTACTS).map((p, idx) => (
+                      <div key={idx} style={{ marginBottom: '1.5rem', padding: '1.2rem', background: palette.surfaceHover, borderRadius: '12px', border: `1px solid ${palette.border}` }}>
+                        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                          <div className="pm-field">
+                            <label>Nome do Pastor/Contato</label>
+                            <input className="pm-input" value={p.name || ''} onChange={e => {
+                              const next = [...(Array.isArray(ministryData) ? ministryData : INITIAL_PASTORS_CONTACTS)];
+                              next[idx] = { ...next[idx], name: e.target.value };
+                              setMinistryData(next);
+                            }} />
+                          </div>
+                          <div className="pm-field">
+                            <label>Cargo / Função</label>
+                            <input className="pm-input" value={p.role || ''} onChange={e => {
+                              const next = [...(Array.isArray(ministryData) ? ministryData : INITIAL_PASTORS_CONTACTS)];
+                              next[idx] = { ...next[idx], role: e.target.value };
+                              setMinistryData(next);
+                            }} />
+                          </div>
+                          <div className="pm-field">
+                            <label>WhatsApp (Somente números)</label>
+                            <input className="pm-input" placeholder="Ex: 5561999999999" value={p.phone || ''} onChange={e => {
+                              const next = [...(Array.isArray(ministryData) ? ministryData : INITIAL_PASTORS_CONTACTS)];
+                              next[idx] = { ...next[idx], phone: e.target.value.replace(/\D/g, '') };
+                              setMinistryData(next);
+                            }} />
+                          </div>
+                          <div className="pm-field">
+                             <label>Foto (Opcional)</label>
+                             <div style={{ display: 'flex', gap: '8px' }}>
+                               <input className="pm-input" value={p.photo || ''} onChange={e => {
+                                 const next = [...(Array.isArray(ministryData) ? ministryData : INITIAL_PASTORS_CONTACTS)];
+                                 next[idx] = { ...next[idx], photo: e.target.value };
+                                 setMinistryData(next);
+                               }} />
+                               <button className="pm-photo-btn" onClick={() => handleFileUpload(url => {
+                                 const next = [...(Array.isArray(ministryData) ? ministryData : INITIAL_PASTORS_CONTACTS)];
+                                 next[idx] = { ...next[idx], photo: url };
+                                 setMinistryData(next);
+                               }, hasSupabase, supabase)}>Subir</button>
+                             </div>
+                          </div>
+                        </div>
+                        <div style={{ marginTop: '0.8rem', display: 'flex', justifyContent: 'flex-end' }}>
+                          <button className="btn-deletar" onClick={() => {
+                            const next = [...(Array.isArray(ministryData) ? ministryData : INITIAL_PASTORS_CONTACTS)];
+                            next.splice(idx, 1);
+                            setMinistryData(next);
+                          }}>Excluir Contato</button>
+                        </div>
+                      </div>
+                    ))}
+                    <button className="pm-add-btn" onClick={() => setMinistryData([...(Array.isArray(ministryData) ? ministryData : INITIAL_PASTORS_CONTACTS), { name: '', role: '', phone: '', photo: '' }])}>
+                      + Adicionar Novo Pastor
+                    </button>
+                  </div>
+                )}
+
+                {ministryTab === 'geral' && ministryId !== 'pastors_contacts' && (
                   <div style={{ padding: '1.2rem' }}>
                     {ministryId === 'home' ? (
                       <>

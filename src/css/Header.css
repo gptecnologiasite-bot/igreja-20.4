@@ -279,19 +279,18 @@
 .admin-cta-button {
   background: linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%);
   color: #ffffff !important;
-  padding: 6px 14px;
-  border-radius: 50px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
   display: flex;
   align-items: center;
-  gap: 6px;
-  font-size: 0.78rem;
-  font-weight: 700;
+  justify-content: center;
   text-decoration: none;
-  white-space: nowrap;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-  transition: transform 0.2s, box-shadow 0.2s;
-  border: none;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1.5px solid rgba(255, 255, 255, 0.1);
   cursor: pointer;
+  flex-shrink: 0;
 }
 
 .admin-cta-button:hover {

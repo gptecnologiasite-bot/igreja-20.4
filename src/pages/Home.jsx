@@ -15,6 +15,8 @@ import {
   Phone,    // Ícone de telefone nos botões CTA
   ArrowRight, // Seta nos cards de ministérios
   Bell,     // Sino de notificações (Home)
+  Music,
+  MessageCircle,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import "../css/Home.css";
@@ -25,9 +27,25 @@ import { supabase } from "../lib/supabase";
 import { INITIAL_HOME_DATA } from "../lib/constants";
 import { deepMerge, transformImageLink, parseSafeJson } from "../lib/dbUtils";
 import { usePageUpdate } from "../hooks/usePageUpdate";
+import { useSiteData } from "../context/SiteContext";
 
 
 const Home = () => {
+  const { pastorsData } = useSiteData();
+  const [showDropdown, setShowDropdown] = useState(false);
+  const dropdownRef = React.useRef(null);
+
+  // Fecha o dropdown ao clicar fora
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   // Estado principal com os dados da home (carrossel, welcome, agenda, etc.)
   const [data, setData] = useState(INITIAL_HOME_DATA);
   // Lista consolidada de aniversariantes de todos os ministérios
@@ -154,9 +172,45 @@ const Home = () => {
               <h1>{data.welcome.title}</h1>
               <p>{data.welcome.text1}</p>
               <p>{data.welcome.text2}</p>
-              <Link to={data.welcome.buttonLink || "/contato"} className="welcome-btn">
-                <Phone size={18} /> {data.welcome.buttonText || "Entre em Contato"}
-              </Link>
+              
+              <div className="contact-dropdown-container" ref={dropdownRef}>
+                <button 
+                  className="welcome-btn"
+                  onClick={() => setShowDropdown(!showDropdown)}
+                >
+                  <Phone size={18} /> {data.welcome.buttonText || "Entre em Contato"}
+                </button>
+
+                <div className={`contact-dropdown-menu ${showDropdown ? 'active' : ''}`}>
+                  {(pastorsData || []).map((pastor) => (
+                    <a 
+                      key={pastor.id} 
+                      href={`https://wa.me/${pastor.phone || '5561993241084'}`}
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="contact-item"
+                    >
+                      <div className="contact-photo">
+                        {pastor.photo ? (
+                          <img src={transformImageLink(pastor.photo)} alt={pastor.name} />
+                        ) : (
+                          <Phone size={18} />
+                        )}
+                      </div>
+                      <div className="contact-info">
+                        <span className="contact-name">{pastor.name}</span>
+                        <span className="contact-role">{pastor.role}</span>
+                      </div>
+                      <MessageCircle size={14} className="contact-whatsapp-icon" />
+                    </a>
+                  ))}
+                  {(!pastorsData || pastorsData.length === 0) && (
+                    <div style={{ color: '#7c82a0', fontSize: '0.8rem', textAlign: 'center', padding: '10px' }}>
+                      Pressione para ver contatos
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         </div>

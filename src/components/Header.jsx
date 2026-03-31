@@ -495,6 +495,16 @@ const Header = ({ theme, toggleTheme }) => {
             )}
           </div>
 
+          <Link 
+            to="/painel" 
+            className="admin-cta-button"
+            title="Área Administrativa"
+            onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 6px 18px rgba(0,0,0,0.3)'; }}
+            onMouseOut={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.2)'; }}
+          >
+            <ShieldCheck size={18} />
+          </Link>
+
           <button className="mobile-menu-btn" onClick={toggleMenu} aria-label="Menu">
             {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
           </button>
