@@ -17,9 +17,10 @@
   align-items: center;
 }
 
-@media (min-width: 968px) {
+@media (min-width: 1024px) {
   .welcome-content {
-    grid-template-columns: 400px 1fr;
+    grid-template-columns: 420px 1fr;
+    gap: 4rem;
   }
 }
 
@@ -409,9 +410,13 @@
   box-shadow: 0 8px 16px rgba(0,0,0,0.3);
 }
 
-@media (max-width: 768px) {
+@media (max-width: 1024px) {
   .welcome-section {
-    padding: 3rem 1rem;
+    padding: 3rem 1.5rem;
+  }
+
+  .welcome-content {
+    gap: 2rem;
   }
 
   .welcome-text h2 {
@@ -423,16 +428,17 @@
   }
 
   .pastor-card {
-    margin-bottom: 2rem;
+    margin: 0 auto 2rem;
+    max-width: 500px;
   }
 
   .ministries-home-grid {
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
     gap: 1.5rem;
   }
 
   .schedule-home-grid {
-    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
   }
 }
 @media (max-width: 480px) {
@@ -440,28 +446,38 @@
     font-size: 1.8rem;
   }
   .ministries-home-grid {
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    grid-template-columns: 1fr;
     gap: 1rem;
   }
   .schedule-home-grid {
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    grid-template-columns: 1fr;
     gap: 1rem;
   }
   .cta-home-section h2 {
-    font-size: 2rem;
+    font-size: 1.7rem;
   }
   .cta-home-section p {
-    font-size: 1rem;
+    font-size: 0.95rem;
   }
   .cta-home-btn {
-    padding: 0.75rem 1.5rem;
-    font-size: 1rem;
+    padding: 0.8rem 1.5rem;
+    font-size: 0.95rem;
+    width: 100%;
+    justify-content: center;
   }
   .spotify-section h2 {
-    font-size: 2rem;
+    font-size: 1.8rem;
   }
   .spotify-wrapper iframe {
-    height: 260px;
+    height: 200px;
+  }
+  .welcome-text h2 {
+    font-size: 1.8rem;
+    line-height: 1.2;
+  }
+  .welcome-btn {
+    width: 100%;
+    justify-content: center;
   }
 }
 

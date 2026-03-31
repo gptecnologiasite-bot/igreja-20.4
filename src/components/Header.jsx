@@ -840,21 +840,6 @@ const Header = ({ theme, toggleTheme }) => {
           <Link 
             to="/painel" 
             className="admin-cta-button"
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '6px',
-              padding: '6px 14px',
-              background: 'linear-gradient(135deg, #c19a6b 0%, #8b6b4a 100%)',
-              color: '#fff',
-              borderRadius: '50px',
-              textDecoration: 'none',
-              fontWeight: '700',
-              fontSize: '0.78rem',
-              whiteSpace: 'nowrap',
-              boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
-              transition: 'transform 0.2s, box-shadow 0.2s'
-            }}
             onMouseOver={(e) => { e.currentTarget.style.transform = 'translateY(-1px)'; e.currentTarget.style.boxShadow = '0 6px 18px rgba(0,0,0,0.3)'; }}
             onMouseOut={(e) => { e.currentTarget.style.transform = 'translateY(0)'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.2)'; }}
           >
@@ -862,12 +847,32 @@ const Header = ({ theme, toggleTheme }) => {
             Área Administrativa
           </Link>
 
-          {/* Botão hamburguer para menu mobile */}
-          <button className="mobile-menu-btn" onClick={toggleMenu} aria-label="Menu">
-            {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
+          {/* Botão hamburguer para menu mobile — posicionado fixo quando aberto para fácil fechamento */}
+          <button 
+            className={`mobile-menu-btn ${isMenuOpen ? 'open' : ''}`} 
+            onClick={toggleMenu} 
+            aria-label="Menu"
+            style={isMenuOpen ? { position: 'fixed', right: '2rem', top: '1.5rem', zIndex: 1200 } : {}}
+          >
+            {isMenuOpen ? <X size={28} /> : <Menu size={28} />}
           </button>
         </div>
       </div>
+
+      {/* Overlay/Backdrop para o menu mobile */}
+      {isMenuOpen && (
+        <div 
+          className="mobile-overlay" 
+          onClick={toggleMenu}
+          style={{
+            position: 'fixed',
+            inset: 0,
+            background: 'rgba(0,0,0,0.6)',
+            backdropFilter: 'blur(4px)',
+            zIndex: 1050
+          }}
+        />
+      )}
 
       {/* ── Navegação Mobile ── */}
       {isMenuOpen && (
@@ -941,9 +946,9 @@ const Header = ({ theme, toggleTheme }) => {
                 justifyContent: 'center',
                 gap: '8px',
                 padding: '10px 16px', 
-                background: 'linear-gradient(135deg, #c19a6b 0%, #8b6b4a 100%)', 
+                background: 'linear-gradient(135deg, #2e7d32 0%, #1b5e20 100%)', 
                 borderRadius: '50px', 
-                color: '#fff', 
+                color: '#ffffff', 
                 textDecoration: 'none', 
                 fontWeight: 700,
                 fontSize: '.85rem',
