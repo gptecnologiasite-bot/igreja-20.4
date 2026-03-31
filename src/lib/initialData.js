@@ -590,3 +590,9 @@ export const INITIAL_PAGES_DATA = [
   { id: 'contact', name: 'Contato', path: '/contato', status: 'online', type: 'system' }
 ];
 
+export const INITIAL_PASTORS_CONTACTS = [
+  { id: 1, name: 'Pr. Roberto Silva', role: 'Pastor Presidente', phone: '5561993241084', photo: '' },
+  { id: 2, name: 'Pra. Ana Silva', role: 'Pastora Auxiliar', phone: '5561993241084', photo: '' },
+  { id: 3, name: 'Secretaria ADMAC', role: 'Atendimento Geral', phone: '5561993241084', photo: '' }
+];
+
