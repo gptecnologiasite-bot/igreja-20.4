@@ -216,6 +216,46 @@
   cursor: pointer;
 }
 
+.nav-notification-area {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  position: relative;
+}
+
+.nav-notification-btn {
+  position: relative;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  border: 2px solid #d4af37;
+  background: #0a0a0a;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
+
+.nav-notification-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 15px rgba(212, 175, 55, 0.2);
+}
+
+.nav-notification-badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  width: 12px;
+  height: 12px;
+  background: #f43f5e;
+  border-radius: 50%;
+  border: 2px solid #0a0a0a;
+  box-shadow: 0 0 8px rgba(244, 63, 94, 0.6);
+}
+
 .cta-button {
   background-color: #2e7d32;
   color: white;
@@ -311,4 +351,133 @@
 
 .mobile-admin-link:hover {
   color: #81c784 !important;
+}
+
+/* ── Sino de visitantes (contador + modal) ─────────────────────── */
+.nav-visitor-stats {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  background: rgba(255, 255, 255, 0.05);
+  padding: 4px 10px;
+  border-radius: 12px;
+  border: 1px solid rgba(212, 175, 55, 0.15);
+  min-width: 60px;
+}
+
+.nav-visitor-number {
+  font-size: 1.1rem;
+  font-weight: 900;
+  color: #fff;
+  letter-spacing: -0.5px;
+}
+
+.nav-visitor-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: var(--primary-color, #d4af37);
+  opacity: 0.9;
+  margin-top: 2px;
+}
+
+.visitor-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.65);
+  z-index: 3000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+.visitor-modal {
+  width: min(820px, 100%);
+  background: var(--nav-bg);
+  border: 1px solid rgba(212, 175, 55, 0.35);
+  border-radius: 16px;
+  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.55);
+  overflow: hidden;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.visitor-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.9rem 1rem;
+  border-bottom: 1px solid rgba(212, 175, 55, 0.25);
+}
+
+.visitor-modal-close {
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  color: var(--text-color);
+  cursor: pointer;
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+.visitor-modal-body {
+  padding: 1rem;
+  overflow: auto;
+}
+
+.visitor-modal-location {
+  margin-bottom: 0.8rem;
+  color: var(--text-color);
+  opacity: 0.95;
+}
+
+.visitor-modal-map iframe {
+  width: 100%;
+  height: 360px;
+  border: 0;
+  border-radius: 12px;
+  background: #000;
+}
+
+.visitor-modal-empty {
+  width: 100%;
+  padding: 1.2rem;
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px dashed rgba(212, 175, 55, 0.2);
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.visitor-modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 0.9rem 1rem;
+  border-top: 1px solid rgba(212, 175, 55, 0.25);
+}
+
+.visitor-modal-open-panel {
+  background: linear-gradient(135deg, #c19a6b 0%, #8b6b4a 100%);
+  color: #fff;
+  padding: 0.65rem 1.05rem;
+  border-radius: 999px;
+  text-decoration: none;
+  font-weight: 800;
+}
+
+.visitor-modal-close-btn {
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-color);
+  padding: 0.65rem 1.05rem;
+  border-radius: 999px;
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  font-weight: 800;
+  cursor: pointer;
 }
