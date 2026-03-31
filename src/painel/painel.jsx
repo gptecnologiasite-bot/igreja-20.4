@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { supabase, testSupabaseConnection, hasSupabaseConfigured } from '../lib/supabase';
-import { INITIAL_HOME_DATA, INITIAL_MINISTRIES_DATA, INITIAL_FOOTER_DATA, INITIAL_HEADER_DATA } from '../lib/constants';
+import { INITIAL_HOME_DATA, INITIAL_MINISTRIES_DATA, INITIAL_FOOTER_DATA, INITIAL_HEADER_DATA, INITIAL_PASTORS_CONTACTS } from '../lib/constants';
 import { deepMerge, transformImageLink, parseSafeJson } from '../lib/dbUtils';
 import { broadcastUpdate } from '../hooks/usePageUpdate';
 
@@ -1255,8 +1255,12 @@ export default function PainelAdm() {
       // Fusão robusta: Garante que nunca seja null
       let data = defaultData;
       if (parsedRaw) {
+        // Se for pastors_contacts (array) ou não houver defaultData, usa raw. Senão faz merge.
         data = (id === 'pastors_contacts' || !defaultData) ? parsedRaw : (typeof deepMerge === 'function' ? deepMerge(defaultData, parsedRaw) : { ...defaultData, ...parsedRaw });
       }
+
+      // Fallback final: se data ainda for null/undefined (ex: erro no banco e sem default), garanta algo seguro
+      if (!data) data = defaultData || {};
       
       vids = parseSafeJson(vids) || [];
 
@@ -1294,13 +1298,17 @@ export default function PainelAdm() {
     try {
       const key = ministryId === 'home' ? 'home' : ministryId === 'pastors_contacts' ? 'pastors_contacts' : `ministry_${ministryId}`;
 
-      const cleanHomeVideos = ministryId === 'home' ? sanitizeVideos(homeVideos) : null;
-      const sanitizedVideos = cleanHomeVideos || sanitizeVideos(ministryData?.videos);
-
-      const sanitizedMinistryData = {
-        ...ministryData,
-        videos: sanitizedVideos
-      };
+      let sanitizedMinistryData;
+      if (Array.isArray(ministryData)) {
+        sanitizedMinistryData = ministryData;
+      } else {
+        const cleanHomeVideos = ministryId === 'home' ? sanitizeVideos(homeVideos) : null;
+        const sanitizedVideos = cleanHomeVideos || sanitizeVideos(ministryData?.videos);
+        sanitizedMinistryData = {
+          ...ministryData,
+          videos: sanitizedVideos
+        };
+      }
 
       // Log de tamanho para diagnóstico, mas permite salvar (fallback de texto)
       const stringified = JSON.stringify(sanitizedMinistryData);
