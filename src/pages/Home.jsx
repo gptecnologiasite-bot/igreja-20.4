@@ -15,6 +15,7 @@ import {
   Phone,    // Ícone de telefone nos botões CTA
   ArrowRight, // Seta nos cards de ministérios
   Bell,     // Sino de notificações (Home)
+  Heart,    // Ícone de coração na programação
   Music,
   MessageCircle,
 } from "lucide-react";
@@ -256,8 +257,11 @@ const Home = () => {
 
           <div className="schedule-home-grid">
             {data.schedule.map((item, index) => {
-              // Usa o ícone da programação ou fallback para o ícone Book
-              const IconComponent = item.icon || Book;
+              // Mapeia strings de ícone do banco para componentes Lucide reais
+              const iconMap = { Book, Music, Heart, Clock, Calendar, Bell, Phone, ArrowRight };
+              const IconComponent = (typeof item.iconType === 'string' && iconMap[item.iconType])
+                ? iconMap[item.iconType]
+                : (typeof item.icon === 'function' ? item.icon : Book);
               return (
                 <div key={index} className="schedule-home-card">
                   <div className="schedule-home-day">{item.day}</div>
