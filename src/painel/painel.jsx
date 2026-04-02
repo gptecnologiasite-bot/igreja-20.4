@@ -1299,10 +1299,11 @@ export default function PainelAdm() {
       const key = ministryId === 'home' ? 'home' : ministryId === 'pastors_contacts' ? 'pastors_contacts' : `ministry_${ministryId}`;
 
       let sanitizedMinistryData;
+      let cleanHomeVideos = null;
       if (Array.isArray(ministryData)) {
         sanitizedMinistryData = ministryData;
       } else {
-        const cleanHomeVideos = ministryId === 'home' ? sanitizeVideos(homeVideos) : null;
+        cleanHomeVideos = ministryId === 'home' ? sanitizeVideos(homeVideos) : null;
         const sanitizedVideos = cleanHomeVideos || sanitizeVideos(ministryData?.videos);
         sanitizedMinistryData = {
           ...ministryData,
@@ -1411,7 +1412,8 @@ export default function PainelAdm() {
       }
     } catch (err) {
       console.error('Error saving content:', err);
-      alert('Erro grave ao salvar conteúdo. Verifique o console.');
+      const detail = err?.message || String(err);
+      alert(`Erro grave ao salvar conteúdo.\n\nDetalhe: ${detail}\n\nVerifique o console para mais informações.`);
     }
   };
 
@@ -1471,25 +1473,25 @@ export default function PainelAdm() {
         supabase.from('site_settings').select('data').eq('key', 'videos').single()
       ]);
 
-      let hd = dbHome?.data || null;
-      let videos = dbVideos?.data || null;
+      let rawHd = parseSafeJson(dbHome?.data);
+      let rawVideos = parseSafeJson(dbVideos?.data);
 
       // Fallback localStorage quando Supabase estiver indisponível
-      if (!hd) {
+      if (!rawHd) {
         try {
           const raw = localStorage.getItem('admac_site_settings:home');
-          if (raw) hd = JSON.parse(raw);
+          if (raw) rawHd = JSON.parse(raw);
         } catch { /* ignore */ }
       }
-      if (!videos) {
+      if (!rawVideos) {
         try {
           const raw = localStorage.getItem('admac_site_settings:videos');
-          if (raw) videos = JSON.parse(raw);
+          if (raw) rawVideos = JSON.parse(raw);
         } catch { /* ignore */ }
       }
 
-      hd = hd || INITIAL_HOME_DATA;
-      videos = videos || [];
+      const hd = rawHd ? deepMerge(INITIAL_HOME_DATA, rawHd) : INITIAL_HOME_DATA;
+      const videos = Array.isArray(rawVideos) ? rawVideos : [];
       
       // Sincroniza os conteúdos para evitar discrepância no editor
       const syncedHome = { ...hd, videos };
@@ -1752,8 +1754,10 @@ export default function PainelAdm() {
         const { data: dbHome } = await supabase.from('site_settings').select('data').eq('key', 'home').single();
         const { data: dbVideos } = await supabase.from('site_settings').select('data').eq('key', 'videos').single();
 
-        const hd = dbHome?.data || INITIAL_HOME_DATA;
-        const videosArr = dbVideos?.data || [];
+        const rawHd = parseSafeJson(dbHome?.data);
+        const hd = rawHd ? deepMerge(INITIAL_HOME_DATA, rawHd) : INITIAL_HOME_DATA;
+        const rawVideos = parseSafeJson(dbVideos?.data);
+        const videosArr = Array.isArray(rawVideos) ? rawVideos : [];
         const syncedHomeData = { ...hd, videos: videosArr };
 
         setHomeData(syncedHomeData);
@@ -1983,7 +1987,7 @@ export default function PainelAdm() {
 
         if (!hasSupabase || error) {
           try {
-            localStorage.setItem(`admac_site_settings:${key}`, content);
+            localStorage.setItem(`admac_site_settings:${key}`, JSON.stringify(pageData));
           } catch { }
           if (hasSupabase && error) console.error(`[Supabase Error] ${key} Save:`, error);
           alert('Página salva LOCALMENTE (Offline).');
@@ -1998,7 +2002,8 @@ export default function PainelAdm() {
       await loadPages();
     } catch (err) {
       console.error('Error saving page:', err);
-      alert('Erro ao salvar a página.');
+      const msg = err?.message || String(err);
+      alert(`Erro ao salvar a página.\n\nDetalhe: ${msg}`);
     } finally {
       setPageSaving(false);
     }
@@ -5496,14 +5501,10 @@ export default function PainelAdm() {
               className="btn-deletar"
               style={{ width: '100%', background: 'transparent', border: `1px solid ${palette.danger}`, color: palette.danger }}
               onClick={() => {
-                if (window.confirm('ATENÇÃO: Deseja limpar o cache local? Isso recarregará a página.')) {
-                  // Limpeza seletiva para não quebrar outras partes do navegador
-                  Object.keys(localStorage).forEach(key => {
-                    if (key.startsWith('admac_') || key.startsWith('site_settings:')) {
-                      localStorage.removeItem(key);
-                    }
-                  });
-                  window.location.reload();
+                if (window.confirm('ATENÇÃO: Deseja apagar TODO o banco de dados local do navegador? Isso forçará o painel a recarregar todos os dados do Supabase na próxima vez.')) {
+                  localStorage.clear();
+                  sessionStorage.clear();
+                  window.location.replace('/painel');
                 }
               }}
             >
