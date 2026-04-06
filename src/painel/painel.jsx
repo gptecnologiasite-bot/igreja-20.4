@@ -335,20 +335,37 @@ const handleFileUpload = (callback, hasSupabase, supabase) => {
   input.click();
 };
 
+/** Chave em site_settings: home usa "home", demais ministérios "ministry_<id>" (nunca "ministry_home"). */
+const settingsKeyForBirthdayTarget = (ministryId) => (ministryId === 'home' ? 'home' : `ministry_${ministryId}`);
+
 function HomeAnivEditor({ palette, ministryOptions, handleFileUpload, hasSupabase, supabase, currentUser }) {
-  const [selMin, setSelMin] = React.useState(ministryOptions[0]?.value || 'jovens');
+  const [selMin, setSelMin] = React.useState(ministryOptions.find(o => o.value !== 'home')?.value || ministryOptions[0]?.value || 'jovens');
   const [bData, setBData] = React.useState(null);
   const [saving, setSaving] = React.useState(false);
   const [msg, setMsg] = React.useState('');
 
   const fetchMinistryBirthdays = async (id) => {
-    const { data: dbData } = await supabase
-      .from('site_settings')
-      .select('data')
-      .eq('key', `ministry_${id}`)
-      .single();
-    const parsed = parseSafeJson(dbData?.data);
-    return parsed?.birthdays || { title: '', text: '', videoUrl: '', people: [] };
+    const key = settingsKeyForBirthdayTarget(id);
+    try {
+      if (!hasSupabase || !supabase) {
+        const raw = localStorage.getItem(`admac_site_settings:${key}`);
+        const parsed = raw ? parseSafeJson(raw) : null;
+        return parsed?.birthdays || { title: '', text: '', videoUrl: '', people: [] };
+      }
+      const { data: dbData, error } = await supabase
+        .from('site_settings')
+        .select('data')
+        .eq('key', key)
+        .maybeSingle();
+      if (error) {
+        console.warn('[HomeAnivEditor] Leitura:', error.message);
+      }
+      const parsed = parseSafeJson(dbData?.data);
+      return parsed?.birthdays || { title: '', text: '', videoUrl: '', people: [] };
+    } catch (e) {
+      console.warn('[HomeAnivEditor] fetchMinistryBirthdays:', e);
+      return { title: '', text: '', videoUrl: '', people: [] };
+    }
   };
 
   React.useEffect(() => {
@@ -359,28 +376,79 @@ function HomeAnivEditor({ palette, ministryOptions, handleFileUpload, hasSupabas
   const updatePeople = (next) => setBData(d => ({ ...d, people: next }));
 
   const handleSave = async () => {
+    if (currentUser?.role === 'Viewer') {
+      alert('Visualizadores não podem salvar alterações.');
+      return;
+    }
+    if (!bData) return;
+
     setSaving(true);
+    setMsg('');
+    const key = settingsKeyForBirthdayTarget(selMin);
+
+    const persistLocal = (fullObj) => {
+      try {
+        localStorage.setItem(`admac_site_settings:${key}`, JSON.stringify(fullObj));
+      } catch (e) {
+        console.warn('localStorage:', e);
+      }
+      broadcastUpdate(key);
+    };
+
     try {
-      const { data: dbData } = await supabase
-        .from('site_settings')
-        .select('data')
-        .eq('key', `ministry_${selMin}`)
-        .single();
+      let full = {};
+      if (hasSupabase && supabase) {
+        const { data: dbData, error: fetchErr } = await supabase
+          .from('site_settings')
+          .select('data')
+          .eq('key', key)
+          .maybeSingle();
 
-      const full = parseSafeJson(dbData?.data) || {};
-      await supabase.from('site_settings').upsert({
-        key: `ministry_${selMin}`,
-        data: { ...full, birthdays: bData }
-      });
+        if (fetchErr) {
+          console.error('[HomeAnivEditor] SELECT:', fetchErr);
+          throw new Error(fetchErr.message || 'Falha ao ler o banco');
+        }
+        full = parseSafeJson(dbData?.data) || {};
+      } else {
+        try {
+          const raw = localStorage.getItem(`admac_site_settings:${key}`);
+          if (raw) full = parseSafeJson(JSON.parse(raw)) || {};
+        } catch { /* ignore */ }
+      }
 
-      broadcastUpdate(`ministry_${selMin}`);
-      setMsg('✅ Salvo!');
+      const payload = { ...full, birthdays: bData };
+
+      if (hasSupabase && supabase) {
+        const { error: upErr } = await supabase.from('site_settings').upsert({
+          key,
+          data: payload,
+          updated_at: new Date().toISOString()
+        });
+        if (upErr) {
+          console.error('[HomeAnivEditor] UPSERT:', upErr);
+          throw new Error(upErr.message || 'Falha ao gravar no Supabase');
+        }
+      }
+
+      persistLocal(payload);
+      setMsg(hasSupabase ? '✅ Salvo no banco!' : '✅ Salvo no navegador (sem Supabase).');
     } catch (err) {
       console.error('Error saving birthdays:', err);
-      setMsg('❌ Erro!');
+      try {
+        let prev = {};
+        try {
+          const raw = localStorage.getItem(`admac_site_settings:${key}`);
+          if (raw) prev = JSON.parse(raw);
+        } catch { /* ignore */ }
+        const payload = { ...prev, birthdays: bData };
+        persistLocal(payload);
+        setMsg(`⚠️ Banco indisponível: salvo só localmente. ${err?.message ? `(${err.message})` : ''}`);
+      } catch {
+        setMsg(`❌ ${err?.message || 'Erro ao salvar'}`);
+      }
     } finally {
       setSaving(false);
-      setTimeout(() => setMsg(''), 2000);
+      setTimeout(() => setMsg(''), 6000);
     }
   };
 
@@ -3537,21 +3605,42 @@ export default function PainelAdm() {
                               </div>
                             </div>
                             {ministryId === 'ebd' ? (
-                              <div className="pm-field">
-                                <label>Sala</label>
-                                <div className="pm-field-wrap">
-                                  <span className="pm-icon">🚪</span>
-                                  <input
-                                    className="pm-input"
-                                    value={s.room || s.location || ''}
-                                    onChange={e => {
-                                      const next = [...(ministryData.schedule || [])];
-                                      next[idx] = { ...next[idx], room: e.target.value };
-                                      setMinistryData(d => ({ ...d, schedule: next }));
-                                    }}
-                                  />
+                              <>
+                                <div className="pm-field">
+                                  <label>Sala</label>
+                                  <div className="pm-field-wrap">
+                                    <span className="pm-icon">🚪</span>
+                                    <input
+                                      className="pm-input"
+                                      value={s.room || s.location || ''}
+                                      onChange={e => {
+                                        const next = [...(ministryData.schedule || [])];
+                                        next[idx] = { ...next[idx], room: e.target.value };
+                                        setMinistryData(d => ({ ...d, schedule: next }));
+                                      }}
+                                    />
+                                  </div>
                                 </div>
-                              </div>
+                                <div className="pm-field" style={{ gridColumn: '1 / -1' }}>
+                                  <label>Link do Material / Revista (PDF)</label>
+                                  <div className="pm-field-wrap">
+                                    <span className="pm-icon">🔗</span>
+                                    <input
+                                      className="pm-input"
+                                      value={s.materialLink || ''}
+                                      onChange={e => {
+                                        const next = [...(ministryData.schedule || [])];
+                                        next[idx] = { ...next[idx], materialLink: e.target.value };
+                                        setMinistryData(d => ({ ...d, schedule: next }));
+                                      }}
+                                      placeholder="https://..."
+                                    />
+                                  </div>
+                                  <p style={{ fontSize: '0.75rem', color: palette.textMuted, marginTop: '0.4rem' }}>
+                                    Deixe em branco para usar o gerenciamento automático. Formato para o QR Code de download da revista.
+                                  </p>
+                                </div>
+                              </>
                             ) : (
                               <>
                                 <div className="pm-field">
@@ -6199,8 +6288,8 @@ export default function PainelAdm() {
                       if (ministryId === 'revista') tabs = ['geral', 'paginas'];
                       return tabs.map(t => {
                         // Define which tabs are available for each ministry
-                        const isGalleryAllowed = ['jovens', 'mulheres', 'homens', 'louvor', 'kids', 'ebd', 'lares', 'social', 'retiro', 'intercessao', 'missoes', 'midia'].includes(ministryId);
-                        const isBirthdaysAllowed = ['jovens', 'mulheres', 'homens', 'louvor', 'kids', 'ebd', 'lares', 'social', 'retiro', 'intercessao', 'missoes', 'midia'].includes(ministryId);
+                        const isGalleryAllowed = ['jovens', 'mulheres', 'homens', 'louvor', 'kids', 'ebd', 'lares', 'social', 'retiro', 'intercessao', 'missoes', 'midia', 'casais'].includes(ministryId);
+                        const isBirthdaysAllowed = ['jovens', 'mulheres', 'homens', 'louvor', 'kids', 'ebd', 'lares', 'social', 'retiro', 'intercessao', 'missoes', 'midia', 'casais', 'revista'].includes(ministryId);
                         
                         if (t === 'galeria' && !isGalleryAllowed) return null;
                         if (t === 'aniversariantes' && !isBirthdaysAllowed) return null;
@@ -6529,18 +6618,18 @@ export default function PainelAdm() {
                         <label>Título da Seção</label>
                         <div className="pm-field-wrap">
                           <span className="pm-icon">🎉</span>
-                          <input className="pm-input" value={ministryData?.birthdays?.title || ''} onChange={e => setMinistryData(d => ({ ...d, birthdays: { ...d.birthdays, title: e.target.value } }))} placeholder="Ex: Aniversariantes do Mês" />
+                          <input className="pm-input" value={ministryData?.birthdays?.title || ''} onChange={e => setMinistryData(d => ({ ...d, birthdays: { ...(d.birthdays || {}), title: e.target.value } }))} placeholder="Ex: Aniversariantes do Mês" />
                         </div>
                       </div>
                       <div className="pm-field">
                         <label>Texto Descritivo</label>
-                        <textarea value={ministryData?.birthdays?.text || ''} onChange={e => setMinistryData(d => ({ ...d, birthdays: { ...d.birthdays, text: e.target.value } }))} style={{ width: '100%', height: 90, background: palette.bg, color: palette.text, border: `1px solid ${palette.border}`, borderRadius: 10, padding: 12, fontSize: '.9rem', outline: 'none', resize: 'vertical', fontFamily: 'Inter, sans-serif', lineHeight: 1.6 }} />
+                        <textarea value={ministryData?.birthdays?.text || ''} onChange={e => setMinistryData(d => ({ ...d, birthdays: { ...(d.birthdays || {}), text: e.target.value } }))} style={{ width: '100%', height: 90, background: palette.bg, color: palette.text, border: `1px solid ${palette.border}`, borderRadius: 10, padding: 12, fontSize: '.9rem', outline: 'none', resize: 'vertical', fontFamily: 'Inter, sans-serif', lineHeight: 1.6 }} />
                       </div>
                       <div className="pm-field">
                         <label>Link do Vídeo (YouTube/Vimeo)</label>
                         <div className="pm-field-wrap">
                           <span className="pm-icon">▶</span>
-                          <input className="pm-input" value={ministryData?.birthdays?.videoUrl || ''} onChange={e => setMinistryData(d => ({ ...d, birthdays: { ...d.birthdays, videoUrl: e.target.value } }))} />
+                          <input className="pm-input" value={ministryData?.birthdays?.videoUrl || ''} onChange={e => setMinistryData(d => ({ ...d, birthdays: { ...(d.birthdays || {}), videoUrl: e.target.value } }))} />
                         </div>
                       </div>
                       <div className="pm-field">
@@ -6563,9 +6652,9 @@ export default function PainelAdm() {
                               className="pm-action-btn" 
                               style={{ border: 'none', cursor: 'pointer', padding: '0.4rem 0.8rem', fontSize: '0.8rem', background: palette.accentGlow, color: palette.accentLight, borderRadius: '6px' }}
                               onClick={() => handleFileUpload(url => {
-                                const next = [...(ministryData.birthdays.people || [])];
+                                const next = [...(ministryData?.birthdays?.people || [])];
                                 next[idx] = { ...next[idx], photo: url };
-                                setMinistryData(d => ({ ...d, birthdays: { ...d.birthdays, people: next } }));
+                                setMinistryData(d => ({ ...d, birthdays: { ...(d.birthdays || {}), people: next } }));
                               }, hasSupabase, supabase)}
                             >
                               Alterar Foto
@@ -6579,9 +6668,9 @@ export default function PainelAdm() {
                                 className="pm-input"
                                 value={p.name || ''}
                                 onChange={e => {
-                                  const next = [...(ministryData.birthdays.people || [])];
+                                  const next = [...(ministryData?.birthdays?.people || [])];
                                   next[idx] = { ...next[idx], name: e.target.value };
-                                  setMinistryData(d => ({ ...d, birthdays: { ...d.birthdays, people: next } }));
+                                  setMinistryData(d => ({ ...d, birthdays: { ...(d.birthdays || {}), people: next } }));
                                 }}
                               />
                             </div>
@@ -6594,9 +6683,9 @@ export default function PainelAdm() {
                                 className="pm-input"
                                 value={p.date || ''}
                                 onChange={e => {
-                                  const next = [...(ministryData.birthdays.people || [])];
+                                  const next = [...(ministryData?.birthdays?.people || [])];
                                   next[idx] = { ...next[idx], date: e.target.value };
-                                  setMinistryData(d => ({ ...d, birthdays: { ...d.birthdays, people: next } }));
+                                  setMinistryData(d => ({ ...d, birthdays: { ...(d.birthdays || {}), people: next } }));
                                 }}
                               />
                             </div>
@@ -6605,9 +6694,9 @@ export default function PainelAdm() {
                             <button
                               className="btn-deletar"
                               onClick={() => {
-                                const next = [...(ministryData.birthdays.people || [])];
+                                const next = [...(ministryData?.birthdays?.people || [])];
                                 next.splice(idx, 1);
-                                setMinistryData(d => ({ ...d, birthdays: { ...d.birthdays, people: next } }));
+                                setMinistryData(d => ({ ...d, birthdays: { ...(d.birthdays || {}), people: next } }));
                               }}
                             >
                               Remover Pessoa
@@ -6620,7 +6709,7 @@ export default function PainelAdm() {
                         onClick={() => setMinistryData(d => ({
                           ...d,
                           birthdays: {
-                            ...d.birthdays,
+                            ...(d.birthdays || {}),
                             people: [...(d.birthdays?.people || []), { name: '', date: '', photo: '' }]
                           }
                         }))}

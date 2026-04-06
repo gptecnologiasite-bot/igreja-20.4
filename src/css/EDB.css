@@ -491,4 +491,119 @@
   font-weight: 600;
 }
 
+/* Birthdays Section */
+.edb-page .birthdays-section {
+  padding: 4rem 1rem;
+  background: linear-gradient(180deg, var(--bg-color) 0%, #1a1a1a 100%);
+  border-top: 1px solid rgba(212, 175, 55, 0.2);
+}
+
+.edb-page .birthdays-section .container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.edb-page .birthdays-section .section-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+  color: #d4af37;
+}
+
+.edb-page .birthdays-section .section-header h2 {
+  margin: 0;
+  font-size: 2rem;
+  font-weight: 700;
+  color: #d4af37;
+}
+
+.edb-page .birthdays-section .section-subtitle {
+  text-align: center;
+  color: var(--text-muted);
+  margin: 0 auto 2rem;
+  max-width: 640px;
+  line-height: 1.6;
+}
+
+.edb-page .birthdays-section .birthday-video-wrapper {
+  margin-bottom: 2rem;
+  border-radius: 16px;
+  overflow: hidden;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(212, 175, 55, 0.25);
+}
+
+.edb-page .birthdays-section .birthdays-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 1.5rem;
+}
+
+.edb-page .birthdays-section .birthday-card {
+  background: #2a2a2a;
+  border-radius: 16px;
+  padding: 1.5rem 1.25rem;
+  text-align: center;
+  border: 1px solid rgba(212, 175, 55, 0.15);
+  transition: transform 0.25s ease, border-color 0.25s ease;
+}
+
+.edb-page .birthdays-section .birthday-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(212, 175, 55, 0.45);
+}
+
+.edb-page .birthdays-section .birthday-photo-wrap {
+  position: relative;
+  width: 120px;
+  height: 120px;
+  margin: 0 auto 1rem;
+}
+
+.edb-page .birthdays-section .birthday-photo-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 3px solid #d4af37;
+}
+
+.edb-page .birthdays-section .birthday-badge {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 36px;
+  height: 36px;
+  background: #1a1a1a;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  border: 2px solid #d4af37;
+}
+
+.edb-page .birthdays-section .birthday-card h3 {
+  margin: 0 0 0.35rem;
+  font-size: 1.1rem;
+  color: var(--text-color);
+}
+
+.edb-page .birthdays-section .birthday-date {
+  color: #d4af37;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.edb-page .birthdays-section .empty-birthdays {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 2rem;
+  color: var(--text-muted);
+  background: rgba(42, 42, 42, 0.6);
+  border-radius: 12px;
+  border: 1px dashed rgba(212, 175, 55, 0.25);
+}
 

@@ -6,7 +6,7 @@
 // Todos os dados são carregados dinamicamente via Supabase.
 // ================================================================
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Calendar, // Ícone do calendário na programação semanal
   Clock,    // Ícone de horário nos cards de programação
@@ -30,6 +30,24 @@ import { deepMerge, transformImageLink, parseSafeJson } from "../lib/dbUtils";
 import { usePageUpdate } from "../hooks/usePageUpdate";
 import { useSiteData } from "../context/SiteContext";
 
+/** Chaves de ministérios cuja seção de aniversariantes entra na Home (deve bater com o painel / site_settings). */
+const BIRTHDAY_MINISTRY_KEYS = [
+  "home",
+  "ministry_kids",
+  "ministry_louvor",
+  "ministry_jovens",
+  "ministry_mulheres",
+  "ministry_homens",
+  "ministry_lares",
+  "ministry_retiro",
+  "ministry_social",
+  "ministry_ebd",
+  "ministry_midia",
+  "ministry_intercessao",
+  "ministry_missoes",
+  "ministry_revista",
+  "ministry_casais",
+];
 
 const Home = () => {
   const { pastorsData } = useSiteData();
@@ -108,53 +126,47 @@ const Home = () => {
   // Sincronização automática via usePageUpdate
   usePageUpdate(['home', 'videos'], loadData);
 
+  // Carrega aniversariantes de todas as áreas (batch). Precisa reexecutar quando qualquer ministério for salvo no painel.
+  const loadBirthdays = useCallback(async () => {
+    try {
+      const { data: dbResults, error } = await supabase
+        .from('site_settings')
+        .select('key, data')
+        .in('key', BIRTHDAY_MINISTRY_KEYS);
 
+      if (error) throw error;
 
-  // Carrega aniversariantes de todas as áreas de uma só vez (Batch Fetch)
-  useEffect(() => {
-    const loadBirthdays = async () => {
-      try {
-        const ministryKeys = [
-          'ministry_kids', 'ministry_louvor', 'ministry_jovens', 
-          'ministry_mulheres', 'ministry_homens', 'ministry_lares', 
-          'ministry_retiro', 'ministry_social', 'ministry_ebd', 
-          'ministry_midia', 'ministry_intercessao', 'ministry_missoes', 
-          'ministry_revista'
-        ];
+      const results = [];
+      dbResults?.forEach(row => {
+        const d = parseSafeJson(row.data);
+        if (d?.birthdays?.people?.length > 0) {
+          const label =
+            row.key === "home"
+              ? "Página Principal"
+              : d?.hero?.title || row.key.replace("ministry_", "");
+          d.birthdays.people.forEach(person => {
+            results.push({ ...person, ministryLabel: label });
+          });
+        }
+      });
 
-        const { data: dbResults, error } = await supabase
-          .from('site_settings')
-          .select('key, data')
-          .in('key', ministryKeys);
+      results.sort((a, b) => {
+        const [da, ma] = (a.date || '99/99').split('/').map(n => parseInt(n) || 99);
+        const [db, mb] = (b.date || '99/99').split('/').map(n => parseInt(n) || 99);
+        return ma !== mb ? ma - mb : da - db;
+      });
 
-        if (error) throw error;
-
-        const results = [];
-        dbResults?.forEach(row => {
-          const d = parseSafeJson(row.data);
-          if (d?.birthdays?.people?.length > 0) {
-            const label = d?.hero?.title || row.key.replace('ministry_', '');
-            d.birthdays.people.forEach(person => {
-              results.push({ ...person, ministryLabel: label });
-            });
-          }
-        });
-
-        // Ordenação eficiente
-        results.sort((a, b) => {
-          const [da, ma] = (a.date || '99/99').split('/').map(n => parseInt(n) || 99);
-          const [db, mb] = (b.date || '99/99').split('/').map(n => parseInt(n) || 99);
-          return ma !== mb ? ma - mb : da - db;
-        });
-
-        setAllBirthdays(results);
-      } catch (err) {
-        console.warn("[Home] Erro ao carregar aniversariantes em lote:", err.message);
-      }
-    };
-
-    loadBirthdays();
+      setAllBirthdays(results);
+    } catch (err) {
+      console.warn('[Home] Erro ao carregar aniversariantes em lote:', err.message);
+    }
   }, []);
+
+  useEffect(() => {
+    loadBirthdays();
+  }, [loadBirthdays]);
+
+  usePageUpdate(BIRTHDAY_MINISTRY_KEYS, loadBirthdays);
 
   return (
     <div className="home">

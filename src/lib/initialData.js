@@ -269,7 +269,13 @@ export const INITIAL_MINISTRIES_DATA = {
     ],
     gallery: [
       { url: 'https://images.unsplash.com/photo-1491841550275-ad7854e35ca6?w=400&h=300&fit=crop', caption: 'Classe de Jovens' }
-    ]
+    ],
+    birthdays: {
+      title: 'Aniversariantes do Mês',
+      text: 'Celebramos a vida dos nossos irmãos da EBD!',
+      videoUrl: '',
+      people: []
+    }
   },
   midia: {
     hero: { 

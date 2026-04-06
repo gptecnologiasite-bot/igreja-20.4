@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BookOpen, Users, Clock, MapPin, GraduationCap, UserCheck, Download, Camera, MessageSquare, Send } from 'lucide-react';
+import { BookOpen, Users, Clock, MapPin, GraduationCap, UserCheck, Download, Camera, MessageSquare, Send, Gift } from 'lucide-react';
 import { transformImageLink } from '../lib/dbUtils';
 import { useMinistryData } from '../hooks/useMinistryData';
 import { supabase } from '../lib/supabase';
@@ -7,8 +7,11 @@ import '../css/EDB.css';
 
 const EDB = () => {
   const [data] = useMinistryData('ebd');
+  const [activeQR, setActiveQR] = useState(null);
 
-
+  const handleDownloadClick = (index) => {
+    setActiveQR(activeQR === index ? null : index);
+  };
 
   return (
     <div className="edb-page">
@@ -98,10 +101,31 @@ const EDB = () => {
                   )}
 
                   {/* Download Button */}
-                  <button className="download-btn">
-                    <Download size={18} />
-                    Baixar Material
-                  </button>
+                  <div className="download-wrapper" style={{ position: 'relative' }}>
+                    <button className="download-btn" onClick={() => handleDownloadClick(index)}>
+                      <Download size={18} />
+                      Baixar Material
+                    </button>
+                    {activeQR === index && (
+                      <div className="qr-dropdown" style={{ 
+                        marginTop: '1rem', 
+                        padding: '1rem', 
+                        background: 'rgba(255,255,255,0.1)', 
+                        borderRadius: '8px',
+                        textAlign: 'center',
+                        animation: 'fadeIn 0.3s ease'
+                      }}>
+                        <p style={{ marginBottom: '10px', fontSize: '0.9rem', color: '#fff' }}>
+                          Após pagar a revista, escaneie para baixar em PDF
+                        </p>
+                        <img 
+                          src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${classItem.materialLink ? encodeURIComponent(classItem.materialLink) : encodeURIComponent(`https://www.admac.com.br/revista/pdf/${className}.pdf`)}`} 
+                          alt="QR Code para Download" 
+                          style={{ margin: '0 auto', display: 'block', background: 'white', padding: '5px', borderRadius: '4px' }}
+                        />
+                      </div>
+                    )}
+                  </div>
                 </div>
               );
             })
@@ -137,6 +161,57 @@ const EDB = () => {
         </div>
       </div>
 
+      {/* Birthdays Section */}
+      {data.birthdays && (
+        <section className="birthdays-section">
+          <div className="container">
+            <div className="section-header">
+              <Gift size={32} />
+              <h2>{data.birthdays.title || 'Aniversariantes do Mês'}</h2>
+            </div>
+            <p className="section-subtitle">{data.birthdays.text || 'Celebramos a vida dos nossos irmãos na Escola Bíblica!'}</p>
+
+            {data.birthdays.videoUrl && (
+              <div className="birthday-video-wrapper">
+                {data.birthdays.videoUrl.includes('youtube.com') || data.birthdays.videoUrl.includes('youtu.be') ? (
+                  <iframe
+                    width="100%"
+                    height="400"
+                    src={data.birthdays.videoUrl.replace('watch?v=', 'embed/').split('&')[0]}
+                    title="Vídeo de Aniversariantes"
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                ) : (
+                  <video controls width="100%" src={transformImageLink(data.birthdays.videoUrl)} />
+                )}
+              </div>
+            )}
+
+            <div className="birthdays-grid">
+              {(data.birthdays.people || []).map((person, index) => (
+                <div key={index} className="birthday-card">
+                  <div className="birthday-photo-wrap">
+                    <img
+                      src={transformImageLink(person.photo || `https://ui-avatars.com/api/?name=${encodeURIComponent(person.name || '')}&background=d4af37&color=000`)}
+                      alt={person.name || 'Aniversariante'}
+                    />
+                    <div className="birthday-badge">🎂</div>
+                  </div>
+                  <h3>{person.name}</h3>
+                  <span className="birthday-date">{person.date}</span>
+                </div>
+              ))}
+              {(!data.birthdays.people || data.birthdays.people.length === 0) && (
+                <div className="empty-birthdays">
+                  <p>Nenhum aniversariante cadastrado ainda.</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Gallery Section */}
       <div className="gallery-section">
