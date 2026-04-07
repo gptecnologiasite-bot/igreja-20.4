@@ -335,80 +335,35 @@ const Home = () => {
         </div>
       </section>
 
-      {/* ── Seção de Aniversariantes — sempre visível ── */}
-      <section className="birthdays-home-section" style={{
-        padding: '4rem 0',
-        background: 'linear-gradient(135deg, var(--primary-dark, #0d0d1a) 0%, var(--surface-color, #1a1a2e) 100%)'
-      }}>
+      {/* ── Seção de Aniversariantes — sempre visível (estilos em Home.css) ── */}
+      <section className="birthdays-home-section">
         <div className="container">
-          <div className="section-header" style={{ textAlign: 'center', marginBottom: '0.5rem', justifyContent: 'center' }}>
-            <span style={{ fontSize: '2rem' }}>🎂</span>
-            <h2 style={{ margin: '0 0.5rem', fontSize: '2rem', fontWeight: 700 }}>Aniversariantes dos Ministérios</h2>
+          <div className="birthdays-home-header">
+            <span className="birthdays-home-icon" aria-hidden>🎂</span>
+            <h2>Aniversariantes dos Ministérios</h2>
           </div>
-          <p className="section-subtitle" style={{ textAlign: 'center', marginBottom: '3rem' }}>
+          <p className="birthdays-home-subtitle">
             Vamos celebrar com quem faz parte da nossa família!
           </p>
 
-          {/* Grid de cards dos aniversariantes */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))',
-            gap: '1.5rem',
-            justifyContent: 'center'
-          }}>
+          <div className="birthdays-home-grid">
             {allBirthdays.map((person, index) => (
-              <div
-                key={index}
-                style={{
-                  background: 'rgba(255,255,255,0.06)',
-                  backdropFilter: 'blur(12px)',
-                  border: '1px solid rgba(212,175,55,0.25)',
-                  borderRadius: '20px',
-                  padding: '1.8rem 1rem 1.4rem',
-                  textAlign: 'center',
-                  transition: 'transform 0.3s, box-shadow 0.3s',
-                  cursor: 'default',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  gap: '0.5rem'
-                }}
-                onMouseEnter={e => {
-                  e.currentTarget.style.transform = 'translateY(-8px)';
-                  e.currentTarget.style.boxShadow = '0 16px 40px rgba(212,175,55,0.25)';
-                }}
-                onMouseLeave={e => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = 'none';
-                }}
-              >
-                {/* Avatar: usa foto cadastrada ou avatar automático gerado por nome */}
+              <div key={index} className="birthdays-home-card">
                 <img
                   src={transformImageLink(person.photo) || `https://ui-avatars.com/api/?name=${encodeURIComponent(person.name || 'A')}&background=d4af37&color=000&bold=true&size=150`}
-                  alt={person.name}
-                  style={{ width: 90, height: 90, borderRadius: '50%', objectFit: 'cover', border: '3px solid #d4af37', boxShadow: '0 0 0 4px rgba(212,175,55,0.2)' }}
+                  alt={person.name || ''}
                 />
-                {/* Nome do aniversariante */}
-                <div style={{ fontWeight: 800, fontSize: '1.05rem', color: '#ffffff', lineHeight: 1.2, marginTop: '0.4rem' }}>
-                  {person.name || '—'}
-                </div>
-                {/* Data de aniversário (formato DD/MM) */}
+                <div className="birthdays-home-name">{person.name || '—'}</div>
                 {person.date && (
-                  <div style={{ fontSize: '0.88rem', color: '#d4af37', fontWeight: 700, background: 'rgba(212,175,55,0.12)', padding: '0.2rem 0.7rem', borderRadius: '20px' }}>
-                    🎂 {person.date}
-                  </div>
+                  <div className="birthdays-home-date">🎂 {person.date}</div>
                 )}
-                {/* Nome do ministério de origem */}
-                <div style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.45)', textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: '0.1rem' }}>
-                  {person.ministryLabel}
-                </div>
+                <div className="birthdays-home-ministry">{person.ministryLabel}</div>
               </div>
             ))}
           </div>
 
-          {/* Mensagem de placeholder quando não há aniversariantes cadastrados */}
           {allBirthdays.length === 0 && (
-            <div style={{ textAlign: 'center', padding: '2rem', color: 'rgba(255,255,255,0.4)', fontSize: '1rem', fontStyle: 'italic' }}>
+            <div className="birthdays-home-empty">
               🎂 Nenhum aniversariante cadastrado ainda. Adicione pelo Painel → Configurações → Editar Ministério → Aniversariantes.
             </div>
           )}
@@ -420,7 +375,7 @@ const Home = () => {
         <div className="container">
           <h2 style={{ marginBottom: '.5rem' }}>Atividades em Destaque</h2>
           <p className="section-subtitle">Veja o que está acontecendo na igreja</p>
-          <div className="card-group" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1.5rem', marginTop: '1.5rem' }}>
+          <div className="card-group" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 260px), 1fr))', gap: '1.5rem', marginTop: '1.5rem' }}>
             {(data.activities || []).map((a, idx) => (
               <div key={idx} className="card" style={{ border: '1px solid rgba(212,175,55,0.25)', borderRadius: 16, overflow: 'hidden', background: 'rgba(255,255,255,0.03)' }}>
                 <img

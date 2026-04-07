@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { transformImageLink } from '../lib/dbUtils';
 // Removed unused supabase import
-import { Mountain, Calendar, MapPin, Users, Camera, Send, Heart, Clock, Tent, Book, Music } from 'lucide-react';
+import { Mountain, Calendar, MapPin, Users, Camera, Send, Heart, Clock, Tent, Book, Music, Gift } from 'lucide-react';
 import { useMinistryData } from '../hooks/useMinistryData';
 import '../css/Retiro.css';
 
@@ -23,9 +23,21 @@ const Retiro = () => {
 
   return (
     <div className="retiro-page">
-      {/* Hero Section */}
-      <div className="retiro-hero">
-        <div className="hero-overlay"></div>
+      {/* Hero Section — imagem opcional vinda do painel (hero.image) */}
+      <div
+        className={`retiro-hero${data?.hero?.image ? ' retiro-hero--photo' : ''}`}
+        style={
+          data?.hero?.image
+            ? {
+                backgroundImage: `linear-gradient(rgba(0,0,0,0.58), rgba(0,0,0,0.42)), url(${transformImageLink(data.hero.image)})`,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat',
+              }
+            : undefined
+        }
+      >
+        <div className="hero-overlay" aria-hidden />
         <div className="hero-content">
           <Mountain size={80} className="hero-icon" />
           <h1>{data.hero?.title || 'Retiros Espirituais'}</h1>
@@ -100,6 +112,12 @@ const Retiro = () => {
                           <span>{retreat.date || retreat.day}</span>
                         </div>
                       )}
+                      {retreat.time && (
+                        <div className="detail-item">
+                          <Clock size={16} />
+                          <span>{retreat.time}</span>
+                        </div>
+                      )}
                       {retreat.location && (
                         <div className="detail-item">
                           <MapPin size={16} />
@@ -115,9 +133,7 @@ const Retiro = () => {
                 );
               })
             ) : (
-              <p style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '2rem', color: 'rgba(255, 255, 255, 0.7)' }}>
-                Nenhum retiro programado no momento. Em breve teremos novidades!
-              </p>
+              <p className="retiro-empty-hint">Nenhum retiro programado no momento. Em breve teremos novidades!</p>
             )}
           </div>
         </div>
@@ -139,13 +155,63 @@ const Retiro = () => {
                 </div>
               ))
             ) : (
-              <p style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '2rem', color: 'rgba(255, 255, 255, 0.7)' }}>
-                Informações da equipe em breve.
-              </p>
+              <p className="retiro-empty-hint">Informações da equipe em breve.</p>
             )}
           </div>
         </div>
       </section>
+
+      {/* Aniversariantes (dados do painel — mesma estrutura dos outros ministérios) */}
+      {data.birthdays && (
+        <section className="birthdays-section">
+          <div className="container">
+            <div className="section-header">
+              <Gift size={32} />
+              <h2>{data.birthdays.title || 'Aniversariantes do Mês'}</h2>
+            </div>
+            <p className="section-subtitle">{data.birthdays.text || 'Celebramos a vida dos nossos irmãos!'}</p>
+
+            {data.birthdays.videoUrl && (
+              <div className="birthday-video-wrapper">
+                {data.birthdays.videoUrl.includes('youtube.com') || data.birthdays.videoUrl.includes('youtu.be') ? (
+                  <iframe
+                    width="100%"
+                    height="400"
+                    title="Vídeo de Aniversariantes"
+                    src={data.birthdays.videoUrl.replace('watch?v=', 'embed/').split('&')[0]}
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                ) : (
+                  <video controls width="100%" src={transformImageLink(data.birthdays.videoUrl)} />
+                )}
+              </div>
+            )}
+
+            <div className="birthdays-grid">
+              {(data.birthdays.people || []).map((person, index) => (
+                <div key={index} className="birthday-card">
+                  <div className="birthday-photo-wrap">
+                    <img
+                      src={transformImageLink(person.photo || `https://ui-avatars.com/api/?name=${encodeURIComponent(person.name || '')}&background=16a34a&color=fff`)}
+                      alt={person.name || 'Aniversariante'}
+                    />
+                    <div className="birthday-badge">🎂</div>
+                  </div>
+                  <h3>{person.name}</h3>
+                  <span className="birthday-date">{person.date}</span>
+                </div>
+              ))}
+              {(!data.birthdays.people || data.birthdays.people.length === 0) && (
+                <div className="empty-birthdays">
+                  <p>Nenhum aniversariante cadastrado ainda.</p>
+                </div>
+              )}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Gallery Section */}
       <section className="gallery-section">
@@ -167,9 +233,7 @@ const Retiro = () => {
                 </div>
               ))
             ) : (
-              <p style={{ gridColumn: '1 / -1', textAlign: 'center', padding: '2rem', color: 'rgba(255, 255, 255, 0.7)' }}>
-                Galeria de fotos em breve.
-              </p>
+              <p className="retiro-empty-hint">Galeria de fotos em breve.</p>
             )}
           </div>
         </div>
