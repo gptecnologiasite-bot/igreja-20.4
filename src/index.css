@@ -187,3 +187,10 @@ button {
     height: 28px;
   }
 }
+
+/* Fix para o icone centralizado nas paginas (hero-icon) */
+.hero-icon {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
