@@ -90,7 +90,7 @@ CREATE POLICY "su_livre_escrita" ON public.site_users FOR ALL USING (true) WITH 
 -- Admin padrão
 INSERT INTO public.site_users (name, email, password, role, status, location)
 VALUES ('Administrador', 'admin@admin.com', 'REDACTED_SENHA', 'Administrador', 'active', 'Samambaia, DF')
-ON CONFLICT (email) DO NOTHING;
+ON CONFLICT (email) ON CONFLICT (key) DO UPDATE SET data = EXCLUDED.data WHERE site_settings.data = '{}'::jsonb OR site_settings.data IS NULL;
 
 
 -- ================================================================
@@ -124,6 +124,8 @@ CREATE TABLE IF NOT EXISTS public.site_messages (
   email      TEXT        NOT NULL DEFAULT '',
   phone      TEXT        DEFAULT '',
   message    TEXT        NOT NULL DEFAULT '',
+  category   TEXT        DEFAULT 'Geral',
+  photo_url  TEXT        DEFAULT '',
   read       BOOLEAN     DEFAULT false,
   created_at TIMESTAMPTZ DEFAULT now()
 );
@@ -133,6 +135,12 @@ DROP POLICY IF EXISTS "sm_livre" ON public.site_messages;
 CREATE POLICY "sm_livre" ON public.site_messages FOR ALL USING (true) WITH CHECK (true);
 
 DO $$ BEGIN
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='site_messages' AND column_name='category') THEN
+    ALTER TABLE public.site_messages ADD COLUMN category TEXT DEFAULT 'Geral';
+  END IF;
+  IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='site_messages' AND column_name='photo_url') THEN
+    ALTER TABLE public.site_messages ADD COLUMN photo_url TEXT DEFAULT '';
+  END IF;
   IF NOT EXISTS (SELECT 1 FROM pg_publication_tables WHERE pubname='supabase_realtime' AND tablename='site_messages') THEN 
     ALTER PUBLICATION supabase_realtime ADD TABLE public.site_messages; 
   END IF;
@@ -199,34 +207,34 @@ INSERT INTO public.site_settings (key, data) VALUES ('home', '{
     {"title":"Louvor","description":"Adorando a Deus","link":"/louvor","icon":"🎵","color":"#9b59b6"},
     {"title":"EBD","description":"Crescendo na Palavra","link":"/ebd","icon":"📚","color":"#d4af37"}
   ]
-}'::jsonb) ON CONFLICT (key) DO UPDATE SET data = EXCLUDED.data;
+}'::jsonb) ON CONFLICT (key) DO UPDATE SET data = EXCLUDED.data WHERE site_settings.data = '{}'::jsonb OR site_settings.data IS NULL;
 
 INSERT INTO public.site_settings (key, data) VALUES
-('header','{"logo":{"text":"ADMAC","icon":"✝"},"menu":[{"name":"Início","path":"/"},{"name":"Sobre","path":"/sobre"}]}'::jsonb) ON CONFLICT (key) DO UPDATE SET data = EXCLUDED.data;
+('header','{"logo":{"text":"ADMAC","icon":"✝"},"menu":[{"name":"Início","path":"/"},{"name":"Sobre","path":"/sobre"}]}'::jsonb) ON CONFLICT (key) DO UPDATE SET data = EXCLUDED.data WHERE site_settings.data = '{}'::jsonb OR site_settings.data IS NULL;
 
 INSERT INTO public.site_settings (key, data) VALUES
-('footer','{"description":"Assembleia de Deus Ministério Atos e Conquistas","verse":"Ide por todo o mundo e pregai o evangelho","contact":{"address":"QN 404 - Samambaia Norte, DF","phone":"(61) 99999-9999","email":"contato@admac.com.br"}}'::jsonb) ON CONFLICT (key) DO UPDATE SET data = EXCLUDED.data;
+('footer','{"description":"Assembleia de Deus Ministério Atos e Conquistas","verse":"Ide por todo o mundo e pregai o evangelho","contact":{"address":"QN 404 - Samambaia Norte, DF","phone":"(61) 99999-9999","email":"contato@admac.com.br"}}'::jsonb) ON CONFLICT (key) DO UPDATE SET data = EXCLUDED.data WHERE site_settings.data = '{}'::jsonb OR site_settings.data IS NULL;
 
-INSERT INTO public.site_settings (key, data) VALUES ('videos', '[]'::jsonb) ON CONFLICT (key) DO UPDATE SET data = EXCLUDED.data;
-INSERT INTO public.site_settings (key, data) VALUES ('visitor_stats', '{"value": 0}'::jsonb) ON CONFLICT (key) DO UPDATE SET data = EXCLUDED.data;
+INSERT INTO public.site_settings (key, data) VALUES ('videos', '[]'::jsonb) ON CONFLICT (key) DO UPDATE SET data = EXCLUDED.data WHERE site_settings.data = '{}'::jsonb OR site_settings.data IS NULL;
+INSERT INTO public.site_settings (key, data) VALUES ('visitor_stats', '{"value": 0}'::jsonb) ON CONFLICT (key) DO UPDATE SET data = EXCLUDED.data WHERE site_settings.data = '{}'::jsonb OR site_settings.data IS NULL;
 
-INSERT INTO public.site_settings (key, data) VALUES ('ministry_kids', '{"hero":{"title":"Ministério Kids","subtitle":"Ensinando as crianças","image":"/imagem/kidis.jpg"},"info":{}}'::jsonb) ON CONFLICT (key) DO UPDATE SET data = EXCLUDED.data;
-INSERT INTO public.site_settings (key, data) VALUES ('ministry_louvor', '{"hero":{"title":"Ministério de Louvor","subtitle":"Adorando a Deus","image":"/imagem/culto de louvor.jpg"},"info":{}}'::jsonb) ON CONFLICT (key) DO UPDATE SET data = EXCLUDED.data;
-INSERT INTO public.site_settings (key, data) VALUES ('ministry_contact', '{"title":"Entre em Contato","description":"Estamos aqui para te receber!","address":"Samambaia, DF","phone":"(61) 99324-1084"}'::jsonb) ON CONFLICT (key) DO UPDATE SET data = EXCLUDED.data;
-INSERT INTO public.site_settings (key, data) VALUES ('ministry_jovens', '{"hero":{"title":"Ministério de Jovens","subtitle":"Jovens apaixonados por Deus","verse":"1 Timóteo 4:12","image":"/imagem/culto1.jpg.png"},"mission":{"title":"Nossa Missão","text":"Formar uma geração comprometida."}}'::jsonb) ON CONFLICT (key) DO UPDATE SET data = EXCLUDED.data;
-INSERT INTO public.site_settings (key, data) VALUES ('ministry_mulheres', '{"hero":{"title":"Ministério de Mulheres","subtitle":"Mulheres transformadas","verse":"Provérbios 31:10","image":"/imagem/mulheres.jpg"},"mission":{"title":"Nossa Missão","text":"Acolher e inspirar mulheres."}}'::jsonb) ON CONFLICT (key) DO UPDATE SET data = EXCLUDED.data;
-INSERT INTO public.site_settings (key, data) VALUES ('ministry_homens', '{"hero":{"title":"Ministério de Homens","subtitle":"Firmes na fé","verse":"1 Coríntios 15:58","image":"/imagem/homem.png"},"mission":{"title":"Nossa Missão","text":"Fortalecer homens na Palavra."}}'::jsonb) ON CONFLICT (key) DO UPDATE SET data = EXCLUDED.data;
-INSERT INTO public.site_settings (key, data) VALUES ('ministry_lares', '{"hero":{"title":"Ministério de Lares","subtitle":"Comunhão nos lares","verse":"Atos 2:46","image":"/imagem/CULTO LARES.png"},"mission":{"title":"Nossa Missão","text":"Levar a igreja para as casas."}}'::jsonb) ON CONFLICT (key) DO UPDATE SET data = EXCLUDED.data;
-INSERT INTO public.site_settings (key, data) VALUES ('ministry_retiro', '{"hero":{"title":"Retiros","subtitle":"Renovação e comunhão","verse":"","image":"/imagem/aviso1.jpg"},"mission":{"title":"Visão","text":"Desconecte-se do mundo."}}'::jsonb) ON CONFLICT (key) DO UPDATE SET data = EXCLUDED.data;
-INSERT INTO public.site_settings (key, data) VALUES ('ministry_social', '{"hero":{"title":"Ação Social","subtitle":"Servindo com amor","image":"/imagem/hoje.jpg"},"mission":{"title":"Missão","text":"Ações práticas de amor."}}'::jsonb) ON CONFLICT (key) DO UPDATE SET data = EXCLUDED.data;
-INSERT INTO public.site_settings (key, data) VALUES ('ministry_ebd', '{"hero":{"title":"Escola Bíblica Dominical","subtitle":"Crescendo no conhecimento","verse":"","image":"/imagem/estudo biblico.jpg"},"mission":{"title":"Visão","text":"Ensino da Palavra."}}'::jsonb) ON CONFLICT (key) DO UPDATE SET data = EXCLUDED.data;
-INSERT INTO public.site_settings (key, data) VALUES ('ministry_midia', '{"hero":{"title":"Mídia","subtitle":"Comunicação do Reino","image":"/imagem/midia.jpg"},"mission":{"title":"Visão","text":"Tecnologia a favor do evangelho."}}'::jsonb) ON CONFLICT (key) DO UPDATE SET data = EXCLUDED.data;
-INSERT INTO public.site_settings (key, data) VALUES ('ministry_intercessao', '{"hero":{"title":"Intercessão","subtitle":"Orai sem cessar","image":"/imagem/Intercessão.jpg"},"mission":{"title":"Missão","text":"Sustentar a igreja na oração."}}'::jsonb) ON CONFLICT (key) DO UPDATE SET data = EXCLUDED.data;
-INSERT INTO public.site_settings (key, data) VALUES ('ministry_casais', '{"hero":{"title":"Min. Casais","subtitle":"Famílias na Rocha","image":"/imagem/fe1.jpg"},"mission":{"title":"Missão","text":"Fortalecer laços."}}'::jsonb) ON CONFLICT (key) DO UPDATE SET data = EXCLUDED.data;
-INSERT INTO public.site_settings (key, data) VALUES ('ministry_missoes', '{"hero":{"title":"Missões","subtitle":"Ide por todo o mundo","image":"/imagem/hoje (2).jpg"},"mission":{"title":"Missão","text":"Apoiar missionários."}}'::jsonb) ON CONFLICT (key) DO UPDATE SET data = EXCLUDED.data;
-INSERT INTO public.site_settings (key, data) VALUES ('ministry_sobre', '{"hero":{"title":"Sobre a Igreja","subtitle":"Nossa história","image":"/imagem/admac.png"},"mission":{"title":"Quem Somos","text":"Proclamar o evangelho."}}'::jsonb) ON CONFLICT (key) DO UPDATE SET data = EXCLUDED.data;
-INSERT INTO public.site_settings (key, data) VALUES ('ministry_revista', '{"hero":{"title":"Revista","subtitle":"Mensal"},"pages":[]}'::jsonb) ON CONFLICT (key) DO UPDATE SET data = EXCLUDED.data;
-INSERT INTO public.site_settings (key, data) VALUES ('pastors_contacts', '[]'::jsonb) ON CONFLICT (key) DO UPDATE SET data = EXCLUDED.data;
+INSERT INTO public.site_settings (key, data) VALUES ('ministry_kids', '{"hero":{"title":"Ministério Kids","subtitle":"Ensinando as crianças","image":"/imagem/kidis.jpg"},"info":{}}'::jsonb) ON CONFLICT (key) DO UPDATE SET data = EXCLUDED.data WHERE site_settings.data = '{}'::jsonb OR site_settings.data IS NULL;
+INSERT INTO public.site_settings (key, data) VALUES ('ministry_louvor', '{"hero":{"title":"Ministério de Louvor","subtitle":"Adorando a Deus","image":"/imagem/culto de louvor.jpg"},"info":{}}'::jsonb) ON CONFLICT (key) DO UPDATE SET data = EXCLUDED.data WHERE site_settings.data = '{}'::jsonb OR site_settings.data IS NULL;
+INSERT INTO public.site_settings (key, data) VALUES ('ministry_contact', '{"title":"Entre em Contato","description":"Estamos aqui para te receber!","address":"Samambaia, DF","phone":"(61) 99324-1084"}'::jsonb) ON CONFLICT (key) DO UPDATE SET data = EXCLUDED.data WHERE site_settings.data = '{}'::jsonb OR site_settings.data IS NULL;
+INSERT INTO public.site_settings (key, data) VALUES ('ministry_jovens', '{"hero":{"title":"Ministério de Jovens","subtitle":"Jovens apaixonados por Deus","verse":"1 Timóteo 4:12","image":"/imagem/culto1.jpg.png"},"mission":{"title":"Nossa Missão","text":"Formar uma geração comprometida."}}'::jsonb) ON CONFLICT (key) DO UPDATE SET data = EXCLUDED.data WHERE site_settings.data = '{}'::jsonb OR site_settings.data IS NULL;
+INSERT INTO public.site_settings (key, data) VALUES ('ministry_mulheres', '{"hero":{"title":"Ministério de Mulheres","subtitle":"Mulheres transformadas","verse":"Provérbios 31:10","image":"/imagem/mulheres.jpg"},"mission":{"title":"Nossa Missão","text":"Acolher e inspirar mulheres."}}'::jsonb) ON CONFLICT (key) DO UPDATE SET data = EXCLUDED.data WHERE site_settings.data = '{}'::jsonb OR site_settings.data IS NULL;
+INSERT INTO public.site_settings (key, data) VALUES ('ministry_homens', '{"hero":{"title":"Ministério de Homens","subtitle":"Firmes na fé","verse":"1 Coríntios 15:58","image":"/imagem/homem.png"},"mission":{"title":"Nossa Missão","text":"Fortalecer homens na Palavra."}}'::jsonb) ON CONFLICT (key) DO UPDATE SET data = EXCLUDED.data WHERE site_settings.data = '{}'::jsonb OR site_settings.data IS NULL;
+INSERT INTO public.site_settings (key, data) VALUES ('ministry_lares', '{"hero":{"title":"Ministério de Lares","subtitle":"Comunhão nos lares","verse":"Atos 2:46","image":"/imagem/CULTO LARES.png"},"mission":{"title":"Nossa Missão","text":"Levar a igreja para as casas."}}'::jsonb) ON CONFLICT (key) DO UPDATE SET data = EXCLUDED.data WHERE site_settings.data = '{}'::jsonb OR site_settings.data IS NULL;
+INSERT INTO public.site_settings (key, data) VALUES ('ministry_retiro', '{"hero":{"title":"Retiros","subtitle":"Renovação e comunhão","verse":"","image":"/imagem/aviso1.jpg"},"mission":{"title":"Visão","text":"Desconecte-se do mundo."}}'::jsonb) ON CONFLICT (key) DO UPDATE SET data = EXCLUDED.data WHERE site_settings.data = '{}'::jsonb OR site_settings.data IS NULL;
+INSERT INTO public.site_settings (key, data) VALUES ('ministry_social', '{"hero":{"title":"Ação Social","subtitle":"Servindo com amor","image":"/imagem/hoje.jpg"},"mission":{"title":"Missão","text":"Ações práticas de amor."}}'::jsonb) ON CONFLICT (key) DO UPDATE SET data = EXCLUDED.data WHERE site_settings.data = '{}'::jsonb OR site_settings.data IS NULL;
+INSERT INTO public.site_settings (key, data) VALUES ('ministry_ebd', '{"hero":{"title":"Escola Bíblica Dominical","subtitle":"Crescendo no conhecimento","verse":"","image":"/imagem/estudo biblico.jpg"},"mission":{"title":"Visão","text":"Ensino da Palavra."}}'::jsonb) ON CONFLICT (key) DO UPDATE SET data = EXCLUDED.data WHERE site_settings.data = '{}'::jsonb OR site_settings.data IS NULL;
+INSERT INTO public.site_settings (key, data) VALUES ('ministry_midia', '{"hero":{"title":"Mídia","subtitle":"Comunicação do Reino","image":"/imagem/midia.jpg"},"mission":{"title":"Visão","text":"Tecnologia a favor do evangelho."}}'::jsonb) ON CONFLICT (key) DO UPDATE SET data = EXCLUDED.data WHERE site_settings.data = '{}'::jsonb OR site_settings.data IS NULL;
+INSERT INTO public.site_settings (key, data) VALUES ('ministry_intercessao', '{"hero":{"title":"Intercessão","subtitle":"Orai sem cessar","image":"/imagem/Intercessão.jpg"},"mission":{"title":"Missão","text":"Sustentar a igreja na oração."}}'::jsonb) ON CONFLICT (key) DO UPDATE SET data = EXCLUDED.data WHERE site_settings.data = '{}'::jsonb OR site_settings.data IS NULL;
+INSERT INTO public.site_settings (key, data) VALUES ('ministry_casais', '{"hero":{"title":"Min. Casais","subtitle":"Famílias na Rocha","image":"/imagem/fe1.jpg"},"mission":{"title":"Missão","text":"Fortalecer laços."}}'::jsonb) ON CONFLICT (key) DO UPDATE SET data = EXCLUDED.data WHERE site_settings.data = '{}'::jsonb OR site_settings.data IS NULL;
+INSERT INTO public.site_settings (key, data) VALUES ('ministry_missoes', '{"hero":{"title":"Missões","subtitle":"Ide por todo o mundo","image":"/imagem/hoje (2).jpg"},"mission":{"title":"Missão","text":"Apoiar missionários."}}'::jsonb) ON CONFLICT (key) DO UPDATE SET data = EXCLUDED.data WHERE site_settings.data = '{}'::jsonb OR site_settings.data IS NULL;
+INSERT INTO public.site_settings (key, data) VALUES ('ministry_sobre', '{"hero":{"title":"Sobre a Igreja","subtitle":"Nossa história","image":"/imagem/admac.png"},"mission":{"title":"Quem Somos","text":"Proclamar o evangelho."}}'::jsonb) ON CONFLICT (key) DO UPDATE SET data = EXCLUDED.data WHERE site_settings.data = '{}'::jsonb OR site_settings.data IS NULL;
+INSERT INTO public.site_settings (key, data) VALUES ('ministry_revista', '{"hero":{"title":"Revista","subtitle":"Mensal"},"pages":[]}'::jsonb) ON CONFLICT (key) DO UPDATE SET data = EXCLUDED.data WHERE site_settings.data = '{}'::jsonb OR site_settings.data IS NULL;
+INSERT INTO public.site_settings (key, data) VALUES ('pastors_contacts', '[]'::jsonb) ON CONFLICT (key) DO UPDATE SET data = EXCLUDED.data WHERE site_settings.data = '{}'::jsonb OR site_settings.data IS NULL;
 
 -- Log de confirmação
 INSERT INTO public.site_logs (action, user_email, details) VALUES ('SETUP_FINAL', 'sistema', 'Todas as tabelas configuradas em script unificado sem falhas.');

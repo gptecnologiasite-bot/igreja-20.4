@@ -800,7 +800,6 @@ export default function PainelAdm() {
     'Revista': 'revista',
     'Revista Admac': 'revista',
     'Sobre': 'sobre',
-    'Contact': 'contact',
     'Casais': 'casais'
   };
 
@@ -1775,7 +1774,7 @@ export default function PainelAdm() {
       const items = pageFiles.map(pf => {
         const id = pageToMinistry[pf.name] || pf.name.toLowerCase();
         const key = id === 'home' ? 'home' : `ministry_${id}`;
-        let settings = dbSettings?.find(s => s.key === key)?.data;
+        let settings = parseSafeJson(dbSettings?.find(s => s.key === key)?.data);
 
         // Fallback offline: se não achou no Supabase, tenta no localStorage
         if (!settings) {
