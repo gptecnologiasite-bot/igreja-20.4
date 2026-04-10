@@ -2736,6 +2736,77 @@ export default function PainelAdm() {
                             style={{ width: '100%', height: 100, background: palette.bg, color: palette.text, border: `1px solid ${palette.border}`, borderRadius: 10, padding: 12, fontSize: '.9rem', outline: 'none', resize: 'vertical', fontFamily: 'Inter, sans-serif', lineHeight: 1.6 }}
                           />
                         </div>
+                        <div className="pm-field" style={{ marginTop: '1.5rem', borderTop: `1px solid ${palette.border}`, paddingTop: '1.5rem' }}>
+                          <label>Vídeo Recomendado (URL do YouTube)</label>
+                          <div className="pm-field-wrap">
+                            <span className="pm-icon">▶</span>
+                            <input
+                              className="pm-input"
+                              placeholder="Ex: https://www.youtube.com/watch?v=HsNdzvG5SkM"
+                              value={ministryData?.extraVideoUrl || ''}
+                              onChange={e => setMinistryData(d => ({ ...d, extraVideoUrl: e.target.value }))}
+                            />
+                          </div>
+                          <small style={{ color: palette.textMuted, fontSize: '0.75rem', marginTop: '6px', display: 'block' }}>
+                            O link aparecerá logo abaixo da seção central do site como vídeo integrado. Deixe em branco caso queira usar o padrão.
+                          </small>
+                        </div>
+
+                        <div className="pm-field" style={{ marginTop: '1rem' }}>
+                          <label>Link do App Bíblia (Google Play / App Store)</label>
+                          <div className="pm-field-wrap">
+                            <span className="pm-icon">📱</span>
+                            <input
+                              className="pm-input"
+                              placeholder="Ex: https://play.google.com/..."
+                              value={ministryData?.appsBibliaLink || ''}
+                              onChange={e => setMinistryData(d => ({ ...d, appsBibliaLink: e.target.value }))}
+                            />
+                          </div>
+                        </div>
+
+                        <div className="pm-field" style={{ marginTop: '1rem' }}>
+                          <label>Link do App Harpa Cristã (Google Play / App Store)</label>
+                          <div className="pm-field-wrap">
+                            <span className="pm-icon">📱</span>
+                            <input
+                              className="pm-input"
+                              placeholder="Ex: https://play.google.com/..."
+                              value={ministryData?.appsHarpaLink || ''}
+                              onChange={e => setMinistryData(d => ({ ...d, appsHarpaLink: e.target.value }))}
+                            />
+                          </div>
+                        </div>
+
+                        <div className="pm-field" style={{ marginTop: '1rem' }}>
+                          <label>Imagem do App (Aparecerá ao lado dos links)</label>
+                          <div className="pm-field-wrap" style={{ display: 'flex', gap: '8px' }}>
+                            <div style={{ position: 'relative', flex: 1 }}>
+                              <span className="pm-icon">🖼</span>
+                              <input
+                                className="pm-input"
+                                placeholder="URL da imagem ou faça o upload"
+                                value={ministryData?.appsImage || ''}
+                                onChange={e => setMinistryData(d => ({ ...d, appsImage: e.target.value }))}
+                              />
+                            </div>
+                            <button
+                              type="button"
+                              className="pm-photo-btn"
+                              style={{ whiteSpace: 'nowrap', padding: '0 12px', height: '38px', marginTop: '0' }}
+                              onClick={() => handleFileUpload(url => {
+                                setMinistryData(d => ({ ...d, appsImage: url }));
+                              }, hasSupabase, supabase)}
+                            >
+                              Subir Foto
+                            </button>
+                          </div>
+                          {ministryData?.appsImage && (
+                            <div style={{ marginTop: '0.5rem' }}>
+                              <img src={transformImageLink(ministryData.appsImage)} alt="Preview" style={{ width: 100, height: 100, borderRadius: 8, objectFit: 'cover', border: `1px solid ${palette.border}` }} />
+                            </div>
+                          )}
+                        </div>
                         <div className="pm-field">
                           <label>Texto do Botão (Home)</label>
                           <div className="pm-field-wrap">
@@ -6015,6 +6086,78 @@ export default function PainelAdm() {
                           onChange={e => setHomeData(d => ({ ...d, welcome: { ...d.welcome, text2: e.target.value } }))}
                           style={{ width: '100%', height: 100, background: palette.bg, color: palette.text, border: `1px solid ${palette.border}`, borderRadius: 10, padding: 12, fontSize: '.9rem', outline: 'none', resize: 'vertical', fontFamily: 'Inter, sans-serif', lineHeight: 1.6 }}
                         />
+                      </div>
+                      
+                      <div className="pm-field" style={{ marginTop: '1.5rem', borderTop: `1px solid ${palette.border}`, paddingTop: '1.5rem' }}>
+                        <label>Vídeo Recomendado (URL do YouTube)</label>
+                        <div className="pm-field-wrap">
+                          <span className="pm-icon">▶</span>
+                          <input
+                            className="pm-input"
+                            placeholder="Ex: https://www.youtube.com/watch?v=HsNdzvG5SkM"
+                            value={homeData?.extraVideoUrl || ''}
+                            onChange={e => setHomeData(d => ({ ...d, extraVideoUrl: e.target.value }))}
+                          />
+                        </div>
+                        <small style={{ color: palette.textMuted, fontSize: '0.75rem', marginTop: '6px', display: 'block' }}>
+                          O link aparecerá logo abaixo da seção central do site como vídeo integrado. Deixe em branco caso queira usar o padrão.
+                        </small>
+                      </div>
+
+                      <div className="pm-field" style={{ marginTop: '1rem' }}>
+                        <label>Link do App Bíblia (Google Play / App Store)</label>
+                        <div className="pm-field-wrap">
+                          <span className="pm-icon">📱</span>
+                          <input
+                            className="pm-input"
+                            placeholder="Ex: https://play.google.com/..."
+                            value={homeData?.appsBibliaLink || ''}
+                            onChange={e => setHomeData(d => ({ ...d, appsBibliaLink: e.target.value }))}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="pm-field" style={{ marginTop: '1rem' }}>
+                        <label>Link do App Harpa Cristã (Google Play / App Store)</label>
+                        <div className="pm-field-wrap">
+                          <span className="pm-icon">📱</span>
+                          <input
+                            className="pm-input"
+                            placeholder="Ex: https://play.google.com/..."
+                            value={homeData?.appsHarpaLink || ''}
+                            onChange={e => setHomeData(d => ({ ...d, appsHarpaLink: e.target.value }))}
+                          />
+                        </div>
+                      </div>
+
+                      <div className="pm-field" style={{ marginTop: '1rem' }}>
+                        <label>Imagem do App (Aparecerá ao lado dos links)</label>
+                        <div className="pm-field-wrap" style={{ display: 'flex', gap: '8px' }}>
+                          <div style={{ position: 'relative', flex: 1 }}>
+                            <span className="pm-icon">🖼</span>
+                            <input
+                              className="pm-input"
+                              placeholder="URL da imagem ou faça o upload"
+                              value={homeData?.appsImage || ''}
+                              onChange={e => setHomeData(d => ({ ...d, appsImage: e.target.value }))}
+                            />
+                          </div>
+                          <button
+                            type="button"
+                            className="pm-photo-btn"
+                            style={{ whiteSpace: 'nowrap', padding: '0 12px', height: '38px', marginTop: '0' }}
+                            onClick={() => handleFileUpload(url => {
+                              setHomeData(d => ({ ...d, appsImage: url }));
+                            }, hasSupabase, supabase)}
+                          >
+                            Subir Foto
+                          </button>
+                        </div>
+                        {homeData?.appsImage && (
+                          <div style={{ marginTop: '0.5rem' }}>
+                            <img src={transformImageLink(homeData.appsImage)} alt="Preview" style={{ width: 100, height: 100, borderRadius: 8, objectFit: 'cover', border: `1px solid ${palette.border}` }} />
+                          </div>
+                        )}
                       </div>
                     </div>
                   )}

@@ -188,9 +188,14 @@ button {
   }
 }
 
-/* Fix para o icone centralizado nas paginas (hero-icon) */
-.hero-icon {
+/* Fix para o icone centralizado nas paginas (hero-icon e afins) */
+.hero-icon, .ministry-home-icon, .section-icon {
+  display: block !important;
+  margin: 0 auto 1.5rem auto !important;
+}
+
+/* Fix extra para garantir que ícones avulsos (SVG) dentro de flex ou botão sejam alinhados perfeitamente */
+.admin-cta-button svg, .logo-icon svg, .logo-icon span {
   display: block;
-  margin-left: auto;
-  margin-right: auto;
+  margin: auto;
 }
