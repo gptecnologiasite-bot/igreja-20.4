@@ -86,7 +86,8 @@ export const INITIAL_HOME_DATA = {
     { title: "Lares", description: "Comunhão e crescimento nos lares", link: "/lares", icon: "🏠", color: "#3498db" },
     { title: "Retiro", description: "Momentos de renovação espiritual", link: "/retiro", icon: "⛰️", color: "#27ae60" },
     { title: "Mídia", description: "Comunicação e tecnologia a serviço do Reino", link: "/midia", icon: "🎬", color: "#d4af37" },
-    { title: "Intercessão", description: "Clamando ao Senhor em todo o tempo", link: "/intercessao", icon: "🙏", color: "#d4af37" }
+    { title: "Intercessão", description: "Clamando ao Senhor em todo o tempo", link: "/intercessao", icon: "🙏", color: "#d4af37" },
+    { title: "Casais", description: "Edificando famílias sobre a Rocha", link: "/casais", icon: "💑", color: "#c19a6b" }
   ]
 };
 
@@ -102,10 +103,6 @@ export const INITIAL_MINISTRIES_DATA = {
       { url: 'https://images.unsplash.com/photo-1485546246426-74dc88dec4d9?w=400&h=300&fit=crop', caption: 'Dia das Crianças' },
       { url: 'https://images.unsplash.com/photo-1502086223501-7ea6ecd79368?w=400&h=300&fit=crop', caption: 'EBF de Férias' },
       { url: 'https://images.unsplash.com/photo-1516627145497-ae6968895b74?w=400&h=300&fit=crop', caption: 'Apresentação de Natal' }
-    ],
-    testimonials: [
-      { name: 'Ana Clara', age: 8, text: 'Eu amo a tia da salinha, ela conta histórias muito legais!', photo: 'https://ui-avatars.com/api/?name=Ana+Clara&background=random' },
-      { name: 'Pedro', age: 10, text: 'Fiz muitos amigos aqui na igreja.', photo: 'https://ui-avatars.com/api/?name=Pedro&background=random' }
     ],
     birthdays: {
       title: 'Aniversariantes do Mês',
@@ -131,7 +128,12 @@ export const INITIAL_MINISTRIES_DATA = {
       text: 'Parabéns aos nossos adoradores aniversariantes!',
       videoUrl: '',
       people: []
-    }
+    },
+    gallery: [
+      { url: 'https://images.unsplash.com/photo-1510915361894-db8b60106cb1?auto=format&fit=crop&q=80&w=800', caption: 'Ensaio Geral' },
+      { url: 'https://images.unsplash.com/photo-1514525253361-bee8a187499b?auto=format&fit=crop&q=80&w=800', caption: 'Culto de domingo' },
+      { url: 'https://images.unsplash.com/photo-1516280440614-37939bbacd81?auto=format&fit=crop&q=80&w=800', caption: 'Noite de Adoração' },
+    ]
   },
   jovens: {
     hero: { title: 'Ministério de Jovens', subtitle: 'Jovens apaixonados por Deus', verse: '"Ninguém despreze a tua mocidade..." - 1 Timóteo 4:12', image: 'https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=1200&h=400&fit=crop' },
@@ -148,10 +150,6 @@ export const INITIAL_MINISTRIES_DATA = {
       { url: 'https://images.unsplash.com/photo-1523580494863-6f3031224c94?w=400&h=300&fit=crop', caption: 'Acampamento 2024' },
       { url: 'https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=400&h=300&fit=crop', caption: 'Culto da Virada' },
       { url: 'https://images.unsplash.com/photo-1529070538774-1843cb3265df?w=400&h=300&fit=crop', caption: 'Evangelismo na Praça' }
-    ],
-    testimonials: [
-      { name: 'Gabriel', age: 22, text: 'O grupo de jovens mudou minha vida. Encontrei amigos verdadeiros.', photo: 'https://ui-avatars.com/api/?name=Gabriel&background=random' },
-      { name: 'Juliana', age: 19, text: 'Aqui aprendi a amar a Bíblia.', photo: 'https://ui-avatars.com/api/?name=Juliana&background=random' }
     ],
     birthdays: {
       title: 'Aniversariantes do Mês',
@@ -175,9 +173,6 @@ export const INITIAL_MINISTRIES_DATA = {
       { url: 'https://images.unsplash.com/photo-1573164713714-d95e436ab8d6?w=400&h=300&fit=crop', caption: 'Conferência de Mulheres' },
       { url: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=400&h=300&fit=crop', caption: 'Chá da Primavera' }
     ],
-    testimonials: [
-      { name: 'Maria', text: 'Me sinto muito acolhida neste ministério.', photo: 'https://ui-avatars.com/api/?name=Maria&background=random' }
-    ],
     birthdays: {
       title: 'Aniversariantes do Mês',
       text: 'Mulheres virtuosas e abençoadas que celebram vida este mês!',
@@ -186,7 +181,7 @@ export const INITIAL_MINISTRIES_DATA = {
     }
   },
   homens: {
-    hero: { title: 'Ministério de Homens', subtitle: 'Firmes na fé, liderando em amor', verse: '"Sede firmes, inabaláveis..." - 1 Coríntios 15:58', videoUrl: '', image: 'https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=1200&h=400&fit=crop' },
+    hero: { title: 'Ministério de Homens', subtitle: 'Firmes na fé, liderando em amor', verse: '"Sede firmes, inabaláveis..." - 1 Coríntios 15:58', videoUrl: '', testimonyUrl: '', image: 'https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=1200&h=400&fit=crop' },
     mission: { title: 'Nossa Missão', text: 'Fortalecer homens na Palavra e no caráter de Cristo para liderarem suas famílias e servirem à igreja.' },
     schedule: [
       { activity: 'Encontro de Homens', day: '1º Sábado do Mês', time: '8h00', location: 'Salão Social', description: 'Comunhão, estudo e oração.' },
@@ -202,9 +197,6 @@ export const INITIAL_MINISTRIES_DATA = {
       { url: 'https://images.unsplash.com/photo-1529070538774-1843cb3265df?w=400&h=300&fit=crop', caption: 'Confraternização' },
       { url: 'https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=400&h=300&fit=crop', caption: 'Louvor e Oração' },
       { url: 'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=400&h=300&fit=crop', caption: 'Retiro de Homens' }
-    ],
-    testimonials: [
-      { name: 'André', text: 'Encontrei direção e irmãos que caminham comigo.', photo: 'https://ui-avatars.com/api/?name=Andre&background=random' }
     ],
     birthdays: {
       title: 'Aniversariantes do Mês',
@@ -224,9 +216,6 @@ export const INITIAL_MINISTRIES_DATA = {
       { url: 'https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=400&h=300&fit=crop', caption: 'Célula Betel', title: 'Célula Betel', text: 'Encontro abençoado na casa do irmão João.', updated: 'Há 2 dias' },
       { url: 'https://images.unsplash.com/photo-1529156069898-49953e39b3ac?w=400&h=300&fit=crop', caption: 'Célula Vida', title: 'Célula Vida', text: 'Comunhão e estudo da palavra.', updated: 'Há 5 dias' },
       { url: 'https://images.unsplash.com/photo-1543269865-cbf427effbad?w=400&h=300&fit=crop', caption: 'Jantar de Líderes', title: 'Jantar de Líderes', text: 'Alinhamento e gratidão por mais um ano.', updated: 'Há 1 semana' }
-    ],
-    testimonials: [
-      { name: 'Roberto', text: 'A célula foi fundamental para minha caminhada cristã.', photo: 'https://ui-avatars.com/api/?name=Roberto&background=random' }
     ],
     birthdays: {
       title: 'Aniversariantes',
@@ -280,7 +269,13 @@ export const INITIAL_MINISTRIES_DATA = {
     ],
     gallery: [
       { url: 'https://images.unsplash.com/photo-1491841550275-ad7854e35ca6?w=400&h=300&fit=crop', caption: 'Classe de Jovens' }
-    ]
+    ],
+    birthdays: {
+      title: 'Aniversariantes do Mês',
+      text: 'Celebramos a vida dos nossos irmãos da EBD!',
+      videoUrl: '',
+      people: []
+    }
   },
   midia: {
     hero: { 
@@ -329,10 +324,6 @@ export const INITIAL_MINISTRIES_DATA = {
         { name: "Humberto Freitas", date: "02/03", photo: "imagem/midia.jpg", isToday: true }
       ] 
     },
-    testimonials: [
-      { name: "Maria Oliveira", role: "Membro Online", text: "A qualidade da transmissão é impecável. Sinto-me parte da igreja mesmo estando longe.", photo: "https://ui-avatars.com/api/?name=Maria+Oliveira" },
-      { name: "João Souza", role: "Visitante", text: "Conheci a ADMAC através do YouTube e hoje sou membro presencial. Trabalho incrível!", photo: "https://ui-avatars.com/api/?name=Joao+Souza" }
-    ],
     schedule: [
       { day: "Domingo", time: "18h", activity: "Culto de Celebração", location: "Templo Principal", isNext: true },
       { day: "Quarta", time: "19h30", activity: "Culto de Ensino", location: "Templo Principal", isNext: false },
@@ -365,9 +356,6 @@ export const INITIAL_MINISTRIES_DATA = {
     team: [
       { name: 'Equipe de Intercessão', role: 'Líderes', photo: 'https://ui-avatars.com/api/?name=Intercessao&background=random' }
     ],
-    testimonials: [
-      { author: 'Visitante', text: 'Senti a presença de Deus e a força das orações desta igreja.' }
-    ]
   },
   missoes: {
     hero: {
@@ -528,6 +516,26 @@ export const INITIAL_MINISTRIES_DATA = {
       { url: 'https://images.unsplash.com/photo-1510936111840-65e151ad71bb?auto=format&fit=crop&w=1200&q=80', caption: 'Nossa sede' },
       { url: 'https://images.unsplash.com/photo-1438232992991-995b7058bbb3?auto=format&fit=crop&w=1200&q=80', caption: 'Comunhão' }
     ]
+  },
+  casais: {
+    hero: { title: 'Ministério de Casais', subtitle: 'Edificando famílias sobre a Rocha', verse: '"Portanto, o que Deus ajuntou não o separe o homem." - Mateus 19:6', image: 'https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=1200&h=400&fit=crop' },
+    mission: { title: 'Nossa Missão', text: 'Fortalecer o vínculo matrimonial através do ensino bíblico, comunhão e apoio mútuo, visando lares centralizados em Cristo.' },
+    schedule: [
+      { activity: 'Culto de Casais', day: 'Último Sábado do Mês', time: '19:30', location: 'Templo Principal', description: 'Uma noite especial de ministração, louvor e renovação para casais.' },
+      { activity: 'Reunião de Casais (Lares)', day: 'Quinzenal', time: '20:00', location: 'Nas Casas', description: 'Pequenos grupos para compartilhar experiências e estudar a Palavra.' }
+    ],
+    team: [
+      { name: 'Pr. Roberto & Pra. Ana', role: 'Pastores Presidentes', photo: 'https://ui-avatars.com/api/?name=Roberto+Ana&background=d4af37&color=000&size=200&bold=true' }
+    ],
+    gallery: [
+      { url: 'https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=800&h=600&fit=crop', caption: 'Encontro de Casais 2024' }
+    ],
+    birthdays: {
+      title: 'Aniversários de Casamento',
+      text: 'Celebrando a união de nossos casais!',
+      videoUrl: '',
+      people: []
+    }
   }
 };
 
@@ -561,6 +569,7 @@ export const INITIAL_FOOTER_DATA = {
     facebook: 'admac', 
     instagram: '@admac', 
     youtube: 'ADMAC TV',
+    whatsapp: 'https://wa.me/5561993241084',
     spotify: 'https://open.spotify.com/show/2lzm9pXbj4PCoWcxsFzDtf'
   }
 };
@@ -583,5 +592,13 @@ export const INITIAL_PAGES_DATA = [
   { id: 'midia', name: 'Midia', path: '/midia', status: 'online', type: 'system' },
   { id: 'missoes', name: 'Missões', path: '/missoes', status: 'online', type: 'system' },
   { id: 'intercessao', name: 'Intercessão', path: '/intercessao', status: 'online', type: 'system' },
+  { id: 'casais', name: 'Casais', path: '/casais', status: 'online', type: 'system' },
+  { id: 'contact', name: 'Contato', path: '/contato', status: 'online', type: 'system' }
+];
+
+export const INITIAL_PASTORS_CONTACTS = [
+  { id: 1, name: 'Pr. Roberto Silva', role: 'Pastor Presidente', phone: '5561993241084', photo: '' },
+  { id: 2, name: 'Pra. Ana Silva', role: 'Pastora Auxiliar', phone: '5561993241084', photo: '' },
+  { id: 3, name: 'Secretaria ADMAC', role: 'Atendimento Geral', phone: '5561993241084', photo: '' }
 ];
 

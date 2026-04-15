@@ -1,53 +1,19 @@
 import React from 'react';
-import { Outlet, useLocation } from 'react-router-dom';
+import { Outlet } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
-import { supabase } from '../lib/supabase';
-import { parseSafeJson } from '../lib/dbUtils';
+import { useSiteData } from '../context/SiteContext';
 
 const PublicLayout = () => {
-    const location = useLocation();
-    const [isActive, setIsActive] = React.useState(true);
-    const [loading, setLoading] = React.useState(true);
+    const { footerData, siteStatus, loading } = useSiteData();
 
-    React.useEffect(() => {
-        const checkStatus = async () => {
-            setLoading(true);
-            try {
-                const rawPath = location.pathname === '/' ? 'home' : location.pathname.split('/').filter(Boolean)[0].toLowerCase();
+    // Link do WhatsApp vindo dos dados globais
+    const whatsappLink = footerData?.social?.whatsapp || 'https://wa.me/5561993241084';
+    
+    // Verificação de Manutenção (simplificada via SiteContext)
+    const isMaintenance = siteStatus?.maintenance?.active === true;
 
-                // Mapeamento simples para chaves de ministério
-                const keysMap = {
-                    'revista': 'revista',
-                    'contato': 'contact',
-                    'home': 'home'
-                };
-
-                const id = keysMap[rawPath] || rawPath;
-                const key = id === 'home' ? 'home' : `ministry_${id}`;
-
-                const { data } = await supabase.from('site_settings').select('data').eq('key', key).single();
-
-                const parsed = parseSafeJson(data?.data);
-                if (parsed) {
-                    setIsActive(parsed.active !== false);
-                } else {
-                    setIsActive(true); // Ativo por padrão
-                }
-            } catch (err) {
-                console.error('Error checking page status:', err);
-                setIsActive(true);
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        checkStatus();
-    }, [location.pathname]);
-
-    const isInactive = !loading && isActive === false;
-
-    if (isInactive) {
+    if (isMaintenance && !loading) {
         return (
             <>
                 <Header />
@@ -58,6 +24,17 @@ const PublicLayout = () => {
                     <a href="/" style={{ marginTop: '2rem', color: '#6c63ff', textDecoration: 'none', fontWeight: 'bold' }}>← Voltar para a Início</a>
                 </main>
                 <Footer />
+                {whatsappLink && (
+                    <a 
+                        href={whatsappLink} 
+                        target="_blank" 
+                        rel="noopener noreferrer" 
+                        className="whatsapp-float-btn"
+                        title="Fale conosco no WhatsApp"
+                    >
+                        <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp" />
+                    </a>
+                )}
             </>
         );
     }
@@ -69,6 +46,17 @@ const PublicLayout = () => {
                 <Outlet />
             </main>
             <Footer />
+            {whatsappLink && (
+                <a 
+                    href={whatsappLink} 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="whatsapp-float-btn"
+                    title="Fale conosco no WhatsApp"
+                >
+                    <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" alt="WhatsApp" />
+                </a>
+            )}
         </>
     );
 };

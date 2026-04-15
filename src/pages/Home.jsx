@@ -6,7 +6,7 @@
 // Todos os dados são carregados dinamicamente via Supabase.
 // ================================================================
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Calendar, // Ícone do calendário na programação semanal
   Clock,    // Ícone de horário nos cards de programação
@@ -14,6 +14,10 @@ import {
   Book,     // Ícone padrão de fallback para eventos
   Phone,    // Ícone de telefone nos botões CTA
   ArrowRight, // Seta nos cards de ministérios
+  Bell,     // Sino de notificações (Home)
+  Heart,    // Ícone de coração na programação
+  Music,
+  MessageCircle,
 } from "lucide-react";
 import { Link } from "react-router-dom";
 import "../css/Home.css";
@@ -24,8 +28,43 @@ import { supabase } from "../lib/supabase";
 import { INITIAL_HOME_DATA } from "../lib/constants";
 import { deepMerge, transformImageLink, parseSafeJson } from "../lib/dbUtils";
 import { usePageUpdate } from "../hooks/usePageUpdate";
+import { useSiteData } from "../context/SiteContext";
+
+/** Chaves de ministérios cuja seção de aniversariantes entra na Home (deve bater com o painel / site_settings). */
+const BIRTHDAY_MINISTRY_KEYS = [
+  "home",
+  "ministry_kids",
+  "ministry_louvor",
+  "ministry_jovens",
+  "ministry_mulheres",
+  "ministry_homens",
+  "ministry_lares",
+  "ministry_retiro",
+  "ministry_social",
+  "ministry_ebd",
+  "ministry_midia",
+  "ministry_intercessao",
+  "ministry_missoes",
+  "ministry_revista",
+  "ministry_casais",
+];
 
 const Home = () => {
+  const { pastorsData } = useSiteData();
+  const [showDropdown, setShowDropdown] = useState(false);
+  const dropdownRef = React.useRef(null);
+
+  // Fecha o dropdown ao clicar fora
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setShowDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
+
   // Estado principal com os dados da home (carrossel, welcome, agenda, etc.)
   const [data, setData] = useState(INITIAL_HOME_DATA);
   // Lista consolidada de aniversariantes de todos os ministérios
@@ -36,11 +75,11 @@ const Home = () => {
       const { data: dbData, error } = await supabase
         .from('site_settings')
         .select('data')
-        .eq('key', 'home')
-        .single();
+        .eq('key', 'home').single();
 
       if (error) {
-        console.warn('[Supabase] Falha ao carregar Home:', error.message);
+        console.error('❌ [Supabase] Falha ao carregar Home:', error.message, error.details);
+        console.log('💡 DICA: Verifique se a tabela site_settings existe e se o RLS está liberado.');
         
         // Fallback para localStorage
         const raw = localStorage.getItem('admac_site_settings:home');
@@ -62,10 +101,13 @@ const Home = () => {
 
       if (dbData && dbData.data) {
         const parsed = parseSafeJson(dbData.data);
-        setData(deepMerge(INITIAL_HOME_DATA, parsed));
-        
-        // Cacheia para uso offline futuro
-        localStorage.setItem('admac_site_settings:home', JSON.stringify(parsed));
+        if (parsed && typeof parsed === 'object') {
+          setData(deepMerge(INITIAL_HOME_DATA, parsed));
+          // Cacheia para uso offline futuro
+          localStorage.setItem('admac_site_settings:home', JSON.stringify(parsed));
+        } else {
+          console.warn('⚠️ [Supabase] Dados da Home vieram em formato inválido ou vazios.');
+        }
       }
     } catch (err) {
       console.error('[App] Erro crítico no loadData:', err);
@@ -80,49 +122,56 @@ const Home = () => {
     }, 0);
   }, []);
 
+
   // Sincronização automática via usePageUpdate
   usePageUpdate(['home', 'videos'], loadData);
 
-  // Carrega aniversariantes de todas as áreas do site para exibir na Home
-  useEffect(() => {
-    const ministryIds = ['kids', 'louvor', 'jovens', 'mulheres', 'homens', 'lares', 'retiro', 'social', 'ebd', 'midia', 'intercessao', 'missoes', 'revista'];
-    const loadBirthdays = async () => {
-      const results = [];
-      for (const id of ministryIds) {
-        try {
-          const { data: dbData } = await supabase
-            .from('site_settings')
-            .select('data')
-            .eq('key', `ministry_${id}`)
-            .single();
+  // Carrega aniversariantes de todas as áreas (batch). Precisa reexecutar quando qualquer ministério for salvo no painel.
+  const loadBirthdays = useCallback(async () => {
+    try {
+      const { data: dbResults, error } = await supabase
+        .from('site_settings')
+        .select('key, data')
+        .in('key', BIRTHDAY_MINISTRY_KEYS);
 
-          const raw = dbData?.data;
-          const d = parseSafeJson(raw);
-          // Adiciona aniversariantes encontrados junto com o nome do ministério
-          if (d?.birthdays?.people && d.birthdays.people.length > 0) {
-            d.birthdays.people.forEach(person => {
-              results.push({ ...person, ministryLabel: d?.hero?.title || id });
-            });
-          }
-        } catch { /* Ignora ministério com erro e continua */ }
-      }
-      // Ordena por mês e depois por dia (formato DD/MM)
+      if (error) throw error;
+
+      const results = [];
+      dbResults?.forEach(row => {
+        const d = parseSafeJson(row.data);
+        if (d?.birthdays?.people?.length > 0) {
+          const label =
+            row.key === "home"
+              ? "Página Principal"
+              : d?.hero?.title || row.key.replace("ministry_", "");
+          d.birthdays.people.forEach(person => {
+            results.push({ ...person, ministryLabel: label });
+          });
+        }
+      });
+
       results.sort((a, b) => {
-        const parseParts = s => {
-          const p = (s || '').split('/');
-          return [parseInt(p[0]) || 99, parseInt(p[1]) || 99];
-        };
-        const [da, ma] = parseParts(a.date);
-        const [db, mb] = parseParts(b.date);
+        const [da, ma] = (a.date || '99/99').split('/').map(n => parseInt(n) || 99);
+        const [db, mb] = (b.date || '99/99').split('/').map(n => parseInt(n) || 99);
         return ma !== mb ? ma - mb : da - db;
       });
+
       setAllBirthdays(results);
-    };
-    loadBirthdays();
+    } catch (err) {
+      console.warn('[Home] Erro ao carregar aniversariantes em lote:', err.message);
+    }
   }, []);
+
+  useEffect(() => {
+    loadBirthdays();
+  }, [loadBirthdays]);
+
+  usePageUpdate(BIRTHDAY_MINISTRY_KEYS, loadBirthdays);
 
   return (
     <div className="home">
+
+
       {/* ── Carrossel Hero ── */}
       <HeroCarousel slides={data.carousel} />
 
@@ -133,12 +182,48 @@ const Home = () => {
             {/* Suporta múltiplos pastores (array) ou pastor único (legado) */}
             <PastorCarousel pastors={data.pastors || (data.pastor ? [data.pastor] : [])} />
             <div className="welcome-text">
-              <h2>{data.welcome.title}</h2>
+              <h1>{data.welcome.title}</h1>
               <p>{data.welcome.text1}</p>
               <p>{data.welcome.text2}</p>
-              <Link to={data.welcome.buttonLink || "/contato"} className="welcome-btn">
-                <Phone size={18} /> {data.welcome.buttonText || "Entre em Contato"}
-              </Link>
+              
+              <div className="contact-dropdown-container" ref={dropdownRef}>
+                <button 
+                  className="welcome-btn"
+                  onClick={() => setShowDropdown(!showDropdown)}
+                >
+                  <Phone size={18} /> {data.welcome.buttonText || "Entre em Contato"}
+                </button>
+
+                <div className={`contact-dropdown-menu ${showDropdown ? 'active' : ''}`}>
+                  {(pastorsData || []).map((pastor) => (
+                    <a 
+                      key={pastor.id} 
+                      href={`https://wa.me/${pastor.phone || '5561993241084'}`}
+                      target="_blank" 
+                      rel="noopener noreferrer"
+                      className="contact-item"
+                    >
+                      <div className="contact-photo">
+                        {pastor.photo ? (
+                          <img src={transformImageLink(pastor.photo)} alt={pastor.name} />
+                        ) : (
+                          <Phone size={18} />
+                        )}
+                      </div>
+                      <div className="contact-info">
+                        <span className="contact-name">{pastor.name}</span>
+                        <span className="contact-role">{pastor.role}</span>
+                      </div>
+                      <MessageCircle size={14} className="contact-whatsapp-icon" />
+                    </a>
+                  ))}
+                  {(!pastorsData || pastorsData.length === 0) && (
+                    <div style={{ color: '#7c82a0', fontSize: '0.8rem', textAlign: 'center', padding: '10px' }}>
+                      Pressione para ver contatos
+                    </div>
+                  )}
+                </div>
+              </div>
             </div>
           </div>
         </div>
@@ -184,8 +269,11 @@ const Home = () => {
 
           <div className="schedule-home-grid">
             {data.schedule.map((item, index) => {
-              // Usa o ícone da programação ou fallback para o ícone Book
-              const IconComponent = item.icon || Book;
+              // Mapeia strings de ícone do banco para componentes Lucide reais
+              const iconMap = { Book, Music, Heart, Clock, Calendar, Bell, Phone, ArrowRight };
+              const IconComponent = (typeof item.iconType === 'string' && iconMap[item.iconType])
+                ? iconMap[item.iconType]
+                : (typeof item.icon === 'function' ? item.icon : Book);
               return (
                 <div key={index} className="schedule-home-card">
                   <div className="schedule-home-day">{item.day}</div>
@@ -247,80 +335,35 @@ const Home = () => {
         </div>
       </section>
 
-      {/* ── Seção de Aniversariantes — sempre visível ── */}
-      <section className="birthdays-home-section" style={{
-        padding: '4rem 0',
-        background: 'linear-gradient(135deg, var(--primary-dark, #0d0d1a) 0%, var(--surface-color, #1a1a2e) 100%)'
-      }}>
+      {/* ── Seção de Aniversariantes — sempre visível (estilos em Home.css) ── */}
+      <section className="birthdays-home-section">
         <div className="container">
-          <div className="section-header" style={{ textAlign: 'center', marginBottom: '0.5rem', justifyContent: 'center' }}>
-            <span style={{ fontSize: '2rem' }}>🎂</span>
-            <h2 style={{ margin: '0 0.5rem', fontSize: '2rem', fontWeight: 700 }}>Aniversariantes dos Ministérios</h2>
+          <div className="birthdays-home-header">
+            <span className="birthdays-home-icon" aria-hidden>🎂</span>
+            <h2>Aniversariantes dos Ministérios</h2>
           </div>
-          <p className="section-subtitle" style={{ textAlign: 'center', marginBottom: '3rem' }}>
+          <p className="birthdays-home-subtitle">
             Vamos celebrar com quem faz parte da nossa família!
           </p>
 
-          {/* Grid de cards dos aniversariantes */}
-          <div style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))',
-            gap: '1.5rem',
-            justifyContent: 'center'
-          }}>
+          <div className="birthdays-home-grid">
             {allBirthdays.map((person, index) => (
-              <div
-                key={index}
-                style={{
-                  background: 'rgba(255,255,255,0.06)',
-                  backdropFilter: 'blur(12px)',
-                  border: '1px solid rgba(212,175,55,0.25)',
-                  borderRadius: '20px',
-                  padding: '1.8rem 1rem 1.4rem',
-                  textAlign: 'center',
-                  transition: 'transform 0.3s, box-shadow 0.3s',
-                  cursor: 'default',
-                  display: 'flex',
-                  flexDirection: 'column',
-                  alignItems: 'center',
-                  gap: '0.5rem'
-                }}
-                onMouseEnter={e => {
-                  e.currentTarget.style.transform = 'translateY(-8px)';
-                  e.currentTarget.style.boxShadow = '0 16px 40px rgba(212,175,55,0.25)';
-                }}
-                onMouseLeave={e => {
-                  e.currentTarget.style.transform = 'translateY(0)';
-                  e.currentTarget.style.boxShadow = 'none';
-                }}
-              >
-                {/* Avatar: usa foto cadastrada ou avatar automático gerado por nome */}
+              <div key={index} className="birthdays-home-card">
                 <img
                   src={transformImageLink(person.photo) || `https://ui-avatars.com/api/?name=${encodeURIComponent(person.name || 'A')}&background=d4af37&color=000&bold=true&size=150`}
-                  alt={person.name}
-                  style={{ width: 90, height: 90, borderRadius: '50%', objectFit: 'cover', border: '3px solid #d4af37', boxShadow: '0 0 0 4px rgba(212,175,55,0.2)' }}
+                  alt={person.name || ''}
                 />
-                {/* Nome do aniversariante */}
-                <div style={{ fontWeight: 800, fontSize: '1.05rem', color: '#ffffff', lineHeight: 1.2, marginTop: '0.4rem' }}>
-                  {person.name || '—'}
-                </div>
-                {/* Data de aniversário (formato DD/MM) */}
+                <div className="birthdays-home-name">{person.name || '—'}</div>
                 {person.date && (
-                  <div style={{ fontSize: '0.88rem', color: '#d4af37', fontWeight: 700, background: 'rgba(212,175,55,0.12)', padding: '0.2rem 0.7rem', borderRadius: '20px' }}>
-                    🎂 {person.date}
-                  </div>
+                  <div className="birthdays-home-date">🎂 {person.date}</div>
                 )}
-                {/* Nome do ministério de origem */}
-                <div style={{ fontSize: '0.68rem', color: 'rgba(255,255,255,0.45)', textTransform: 'uppercase', letterSpacing: '0.06em', marginTop: '0.1rem' }}>
-                  {person.ministryLabel}
-                </div>
+                <div className="birthdays-home-ministry">{person.ministryLabel}</div>
               </div>
             ))}
           </div>
 
-          {/* Mensagem de placeholder quando não há aniversariantes cadastrados */}
           {allBirthdays.length === 0 && (
-            <div style={{ textAlign: 'center', padding: '2rem', color: 'rgba(255,255,255,0.4)', fontSize: '1rem', fontStyle: 'italic' }}>
+            <div className="birthdays-home-empty">
               🎂 Nenhum aniversariante cadastrado ainda. Adicione pelo Painel → Configurações → Editar Ministério → Aniversariantes.
             </div>
           )}
@@ -332,14 +375,14 @@ const Home = () => {
         <div className="container">
           <h2 style={{ marginBottom: '.5rem' }}>Atividades em Destaque</h2>
           <p className="section-subtitle">Veja o que está acontecendo na igreja</p>
-          <div className="card-group" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1.5rem', marginTop: '1.5rem' }}>
+          <div className="card-group" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 260px), 1fr))', gap: '1.5rem', marginTop: '1.5rem' }}>
             {(data.activities || []).map((a, idx) => (
               <div key={idx} className="card" style={{ border: '1px solid rgba(212,175,55,0.25)', borderRadius: 16, overflow: 'hidden', background: 'rgba(255,255,255,0.03)' }}>
                 <img
                   className="card-img-top"
                   src={transformImageLink(a.image) || '/imagem/admac.png'}
                   alt={a.title || 'Atividade'}
-                  style={{ width: '100%', aspectRatio: '16 / 9', objectFit: 'contain', background: '#0b0b0b', display: 'block' }}
+                  style={{ width: '100%', aspectRatio: '16 / 9', objectFit: 'contain', background: '#000', display: 'block' }}
                   onError={(e) => { e.currentTarget.src = '/imagem/admac.png'; }}
                 />
                 <div className="card-body" style={{ padding: '1rem' }}>
@@ -382,6 +425,89 @@ const Home = () => {
           </div>
         </div>
       </section>
+
+      {/* ── Apps e Recursos (Card Extra solicitados) ── */}
+      <section className="apps-home-section" style={{ padding: '4rem 0', background: 'linear-gradient(180deg, #0f0f0f 0%, #050505 100%)' }}>
+        <div className="container" style={{ display: 'flex', flexWrap: 'wrap', gap: '2rem', justifyContent: 'center' }}>
+          
+          <div className="card mb-3" style={{ maxWidth: '540px', flex: '1 1 300px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(212,175,55,0.25)', borderRadius: '16px', overflow: 'hidden' }}>
+            <div className="row g-0" style={{ display: 'flex', flexWrap: 'wrap', height: '100%' }}>
+              <div className="col-md-4" style={{ flex: '0 0 auto', width: '33.33333333%' }}>
+                <iframe 
+                  width="100%" 
+                  height="100%" 
+                  src={`https://www.youtube.com/embed/${(data?.extraVideoUrl || "https://www.youtube.com/watch?v=HsNdzvG5SkM").match(/(?:youtu\.be\/|youtube\.com\/(?:embed\/|v\/|watch\?v=|watch\?.+&v=))([^&?]+)/)?.[1] || 'HsNdzvG5SkM'}`}
+                  title="YouTube video player" 
+                  frameBorder="0" 
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" 
+                  referrerPolicy="strict-origin-when-cross-origin" 
+                  allowFullScreen
+                  style={{ minHeight: '100%', objectFit: 'cover' }}
+                ></iframe>
+              </div>
+              <div className="col-md-8" style={{ flex: '1 1 auto', width: '66.66666667%' }}>
+                <div className="card-body" style={{ padding: '1.5rem' }}>
+                  <h5 className="card-title" style={{ color: '#d4af37', marginBottom: '0.5rem' }}>Vídeo Recomendado</h5>
+                  <p className="card-text" style={{ color: 'rgba(255,255,255,0.7)' }}>Assista aos nossos vídeos pelo YouTube.</p>
+                  <p className="card-text" style={{ marginBottom: '1.5rem' }}>
+                    <a href={data?.extraVideoUrl || "https://www.youtube.com/watch?v=HsNdzvG5SkM"} target="_blank" rel="noopener noreferrer" style={{ color: '#d4af37', textDecoration: 'none', fontWeight: 'bold' }}>
+                      ▶ Acessar Vídeo no YouTube
+                    </a>
+                  </p>
+                  
+                  {/* Container for App badges */}
+                  <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', marginTop: '1rem', flexWrap: 'wrap', position: 'relative', zIndex: 10 }}>
+                    <a href={data?.appsBibliaLink || "https://play.google.com/store/apps/details?id=br.com.keywordlabs.biblia_nvi&hl=pt_BR"} target="_blank" rel="noopener noreferrer">
+                       <img src="https://upload.wikimedia.org/wikipedia/commons/3/3c/Download_on_the_App_Store_Badge.svg" alt="Download on the App Store" style={{ height: '42px', display: 'block' }} />
+                    </a>
+                    <a href={data?.appsBibliaLink || "https://play.google.com/store/apps/details?id=br.com.keywordlabs.biblia_nvi&hl=pt_BR"} target="_blank" rel="noopener noreferrer">
+                       <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" alt="Get it on Google Play" style={{ height: '42px', display: 'block' }} />
+                    </a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="card mb-3" style={{ maxWidth: '540px', flex: '1 1 300px', background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(212,175,55,0.25)', borderRadius: '16px', overflow: 'hidden' }}>
+            <div className="row g-0" style={{ display: 'flex', flexWrap: 'wrap', height: '100%' }}>
+              <div className="col-md-4" style={{ flex: '0 0 auto', width: '33.33333333%', background: 'rgba(255,255,255,0.02)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: data?.appsImage ? '0' : '1rem' }}>
+                {data?.appsImage ? (
+                  <img src={transformImageLink(data.appsImage)} alt="App Preview" className="img-fluid rounded-start" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : (
+                  <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="#d4af37" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-smartphone"><rect width="14" height="20" x="5" y="2" rx="2" ry="2"/><path d="M12 18h.01"/></svg>
+                )}
+              </div>
+              <div className="col-md-8" style={{ flex: '1 1 auto', width: '66.66666667%' }}>
+                <div className="card-body" style={{ padding: '1.5rem' }}>
+                  <h5 className="card-title" style={{ color: '#d4af37', marginBottom: '0.5rem' }}>Aplicativos e Bíblia</h5>
+                  <p className="card-text" style={{ color: 'rgba(255,255,255,0.7)', marginBottom: '1rem' }}>Mantenha a palavra sempre com você.</p>
+                  <div className="card-text" style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                     <a href={data?.appsBibliaLink || "https://play.google.com/store/apps/details?id=br.com.keywordlabs.biblia_nvi&hl=pt_BR"} target="_blank" rel="noopener noreferrer" style={{ color: '#d4af37', textDecoration: 'none', fontWeight: '500' }}>
+                        📖 Bíblia (ablibla)
+                     </a>
+                     <a href={data?.appsHarpaLink || "https://play.google.com/store/apps/details?id=br.com.aleluiah_apps.hinario.harpa_crista&pli=1"} target="_blank" rel="noopener noreferrer" style={{ color: '#d4af37', textDecoration: 'none', fontWeight: '500' }}>
+                        🎵 Harpa Cristã
+                     </a>
+                     
+                     {/* Container for App badges */}
+                     <div style={{ display: 'flex', justifyContent: 'center', gap: '12px', marginTop: '1rem', flexWrap: 'wrap', position: 'relative', zIndex: 10 }}>
+                       <a href={data?.appsBibliaLink || "https://play.google.com/store/apps/details?id=br.com.keywordlabs.biblia_nvi&hl=pt_BR"} target="_blank" rel="noopener noreferrer">
+                          <img src="https://upload.wikimedia.org/wikipedia/commons/3/3c/Download_on_the_App_Store_Badge.svg" alt="Download on the App Store" style={{ height: '42px', display: 'block' }} />
+                       </a>
+                       <a href={data?.appsBibliaLink || "https://play.google.com/store/apps/details?id=br.com.keywordlabs.biblia_nvi&hl=pt_BR"} target="_blank" rel="noopener noreferrer">
+                          <img src="https://upload.wikimedia.org/wikipedia/commons/7/78/Google_Play_Store_badge_EN.svg" alt="Get it on Google Play" style={{ height: '42px', display: 'block' }} />
+                       </a>
+                     </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
     </div>
   );
 };

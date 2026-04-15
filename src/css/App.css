@@ -11,15 +11,32 @@ main {
 
 .container {
   width: 100%;
-  max-width: 1200px;
+  max-width: 1240px;
   margin: 0 auto;
-  padding: 0 1.5rem;
+  padding: 0 max(1rem, 4vw);
 }
 
 @media (max-width: 768px) {
   .container {
+    padding: 0 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
     padding: 0 1rem;
   }
+}
+
+/* Global Responsive Reset for Media */
+img, video, canvas, svg {
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+iframe {
+  max-width: 100%;
 }
 
 .hide-mobile {
@@ -30,9 +47,29 @@ main {
 
 .show-mobile {
   display: none !important;
-  @media (max-width: 768px) {
+}
+
+@media (max-width: 768px) {
+  .show-mobile {
     display: block !important;
   }
+}
+
+/* Fluid Utilities */
+.fluid-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(var(--min-width, 300px), 1fr));
+  width: 100%;
+}
+
+.responsive-image {
+  width: 100%;
+  height: auto;
+  object-fit: cover;
+}
+
+.section-padding {
+  padding: clamp(2rem, 8vw, 6rem) 0;
 }
 
 /* ============================================================

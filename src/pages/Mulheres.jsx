@@ -1,18 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { transformImageLink } from '../lib/dbUtils';
 import { supabase } from '../lib/supabase';
-import { Heart, Calendar, Clock, Users, Camera, MessageSquare, Send, Star, BookOpen, Sparkles, Crown } from 'lucide-react';
+import { Heart, Calendar, Clock, Users, Camera, MessageSquare, Send, Star, BookOpen, Sparkles, Crown, Gift } from 'lucide-react';
 import { useMinistryData } from '../hooks/useMinistryData';
 import '../css/Mulheres.css';
 
 const Mulheres = () => {
-  const [testimonial, setTestimonial] = useState({
-    name: '',
-    email: '',
-    message: ''
-  });
-
-  const [data] = useMinistryData('mulheres');
+  const [data, , updateMinistryData] = useMinistryData('mulheres');
   const [currentSlide, setCurrentSlide] = useState(0);
 
   useEffect(() => {
@@ -24,37 +18,14 @@ const Mulheres = () => {
     }
   }, [data.gallery]);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const payload = {
-      type: 'testimonial_submission',
-      category: 'mulheres',
-      ...testimonial,
-      created_at: new Date().toISOString()
-    };
 
-    try {
-      const { error } = await supabase.from('site_messages').insert(payload);
-      if (error) throw error;
-      alert('Testemunho enviado com sucesso! Obrigado por compartilhar.');
-      setTestimonial({ name: '', email: '', message: '' });
-    } catch (err) {
-      console.error('Error sending testimonial:', err);
-      // Backup local
-      const backups = JSON.parse(localStorage.getItem('admac_messages_backup') || '[]');
-      backups.push(payload);
-      localStorage.setItem('admac_messages_backup', JSON.stringify(backups));
-      alert('Testemunho enviado com sucesso! Obrigado por compartilhar.');
-      setTestimonial({ name: '', email: '', message: '' });
-    }
-  };
 
   return (
     <div className="mulheres-page">
       {/* Hero Section */}
       <div className="mulheres-hero">
         <div className="hero-slideshow">
-          {data.gallery && data.gallery.map((photo, index) => (
+          {data.gallery?.map((photo, index) => (
             <div
               key={index}
               className={`hero-slide ${index === currentSlide ? 'active' : ''}`}
@@ -124,11 +95,12 @@ const Mulheres = () => {
           <p className="section-subtitle">Participe das nossas atividades</p>
 
           <div className="schedule-grid">
-            {data.schedule.map((item, index) => {
+            {data.schedule?.map((item, index) => {
               // Default icon logic
-              const IconComponent = item.activity.includes('EBD') ? BookOpen :
-                item.activity.includes('Célula') ? Users :
-                  item.activity.includes('Café') ? Sparkles : Heart;
+              const activityStr = item.activity || item.title || '';
+              const IconComponent = activityStr.includes('EBD') ? BookOpen :
+                activityStr.includes('Célula') ? Users :
+                  activityStr.includes('Café') ? Sparkles : Heart;
               return (
                 <div key={index} className="schedule-card">
                   <div className="schedule-icon">
@@ -165,7 +137,7 @@ const Mulheres = () => {
           <p className="section-subtitle">Mulheres que servem a Deus com excelência</p>
 
           <div className="team-grid">
-            {data.team.map((member, index) => (
+            {data.team?.map((member, index) => (
               <div key={index} className="team-card">
                 <img src={transformImageLink(member.photo)} alt={member.name} className="team-photo" />
                 <h3>{member.name}</h3>
@@ -186,7 +158,7 @@ const Mulheres = () => {
           <p className="section-subtitle">Momentos especiais do ministério</p>
 
           <div className="gallery-grid">
-            {data.gallery.map((photo, index) => (
+            {data.gallery?.map((photo, index) => (
               <div key={index} className="gallery-item">
                 <img src={transformImageLink(photo.url)} alt={photo.caption} />
                 <div className="gallery-overlay">
@@ -198,84 +170,61 @@ const Mulheres = () => {
         </div>
       </section>
 
-      {/* Testimonials Display */}
-      <section className="testimonials-display-section">
-        <div className="container">
-          <h2>Testemunhos de Transformação</h2>
-          <p className="section-subtitle">Veja como Jesus tem mudado vidas</p>
+      {/* Birthdays Section */}
+      {data.birthdays && (
+        <section className="birthdays-section">
+          <div className="container">
+            <div className="section-header">
+              <Gift size={32} />
+              <h2>{data.birthdays.title || 'Aniversariantes do Mês'}</h2>
+            </div>
+            <p className="section-subtitle">{data.birthdays.text || 'Celebramos a vida de nossas amadas irmãs!'}</p>
 
-          <div className="testimonials-grid">
-            {data.testimonials.map((testimonial, index) => (
-              <div key={index} className="testimonial-card">
-                <div className="stars">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} size={16} fill="#e91e63" color="#e91e63" />
-                  ))}
+            {data.birthdays.videoUrl && (
+              <div className="birthday-video-wrapper" style={{ marginBottom: '2rem', borderRadius: '16px', overflow: 'hidden', boxShadow: '0 10px 30px rgba(0,0,0,0.1)' }}>
+                {data.birthdays.videoUrl.includes('youtube.com') || data.birthdays.videoUrl.includes('youtu.be') ? (
+                  <iframe
+                    width="100%"
+                    height="400"
+                    src={data.birthdays.videoUrl.replace('watch?v=', 'embed/').split('&')[0]}
+                    title="Vídeo de Aniversariantes"
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  ></iframe>
+                ) : (
+                  <video 
+                    controls 
+                    width="100%" 
+                    src={transformImageLink(data.birthdays.videoUrl)}
+                  />
+                )}
+              </div>
+            )}
+
+            <div className="birthdays-grid">
+              {(data.birthdays.people || []).map((person, index) => (
+                <div key={index} className="birthday-card">
+                  <div className="birthday-photo-wrap">
+                    <img 
+                      src={transformImageLink(person.photo || `https://ui-avatars.com/api/?name=${encodeURIComponent(person.name)}&background=e91e63&color=fff`)} 
+                      alt={person.name} 
+                    />
+                    <div className="birthday-badge">🎂</div>
+                  </div>
+                  <h3>{person.name}</h3>
+                  <span className="birthday-date">{person.date}</span>
                 </div>
-                <p className="testimonial-text">"{testimonial.text}"</p>
-                <div className="testimonial-author">
-                  <img src={transformImageLink(testimonial.photo)} alt={testimonial.name} />
-                  <strong>{testimonial.name}</strong>
+              ))}
+              {(!data.birthdays.people || data.birthdays.people.length === 0) && (
+                <div className="empty-birthdays">
+                  <p>Nenhum aniversariante este mês.</p>
                 </div>
-              </div>
-            ))}
+              )}
+            </div>
           </div>
-        </div>
-      </section>
-
-      {/* Testimonial Form Section */}
-      <section className="testimonial-form-section">
-        <div className="container">
-          <div className="section-header">
-            <MessageSquare size={32} />
-            <h2>Compartilhe Seu Testemunho</h2>
-          </div>
-          <p className="section-subtitle">Como Jesus tem trabalhado em sua vida?</p>
-
-          <div className="form-wrapper">
-            <form onSubmit={handleSubmit} className="testimonial-form">
-              <div className="form-group">
-                <label htmlFor="name">Nome Completo</label>
-                <input
-                  type="text"
-                  id="name"
-                  value={testimonial.name}
-                  onChange={(e) => setTestimonial({ ...testimonial, name: e.target.value })}
-                  placeholder="Seu nome"
-                  required
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="email">Email (Opcional)</label>
-                <input
-                  type="email"
-                  id="email"
-                  value={testimonial.email}
-                  onChange={(e) => setTestimonial({ ...testimonial, email: e.target.value })}
-                  placeholder="seu@email.com"
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="message">Seu Testemunho</label>
-                <textarea
-                  id="message"
-                  value={testimonial.message}
-                  onChange={(e) => setTestimonial({ ...testimonial, message: e.target.value })}
-                  placeholder="Compartilhe como Jesus transformou sua vida..."
-                  rows="6"
-                  required
-                ></textarea>
-              </div>
-
-              <button type="submit" className="submit-btn">
-                <Send size={18} /> Enviar Testemunho
-              </button>
-            </form>
-          </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* CTA Section */}
       <section className="mulheres-cta">

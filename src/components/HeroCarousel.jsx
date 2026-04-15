@@ -50,8 +50,12 @@ const HeroCarousel = ({ slides: propSlides }) => {
         <div
           key={index}
           className={`carousel-slide ${index === currentSlide ? 'active' : ''}`}
-          style={{ backgroundImage: `url("${transformImageLink(slide.image)}")` }}
         >
+          <img 
+            src={transformImageLink(slide.image)} 
+            alt={slide.title} 
+            className="carousel-image" 
+          />
           <div className="carousel-content">
             <h1>{slide.title}</h1>
             <p>{slide.subtitle}</p>

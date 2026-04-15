@@ -1,17 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { transformImageLink } from '../lib/dbUtils';
+import { supabase } from '../lib/supabase';
 import { Zap, Calendar, Clock, Users, Camera, MessageSquare, Send, Heart, MapPin, Star, Music, Gamepad2 } from 'lucide-react';
 import { useMinistryData } from '../hooks/useMinistryData';
 import '../css/Jovens.css';
 
 const Jovens = () => {
-  const [testimonial, setTestimonial] = useState({
-    name: '',
-    age: '',
-    email: '',
-    message: ''
-  });
-
   const [data] = useMinistryData('jovens');
   const [currentSlide, setCurrentSlide] = useState(0);
 
@@ -24,11 +18,7 @@ const Jovens = () => {
     }
   }, [data.gallery]);
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    alert('Testemunho enviado com sucesso! Obrigado por compartilhar.');
-    setTestimonial({ name: '', age: '', email: '', message: '' });
-  };
+
 
   return (
     <div className="jovens-page">
@@ -148,101 +138,7 @@ const Jovens = () => {
         </div>
       </section>
 
-      {/* Testimonials Display */}
-      <section className="testimonials-display-section">
-        <div className="container">
-          <h2>Testemunhos</h2>
-          <p className="section-subtitle">Veja o que os jovens dizem</p>
 
-          <div className="testimonials-grid">
-            {data.testimonials.map((testimonial, index) => (
-              <div key={index} className="testimonial-card">
-                <div className="stars">
-                  {[...Array(5)].map((_, i) => (
-                    <Star key={i} size={16} fill="#e67e22" color="#e67e22" />
-                  ))}
-                </div>
-                <p className="testimonial-text">"{testimonial.text}"</p>
-                <div className="testimonial-author">
-                  <img src={transformImageLink(testimonial.photo)} alt={testimonial.name} />
-                  <div>
-                    <strong>{testimonial.name}</strong>
-                    <span>{testimonial.age} anos</span>
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonial Form Section */}
-      <section className="testimonial-form-section">
-        <div className="container">
-          <div className="section-header">
-            <MessageSquare size={32} />
-            <h2>Deixe Seu Testemunho</h2>
-          </div>
-          <p className="section-subtitle">Compartilhe como Deus tem trabalhado em sua vida</p>
-
-          <div className="form-wrapper">
-            <form onSubmit={handleSubmit} className="testimonial-form">
-              <div className="form-row">
-                <div className="form-group">
-                  <label htmlFor="name">Nome Completo</label>
-                  <input
-                    type="text"
-                    id="name"
-                    value={testimonial.name}
-                    onChange={(e) => setTestimonial({ ...testimonial, name: e.target.value })}
-                    placeholder="Seu nome"
-                    required
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label htmlFor="age">Idade</label>
-                  <input
-                    type="number"
-                    id="age"
-                    value={testimonial.age}
-                    onChange={(e) => setTestimonial({ ...testimonial, age: e.target.value })}
-                    placeholder="Sua idade"
-                    required
-                  />
-                </div>
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="email">Email (Opcional)</label>
-                <input
-                  type="email"
-                  id="email"
-                  value={testimonial.email}
-                  onChange={(e) => setTestimonial({ ...testimonial, email: e.target.value })}
-                  placeholder="seu@email.com"
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="message">Seu Testemunho</label>
-                <textarea
-                  id="message"
-                  value={testimonial.message}
-                  onChange={(e) => setTestimonial({ ...testimonial, message: e.target.value })}
-                  placeholder="Compartilhe sua história..."
-                  rows="6"
-                  required
-                ></textarea>
-              </div>
-
-              <button type="submit" className="submit-btn">
-                <Send size={18} /> Enviar Testemunho
-              </button>
-            </form>
-          </div>
-        </div>
-      </section>
 
       {/* CTA Section */}
       <section className="jovens-cta">

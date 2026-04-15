@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { BookOpen, Users, Clock, MapPin, GraduationCap, UserCheck, Download, Camera, MessageSquare, Send } from 'lucide-react';
+import { BookOpen, Users, Clock, MapPin, GraduationCap, UserCheck, Download, Camera, MessageSquare, Send, Gift } from 'lucide-react';
 import { transformImageLink } from '../lib/dbUtils';
 import { useMinistryData } from '../hooks/useMinistryData';
 import { supabase } from '../lib/supabase';
@@ -7,38 +7,10 @@ import '../css/EDB.css';
 
 const EDB = () => {
   const [data] = useMinistryData('ebd');
-  const [testimonial, setTestimonial] = useState({
-    name: '',
-    email: '',
-    message: ''
-  });
+  const [activeQR, setActiveQR] = useState(null);
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const payload = {
-      type: 'testimonial_submission',
-      category: 'ebd',
-      ...testimonial,
-      created_at: new Date().toISOString()
-    };
-
-    try {
-      const { error } = await supabase.from('site_messages').insert(payload);
-      if (error) throw error;
-      alert('Testemunho enviado com sucesso! Será analisado pela nossa equipe.');
-      setTestimonial({ name: '', email: '', message: '' });
-    } catch (err) {
-      console.error('Error sending testimonial:', err);
-      try {
-        const backups = JSON.parse(localStorage.getItem('admac_messages_backup') || '[]');
-        backups.push(payload);
-        localStorage.setItem('admac_messages_backup', JSON.stringify(backups));
-        alert('Testemunho enviado com sucesso! Será analisado pela nossa equipe.');
-        setTestimonial({ name: '', email: '', message: '' });
-      } catch {
-        alert('Erro ao enviar testemunho. Tente novamente mais tarde.');
-      }
-    }
+  const handleDownloadClick = (index) => {
+    setActiveQR(activeQR === index ? null : index);
   };
 
   return (
@@ -129,10 +101,31 @@ const EDB = () => {
                   )}
 
                   {/* Download Button */}
-                  <button className="download-btn">
-                    <Download size={18} />
-                    Baixar Material
-                  </button>
+                  <div className="download-wrapper" style={{ position: 'relative' }}>
+                    <button className="download-btn" onClick={() => handleDownloadClick(index)}>
+                      <Download size={18} />
+                      Baixar Material
+                    </button>
+                    {activeQR === index && (
+                      <div className="qr-dropdown" style={{ 
+                        marginTop: '1rem', 
+                        padding: '1rem', 
+                        background: 'rgba(255,255,255,0.1)', 
+                        borderRadius: '8px',
+                        textAlign: 'center',
+                        animation: 'fadeIn 0.3s ease'
+                      }}>
+                        <p style={{ marginBottom: '10px', fontSize: '0.9rem', color: '#fff' }}>
+                          Após pagar a revista, escaneie para baixar em PDF
+                        </p>
+                        <img 
+                          src={`https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=${classItem.materialLink ? encodeURIComponent(classItem.materialLink) : encodeURIComponent(`https://www.admac.com.br/revista/pdf/${className}.pdf`)}`} 
+                          alt="QR Code para Download" 
+                          style={{ margin: '0 auto', display: 'block', background: 'white', padding: '5px', borderRadius: '4px' }}
+                        />
+                      </div>
+                    )}
+                  </div>
                 </div>
               );
             })
@@ -168,85 +161,57 @@ const EDB = () => {
         </div>
       </div>
 
-      {/* Testimonials Section */}
-      {data.testimonials && data.testimonials.length > 0 && (
-        <div className="testimonials-section">
+      {/* Birthdays Section */}
+      {data.birthdays && (
+        <section className="birthdays-section">
           <div className="container">
-            <h2>Depoimentos</h2>
-            <p className="section-subtitle">O que dizem os alunos da nossa EBD</p>
-            <div className="testimonials-grid">
-              {data.testimonials.map((t, idx) => (
-                <div key={idx} className="testimonial-card">
-                  <div className="testimonial-content">
-                    <p>"{t.text}"</p>
+            <div className="section-header">
+              <Gift size={32} />
+              <h2>{data.birthdays.title || 'Aniversariantes do Mês'}</h2>
+            </div>
+            <p className="section-subtitle">{data.birthdays.text || 'Celebramos a vida dos nossos irmãos na Escola Bíblica!'}</p>
+
+            {data.birthdays.videoUrl && (
+              <div className="birthday-video-wrapper">
+                {data.birthdays.videoUrl.includes('youtube.com') || data.birthdays.videoUrl.includes('youtu.be') ? (
+                  <iframe
+                    width="100%"
+                    height="400"
+                    src={data.birthdays.videoUrl.replace('watch?v=', 'embed/').split('&')[0]}
+                    title="Vídeo de Aniversariantes"
+                    frameBorder="0"
+                    allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                    allowFullScreen
+                  />
+                ) : (
+                  <video controls width="100%" src={transformImageLink(data.birthdays.videoUrl)} />
+                )}
+              </div>
+            )}
+
+            <div className="birthdays-grid">
+              {(data.birthdays.people || []).map((person, index) => (
+                <div key={index} className="birthday-card">
+                  <div className="birthday-photo-wrap">
+                    <img
+                      src={transformImageLink(person.photo || `https://ui-avatars.com/api/?name=${encodeURIComponent(person.name || '')}&background=d4af37&color=000`)}
+                      alt={person.name || 'Aniversariante'}
+                    />
+                    <div className="birthday-badge">🎂</div>
                   </div>
-                  <div className="testimonial-author">
-                    <img src={transformImageLink(t.photo) || 'https://ui-avatars.com/api/?name=' + encodeURIComponent(t.name || 'Aluno')} alt={t.name} />
-                    <div>
-                      <strong>{t.name}</strong>
-                      {t.age && <span>{t.age} anos</span>}
-                    </div>
-                  </div>
+                  <h3>{person.name}</h3>
+                  <span className="birthday-date">{person.date}</span>
                 </div>
               ))}
+              {(!data.birthdays.people || data.birthdays.people.length === 0) && (
+                <div className="empty-birthdays">
+                  <p>Nenhum aniversariante cadastrado ainda.</p>
+                </div>
+              )}
             </div>
           </div>
-        </div>
+        </section>
       )}
-
-      {/* Testimonial Form Section */}
-      <section className="testimonial-form-section">
-        <div className="container">
-          <div className="section-header">
-            <MessageSquare size={32} />
-            <h2>Compartilhe Seu Testemunho</h2>
-          </div>
-          <p className="section-subtitle">Como a EBD tem transformado sua vida?</p>
-
-          <div className="form-wrapper">
-            <form onSubmit={handleSubmit} className="testimonial-form">
-              <div className="form-group">
-                <label htmlFor="name">Nome Completo</label>
-                <input
-                  type="text"
-                  id="name"
-                  value={testimonial.name}
-                  onChange={(e) => setTestimonial({ ...testimonial, name: e.target.value })}
-                  placeholder="Seu nome"
-                  required
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="email">Email (Opcional)</label>
-                <input
-                  type="email"
-                  id="email"
-                  value={testimonial.email}
-                  onChange={(e) => setTestimonial({ ...testimonial, email: e.target.value })}
-                  placeholder="seu@email.com"
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="message">Seu Testemunho</label>
-                <textarea
-                  id="message"
-                  value={testimonial.message}
-                  onChange={(e) => setTestimonial({ ...testimonial, message: e.target.value })}
-                  placeholder="Compartilhe sua experiência conosco..."
-                  rows="6"
-                  required
-                ></textarea>
-              </div>
-
-              <button type="submit" className="submit-btn">
-                <Send size={18} /> Enviar Testemunho
-              </button>
-            </form>
-          </div>
-        </div>
-      </section>
 
       {/* Gallery Section */}
       <div className="gallery-section">

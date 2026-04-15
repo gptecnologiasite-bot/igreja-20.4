@@ -54,13 +54,21 @@ export async function testSupabaseConnection () {
   
   try {
     // 1. Test Database connection and RLS read
-    const { data, error } = await supabase.from('site_settings').select('key').limit(1)
+    const { data, error, status } = await supabase.from('site_settings').select('key').limit(1)
     if (error) {
       result.db = false
       result.details.db = error.message
-      if (error.code === 'PGRST301') result.message += 'Erro de Autenticação (JWT/Key inválidos). '
-      else if (error.code === '42501') result.message += 'Erro de Permissão (RLS bloqueando leitura). '
-      else result.message += `Erro DB: ${error.message}. `
+      if (error.message.includes('Failed to fetch')) {
+        result.message += 'Erro DB: Falha na Rede ou URL incorreta (VITE_SUPABASE_URL). '
+      } else if (status === 401 || error.code === 'PGRST301') {
+        result.message += 'Erro DB: Chave Inválida (VITE_SUPABASE_ANON_KEY). '
+      } else if (status === 404) {
+        result.message += 'Erro DB: Tabela "site_settings" não encontrada. Execute o SQL de infraestrutura. '
+      } else if (error.code === '42501') {
+        result.message += 'Erro DB: Acesso negado por RLS. '
+      } else {
+        result.message += `Erro DB: ${error.message}. `
+      }
     } else {
       result.db = true
     }
@@ -70,13 +78,16 @@ export async function testSupabaseConnection () {
   }
 
   try {
-    // 2. Test Storage connection
+    // 2. Test Storage connection (Bucket: site-images)
     const { data, error } = await supabase.storage.from('site-images').list('', { limit: 1 })
-    // We consider it working if we get data or if there's no error (even if empty)
     if (error) {
       result.storage = false
       result.details.storage = error.message
-      result.message += `Erro Storage: ${error.message}. `
+      if (error.message.includes('not found') || error.status === 404) {
+        result.message += 'Erro Storage: Bucket "site-images" não encontrado. '
+      } else {
+        result.message += `Erro Storage: ${error.message}. `
+      }
     } else {
       result.storage = true
     }

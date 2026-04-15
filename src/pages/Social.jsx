@@ -1,23 +1,17 @@
 import React, { useState } from 'react';
 import { transformImageLink } from '../lib/dbUtils';
-import { Heart, Calendar, Users, Camera, MessageSquare, MapPin, Clock, Send, Package, Utensils, Shirt } from 'lucide-react';
+import { supabase } from '../lib/supabase';
+import { Heart, Calendar, Users, Camera, MessageSquare, MapPin, Clock, Send, Package, Utensils, Shirt, Star } from 'lucide-react';
 import '../css/Social.css';
 import { useMinistryData } from '../hooks/useMinistryData';
 
 const Social = () => {
-  const [testimonial, setTestimonial] = useState({
-    name: '',
-    email: '',
-    message: ''
-  });
+  const [data, , updateMinistryData] = useMinistryData('social');
+  // DATA LOADED FROM HOOK
 
-  const [data] = useMinistryData('social');
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    alert('Testemunho enviado com sucesso! Obrigado por compartilhar.');
-    setTestimonial({ name: '', email: '', message: '' });
-  };
+
+
 
   return (
     <div className="social-page">
@@ -145,60 +139,6 @@ const Social = () => {
                 Galeria de fotos em breve.
               </p>
             )}
-          </div>
-        </div>
-      </section>
-
-      {/* Testimonials Form Section */}
-      <section className="testimonial-form-section">
-        <div className="container">
-          <div className="section-header">
-            <MessageSquare size={32} />
-            <h2>Compartilhe Seu Testemunho</h2>
-          </div>
-          <p className="section-subtitle">Você foi impactado pela nossa ação social? Conte sua história!</p>
-
-          <div className="form-wrapper">
-            <form onSubmit={handleSubmit} className="testimonial-form">
-              <div className="form-group">
-                <label htmlFor="name">Nome Completo</label>
-                <input
-                  type="text"
-                  id="name"
-                  value={testimonial.name}
-                  onChange={(e) => setTestimonial({ ...testimonial, name: e.target.value })}
-                  placeholder="Seu nome"
-                  required
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="email">Email (Opcional)</label>
-                <input
-                  type="email"
-                  id="email"
-                  value={testimonial.email}
-                  onChange={(e) => setTestimonial({ ...testimonial, email: e.target.value })}
-                  placeholder="seu@email.com"
-                />
-              </div>
-
-              <div className="form-group">
-                <label htmlFor="message">Seu Testemunho</label>
-                <textarea
-                  id="message"
-                  value={testimonial.message}
-                  onChange={(e) => setTestimonial({ ...testimonial, message: e.target.value })}
-                  placeholder="Compartilhe como a ação social impactou sua vida..."
-                  rows="6"
-                  required
-                ></textarea>
-              </div>
-
-              <button type="submit" className="submit-btn">
-                <Send size={18} /> Enviar Testemunho
-              </button>
-            </form>
           </div>
         </div>
       </section>

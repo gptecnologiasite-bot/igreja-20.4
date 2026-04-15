@@ -25,34 +25,71 @@
   padding: 0;
 }
 
+html, body {
+  overflow-x: hidden;
+  width: 100%;
+  position: relative;
+}
+
 body {
   font-family: var(--font-main);
   background-color: var(--bg-color);
   color: var(--text-color);
-  line-height: 1.5;
+  line-height: 1.6;
   font-weight: 400;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  font-size: clamp(0.95rem, 1vw + 0.5rem, 1.1rem);
+  /* NOVA MELHORIA: Scroll-behavior suave (deslizamento suave da tela) */
+  scroll-behavior: smooth;
 }
 
+/* NOVA MELHORIA: Cor de seleção de texto padronizada com o layout */
+::selection {
+  background: var(--primary-color);
+  color: #000;
+}
+
+img {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  margin: 0 auto;
+}
+
+/* NOVA MELHORIA: Transições globais em links para animação suave de brilho no hover */
 a {
   text-decoration: none;
   color: inherit;
-  transition: color 0.3s;
+  transition: all 0.3s ease;
+}
+
+a:hover {
+  filter: brightness(1.2);
 }
 
 ul {
   list-style: none;
 }
 
+/* NOVA MELHORIA: Animação flutuante nos botões padronizados no sistema e painel */
 button {
   cursor: pointer;
   border: none;
   font-family: inherit;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+button:hover {
+  filter: brightness(1.1);
+  transform: translateY(-2px);
 }
 
 .container {
-  max-width: 1200px;
+  width: 100%;
+  max-width: 1240px;
   margin: 0 auto;
-  padding: 0 20px;
+  padding: 0 max(1rem, 3vw);
 }
 
 /* Utility classes */
@@ -84,30 +121,50 @@ button {
   border-radius: 8px;
 }
 
+/* NOVA MELHORIA: Cards modernizados no estilo Glassmorphism com sombras realistas */
 .glass {
+  background: rgba(255, 255, 255, 0.04);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
+  border: 1px solid rgba(212, 175, 55, 0.15);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+  transition: all 0.3s ease;
+}
+
+.glass:hover {
   background: rgba(255, 255, 255, 0.08);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(212, 175, 55, 0.2);
+  border: 1px solid rgba(212, 175, 55, 0.4);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
 }
 
 @supports not ((-webkit-backdrop-filter: blur(10px)) or (backdrop-filter: blur(10px))) {
   .glass { background: rgba(255, 255, 255, 0.12); }
 }
 
-/* Scrollbar */
+/* NOVA MELHORIA: Efeitos nas caixas da classe 'card' para dar profundidade sem mexer na estrutura */
+.card {
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.4), 0 0 0 1px rgba(212, 175, 55, 0.15);
+}
+
+/* NOVA MELHORIA: Scrollbar Melhorado e Moderno no padrão da paleta dourada/cinza */
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 10px;
 }
 ::-webkit-scrollbar-track {
   background: var(--bg-color);
 }
 ::-webkit-scrollbar-thumb {
-  background: #444;
-  border-radius: 4px;
+  background: linear-gradient(180deg, var(--primary-color) 0%, rgba(212,175,55,0.4) 100%);
+  border-radius: 10px;
+  border: 2px solid var(--bg-color);
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #555;
+  background: linear-gradient(180deg, var(--primary-hover) 0%, rgba(212,175,55,0.6) 100%);
 }
 @media (max-width: 480px) {
   .container {
@@ -116,4 +173,70 @@ button {
   body {
     font-size: 0.95rem;
   }
+}
+
+/* Botão Flutuante do WhatsApp */
+.whatsapp-float-btn {
+  position: fixed;
+  bottom: 30px;
+  right: 30px;
+  width: 60px;
+  height: 60px;
+  background-color: #25d366;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3);
+  z-index: 1000;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  animation: pulse-whatsapp 2s infinite;
+}
+
+.whatsapp-float-btn:hover {
+  transform: scale(1.1);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  background-color: #20ba5b;
+}
+
+.whatsapp-float-btn img {
+  width: 35px;
+  height: 35px;
+}
+
+@keyframes pulse-whatsapp {
+  0% {
+    box-shadow: 0 0 0 0 rgba(37, 211, 102, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 15px rgba(37, 211, 102, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(37, 211, 102, 0);
+  }
+}
+
+@media (max-width: 768px) {
+  .whatsapp-float-btn {
+    bottom: 20px;
+    right: 20px;
+    width: 50px;
+    height: 50px;
+  }
+  .whatsapp-float-btn img {
+    width: 28px;
+    height: 28px;
+  }
+}
+
+/* Fix para o icone centralizado nas paginas (hero-icon e afins) */
+.hero-icon, .ministry-home-icon, .section-icon {
+  display: block !important;
+  margin: 0 auto 1.5rem auto !important;
+}
+
+/* Fix extra para garantir que ícones avulsos (SVG) dentro de flex ou botão sejam alinhados perfeitamente */
+.admin-cta-button svg, .logo-icon svg, .logo-icon span {
+  display: block;
+  margin: auto;
 }

@@ -1,0 +1,512 @@
+/* ================================================================
+   Casais.css — Estilos para o Ministério de Casais
+   Paleta: Ouro (#c19a6b), Vinho (#722f37), Creme (#fdf5e6)
+   ================================================================ */
+
+.casais-page {
+  background-color: #0c0d12;
+  color: #e0e0e0;
+  min-height: 100vh;
+}
+
+.casais-hero {
+  position: relative;
+  height: 80vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  overflow: hidden;
+  text-align: center;
+}
+
+.hero-slideshow {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+}
+
+.hero-slide {
+  position: absolute;
+  inset: 0;
+  background-size: cover;
+  background-position: center;
+  opacity: 0;
+  transition: opacity 1.5s ease-in-out;
+}
+
+.hero-slide.active {
+  opacity: 1;
+}
+
+.hero-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to bottom, rgba(12, 13, 18, 0.4), rgba(12, 13, 18, 0.9));
+  z-index: 2;
+}
+
+.hero-content {
+  position: relative;
+  z-index: 3;
+  max-width: 800px;
+  padding: 0 2rem;
+}
+
+.hero-icon {
+  color: #c19a6b;
+  margin-bottom: 1.5rem;
+  filter: drop-shadow(0 0 10px rgba(193, 154, 107, 0.5));
+  animation: heartPulse 2s infinite;
+}
+
+@keyframes heartPulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+
+.casais-hero h1 {
+  font-size: clamp(2.5rem, 8vw, 4.5rem);
+  font-weight: 800;
+  margin-bottom: 1rem;
+  letter-spacing: -0.02em;
+  background: linear-gradient(135deg, #fff 0%, #c19a6b 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.hero-subtitle {
+  font-size: 1.25rem;
+  color: #c19a6b;
+  font-weight: 500;
+  margin-bottom: 2rem;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+}
+
+.hero-verse {
+  background: rgba(193, 154, 107, 0.1);
+  padding: 1rem 2rem;
+  border-radius: 50px;
+  border: 1px solid rgba(193, 154, 107, 0.3);
+  display: inline-block;
+  backdrop-filter: blur(10px);
+}
+
+.hero-verse p {
+  font-style: italic;
+  font-size: 1.1rem;
+  color: #fff;
+}
+
+/* Gospel Section */
+.gospel-section {
+  padding: 6rem 0;
+  background: #0f1117;
+}
+
+.gospel-content {
+  max-width: 900px;
+  margin: 0 auto;
+  text-align: center;
+}
+
+.gospel-content h2 {
+  font-size: 2.5rem;
+  color: #c19a6b;
+  margin-bottom: 1.5rem;
+}
+
+.gospel-text {
+  font-size: 1.2rem;
+  line-height: 1.8;
+  color: #a0a0a0;
+  margin-bottom: 3rem;
+}
+
+.gospel-steps {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+}
+
+.gospel-step {
+  padding: 2rem;
+  background: #1a1d27;
+  border-radius: 20px;
+  border: 1px solid rgba(193, 154, 107, 0.1);
+  transition: transform 0.3s ease;
+}
+
+.gospel-step:hover {
+  transform: translateY(-10px);
+  border-color: #c19a6b;
+}
+
+.step-number {
+  width: 40px;
+  height: 40px;
+  background: #c19a6b;
+  color: #000;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  margin: 0 auto 1.5rem;
+}
+
+/* Common Section Styles */
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 2rem;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+  margin-bottom: 0.5rem;
+  color: #c19a6b;
+}
+
+.section-header h2 {
+  font-size: 2.5rem;
+  color: #fff;
+}
+
+.section-subtitle {
+  text-align: center;
+  color: #a0a0a0;
+  margin-bottom: 4rem;
+  font-size: 1.1rem;
+}
+
+/* Mission Section */
+.mission-section {
+  padding: 5rem 0;
+  text-align: center;
+  background: linear-gradient(to bottom, #0c0d12, #1a1d27);
+}
+
+.mission-text {
+  max-width: 800px;
+  margin: 0 auto;
+  font-size: 1.3rem;
+  line-height: 1.8;
+  color: #d0d0d0;
+}
+
+/* Schedule Section */
+.schedule-section {
+  padding: 6rem 0;
+}
+
+.schedule-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+}
+
+.schedule-card {
+  display: flex;
+  gap: 1.5rem;
+  background: #1a1d27;
+  padding: 2rem;
+  border-radius: 24px;
+  border: 1px solid rgba(193, 154, 107, 0.1);
+  transition: all 0.3s ease;
+}
+
+.schedule-card:hover {
+  background: #22263a;
+  border-color: #c19a6b;
+}
+
+.schedule-icon {
+  color: #c19a6b;
+  flex-shrink: 0;
+}
+
+.schedule-content h3 {
+  font-size: 1.4rem;
+  margin-bottom: 0.5rem;
+  color: #fff;
+}
+
+.day-badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  background: rgba(193, 154, 107, 0.2);
+  color: #c19a6b;
+  border-radius: 10px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin-bottom: 1rem;
+}
+
+.schedule-description {
+  color: #a0a0a0;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  margin-bottom: 1.5rem;
+}
+
+.schedule-details {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1.5rem;
+}
+
+.detail-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #c19a6b;
+  font-size: 0.9rem;
+}
+
+/* Team Section */
+.team-section {
+  padding: 6rem 0;
+  background: #0f1117;
+}
+
+.team-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 3rem;
+  justify-items: center;
+}
+
+.team-card {
+  text-align: center;
+}
+
+.team-photo {
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 4px solid #c19a6b;
+  margin-bottom: 1.5rem;
+  transition: transform 0.3s ease;
+}
+
+.team-card:hover .team-photo {
+  transform: scale(1.05);
+}
+
+.team-card h3 {
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+  color: #fff;
+}
+
+.team-card p {
+  color: #c19a6b;
+  font-weight: 500;
+}
+
+/* Gallery Section */
+.gallery-section {
+  padding: 6rem 0;
+}
+
+.gallery-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.gallery-item {
+  position: relative;
+  height: 250px;
+  border-radius: 20px;
+  overflow: hidden;
+  cursor: pointer;
+}
+
+.gallery-item img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.5s ease;
+}
+
+.gallery-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(114, 47, 55, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.gallery-item:hover img {
+  transform: scale(1.1);
+}
+
+.gallery-item:hover .gallery-overlay {
+  opacity: 1;
+}
+
+.gallery-overlay span {
+  color: #fff;
+  font-weight: 600;
+  font-size: 1.1rem;
+}
+
+/* Birthdays Section */
+.birthdays-section {
+  padding: 6rem 0;
+  background: #1a1d27;
+}
+
+.birthdays-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 2rem;
+}
+
+.birthday-card {
+  background: #0c0d12;
+  padding: 2rem;
+  border-radius: 24px;
+  text-align: center;
+  border: 1px solid rgba(193, 154, 107, 0.1);
+  transition: all 0.3s ease;
+}
+
+.birthday-card:hover {
+  transform: translateY(-5px);
+  border-color: #c19a6b;
+}
+
+.birthday-photo-wrap {
+  position: relative;
+  width: 100px;
+  height: 100px;
+  margin: 0 auto 1.5rem;
+}
+
+.birthday-photo-wrap img {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid #c19a6b;
+}
+
+.birthday-badge {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  background: #c19a6b;
+  width: 30px;
+  height: 30px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  border: 2px solid #0c0d12;
+}
+
+.birthday-card h3 {
+  font-size: 1.1rem;
+  margin-bottom: 0.5rem;
+  color: #fff;
+}
+
+.birthday-date {
+  color: #c19a6b;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+/* CTA Section */
+.casais-cta {
+  padding: 8rem 0;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.casais-cta::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: url('https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=1600&fit=crop') center/cover;
+  opacity: 0.1;
+  z-index: 1;
+}
+
+.casais-cta .container {
+  position: relative;
+  z-index: 2;
+}
+
+.cta-icon {
+  color: #c19a6b;
+  margin-bottom: 2rem;
+}
+
+.casais-cta h2 {
+  font-size: 3.5rem;
+  margin-bottom: 1.5rem;
+  color: #fff;
+}
+
+.casais-cta p {
+  font-size: 1.25rem;
+  color: #a0a0a0;
+  margin-bottom: 3rem;
+  max-width: 600px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.cta-button {
+  background: linear-gradient(135deg, #c19a6b 0%, #722f37 100%);
+  color: #fff;
+  border: none;
+  padding: 1.25rem 3rem;
+  border-radius: 50px;
+  font-size: 1.1rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin: 0 auto;
+  transition: all 0.3s ease;
+  box-shadow: 0 10px 30px rgba(114, 47, 55, 0.4);
+}
+
+.cta-button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 15px 40px rgba(114, 47, 55, 0.6);
+}
+
+@media (max-width: 768px) {
+  .gospel-steps {
+    grid-template-columns: 1fr;
+  }
+  .schedule-card {
+    flex-direction: column;
+    text-align: center;
+    align-items: center;
+  }
+  .schedule-details {
+    justify-content: center;
+  }
+  .casais-cta h2 {
+    font-size: 2.5rem;
+  }
+}

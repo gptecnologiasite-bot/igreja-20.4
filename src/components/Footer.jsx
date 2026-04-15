@@ -3,77 +3,14 @@ import { Link } from 'react-router-dom';
 import { Instagram, Youtube, Facebook, Phone, Music, Mail, MapPin, Clock, Heart, ChevronRight } from 'lucide-react';
 import '../css/Footer.css';
 import { transformImageLink } from '../utils/imageUtils';
-import { supabase } from '../lib/supabase';
-import { INITIAL_FOOTER_DATA, INITIAL_HEADER_DATA } from '../lib/constants';
-import { deepMerge } from '../lib/dbUtils';
 import { usePageUpdate } from '../hooks/usePageUpdate';
+import { useSiteData } from '../context/SiteContext';
 
 const Footer = () => {
-  const [footerData, setFooterData] = React.useState(INITIAL_FOOTER_DATA);
-  const [headerData, setHeaderData] = React.useState(INITIAL_HEADER_DATA);
-
-  const loadData = async () => {
-    try {
-      const [footerRes, headerRes] = await Promise.all([
-        supabase.from('site_settings').select('data').eq('key', 'footer').single(),
-        supabase.from('site_settings').select('data').eq('key', 'header').single()
-      ]);
-
-      const footerFromDb = footerRes.data?.data;
-      if (footerFromDb) {
-        const parsedFooter = typeof footerFromDb === 'string' ? JSON.parse(footerFromDb) : footerFromDb;
-        setFooterData(deepMerge(INITIAL_FOOTER_DATA, parsedFooter));
-      } else {
-        try {
-          const cached = localStorage.getItem('admac_site_settings:footer');
-          if (cached) {
-            const parsed = JSON.parse(cached);
-            setFooterData(deepMerge(INITIAL_FOOTER_DATA, parsed));
-          } else {
-            setFooterData(INITIAL_FOOTER_DATA);
-          }
-        } catch {
-          setFooterData(INITIAL_FOOTER_DATA);
-        }
-      }
-
-      const headerFromDb = headerRes.data?.data;
-      if (headerFromDb) {
-        const parsedHeader = typeof headerFromDb === 'string' ? JSON.parse(headerFromDb) : headerFromDb;
-        setHeaderData(deepMerge(INITIAL_HEADER_DATA, parsedHeader));
-      } else {
-        try {
-          const cached = localStorage.getItem('admac_site_settings:header');
-          if (cached) {
-            const parsed = JSON.parse(cached);
-            setHeaderData(deepMerge(INITIAL_HEADER_DATA, parsed));
-          } else {
-            setHeaderData(INITIAL_HEADER_DATA);
-          }
-        } catch {
-          setHeaderData(INITIAL_HEADER_DATA);
-        }
-      }
-    } catch (err) {
-      console.error('Error loading footer/header data:', err);
-      try {
-        const fCached = localStorage.getItem('admac_site_settings:footer');
-        const hCached = localStorage.getItem('admac_site_settings:header');
-        setFooterData(fCached ? deepMerge(INITIAL_FOOTER_DATA, JSON.parse(fCached)) : INITIAL_FOOTER_DATA);
-        setHeaderData(hCached ? deepMerge(INITIAL_HEADER_DATA, JSON.parse(hCached)) : INITIAL_HEADER_DATA);
-      } catch {
-        setFooterData(INITIAL_FOOTER_DATA);
-        setHeaderData(INITIAL_HEADER_DATA);
-      }
-    }
-  };
-
-  React.useEffect(() => {
-    loadData();
-  }, []);
+  const { footerData, headerData, refreshData } = useSiteData();
 
   // Sincronização automática via usePageUpdate
-  usePageUpdate(['footer', 'header'], loadData);
+  usePageUpdate(['footer', 'header'], refreshData);
 
   // Configuração dos links rápidos no centro do rodapé
   const quickLinks = [
@@ -90,7 +27,7 @@ const Footer = () => {
     { name: 'Louvor', path: '/louvor' },
     { name: 'Kids', path: '/kids' },
     { name: 'Jovens', path: '/jovens' },
-    { name: 'Missões', path: '/missoes' } // Adicionado link de Missões
+    { name: 'Missões', path: '/missoes' }
   ];
 
   return (

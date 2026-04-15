@@ -1,5 +1,6 @@
 import { useMinistryData } from '../hooks/useMinistryData';
 import { transformImageLink } from '../utils/imageUtils';
+import '../css/Ministry.css';
 
 const Ministry = ({ id, ...fallbackProps }) => {
   const [data] = useMinistryData(id || 'default');
@@ -85,12 +86,12 @@ const Ministry = ({ id, ...fallbackProps }) => {
 
         {/* --- Seção Aniversariantes --- */}
         {data?.birthdays && (
-          <div className="ministry-birthdays" style={{ marginTop: '4rem', padding: '3rem 2rem', background: 'var(--surface-color)', borderRadius: '24px', textAlign: 'center' }}>
-            <h2 className="section-title" style={{ marginBottom: '1rem' }}>{data.birthdays.title || "Aniversariantes do Mês"}</h2>
-            <p style={{ color: 'var(--text-muted)', marginBottom: '2.5rem', fontSize: '1.1rem' }}>{data.birthdays.text}</p>
+          <div className="ministry-birthdays-section">
+            <h2 className="section-title">{data.birthdays.title || "Aniversariantes do Mês"}</h2>
+            <p className="birthdays-subtitle">{data.birthdays.text}</p>
 
             {data.birthdays.videoUrl && (
-              <div className="video-wrapper" style={{ marginBottom: '3rem' }}>
+              <div className="video-wrapper">
                 {data.birthdays.videoUrl.includes('youtube.com') || data.birthdays.videoUrl.includes('youtu.be') ? (
                   <iframe
                     width="100%"
@@ -105,37 +106,27 @@ const Ministry = ({ id, ...fallbackProps }) => {
                   <img
                     src={transformImageLink(data.birthdays.videoUrl)}
                     alt="Capa Aniversariantes"
-                    style={{ width: '100%', height: '100%', objectFit: 'cover', position: 'absolute', top: 0, left: 0 }}
+                    className="video-cover-img"
                   />
                 )}
               </div>
             )}
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(180px, 1fr))', gap: '2rem', justifyContent: 'center' }}>
+            <div className="birthdays-grid">
               {data.birthdays.people && data.birthdays.people.map((person, index) => (
-                <div key={index} style={{
-                  background: 'var(--bg-color)',
-                  padding: '1.5rem',
-                  borderRadius: '16px',
-                  boxShadow: '0 4px 15px rgba(0,0,0,0.05)',
-                  transition: 'transform 0.3s ease',
-                  cursor: 'default'
-                }}
-                  onMouseEnter={(e) => e.currentTarget.style.transform = 'translateY(-5px)'}
-                  onMouseLeave={(e) => e.currentTarget.style.transform = 'translateY(0)'}
-                >
+                <div key={index} className="birthday-card team-card-style">
                   <img
                     src={transformImageLink(person.photo) || `https://ui-avatars.com/api/?name=${encodeURIComponent(person.name)}&background=random`}
                     alt={person.name}
-                    style={{ width: '100px', height: '100px', borderRadius: '50%', objectFit: 'cover', marginBottom: '1rem', border: '3px solid var(--accent-light)' }}
+                    className="birthday-photo"
                   />
-                  <h4 style={{ margin: '0 0 0.2rem', fontSize: '1.1rem', color: 'var(--text-color)' }}>{person.name}</h4>
-                  <span style={{ fontSize: '0.9rem', color: 'var(--accent-color)', fontWeight: '600', padding: '0.2rem 0.8rem', background: 'var(--accent-glow)', borderRadius: '20px' }}>{person.date}</span>
+                  <h4 className="birthday-name">{person.name}</h4>
+                  <span className="birthday-date">{person.date}</span>
                 </div>
               ))}
             </div>
             {(!data.birthdays.people || data.birthdays.people.length === 0) && (
-              <p style={{ color: 'var(--text-muted)', fontStyle: 'italic', fontSize: '0.9rem' }}>Nenhum aniversariante cadastrado para este mês.</p>
+              <p className="birthdays-empty">Nenhum aniversariante ou líder cadastrado no momento.</p>
             )}
           </div>
         )}

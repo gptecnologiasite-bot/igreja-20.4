@@ -1,20 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { transformImageLink } from '../lib/dbUtils';
-import { Shield, Calendar, Clock, Users, Camera, MessageSquare, Send, Heart, MapPin, Star, Play } from 'lucide-react';
+import { supabase } from '../lib/supabase';
+import { Shield, Calendar, Clock, Users, Camera, MessageSquare, Send, Heart, MapPin, Star, Play, Gift } from 'lucide-react';
 import { useMinistryData } from '../hooks/useMinistryData';
 import '../css/Homens.css';
 
 const Homens = () => {
-  const [testimonial, setTestimonial] = useState({
-    name: '',
-    age: '',
-    email: '',
-    phone: '',
-    city: '',
-    message: ''
-  });
-
-  const [data] = useMinistryData('homens');
+  const [data, , updateMinistryData] = useMinistryData('homens');
   const [currentSlide, setCurrentSlide] = useState(0);
 
   useEffect(() => {
@@ -25,6 +17,8 @@ const Homens = () => {
       return () => clearInterval(timer);
     }
   }, [data.gallery]);
+
+
 
   return (
     <div className="homens-page">
@@ -62,28 +56,6 @@ const Homens = () => {
         </div>
       </section>
 
-      {data.hero?.videoUrl && (
-        <section className="video-section">
-          <div className="container">
-            <div className="section-header">
-              <Play size={32} />
-              <h2>Conheça o Ministério</h2>
-            </div>
-            <p className="section-subtitle">Assista ao vídeo de apresentação</p>
-            <div className="video-wrapper">
-              <iframe
-                width="100%"
-                height="500"
-                src={data.hero.videoUrl}
-                title="Ministério de Homens"
-                frameBorder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              ></iframe>
-            </div>
-          </div>
-        </section>
-      )}
 
       <section className="schedule-section">
         <div className="container">
@@ -161,7 +133,7 @@ const Homens = () => {
               { url: 'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=400&h=300&fit=crop', caption: 'Retiro' }
             ]).map((item, index) => (
               <div key={index} className="gallery-item">
-                <img src={item.url} alt={item.caption || 'Foto'} />
+                <img src={transformImageLink(item.url)} alt={item.caption || 'Foto'} />
                 <div className="gallery-overlay">{item.caption || 'Momentos'}</div>
               </div>
             ))}
@@ -169,53 +141,63 @@ const Homens = () => {
         </div>
       </section>
 
-      <section className="testimonial-form-section">
-        <div className="container">
-          <div className="section-header">
-            <MessageSquare size={32} />
-            <h2>Compartilhe um Testemunho</h2>
+
+      {/* Birthdays Section */}
+      {data.birthdays && (
+        <section className="birthdays-section">
+          <div className="container">
+            <div className="section-header">
+              <Gift size={32} />
+              <h2>{data.birthdays.title || 'Aniversariantes do Mês'}</h2>
+            </div>
+            <p className="section-subtitle">{data.birthdays.text || 'Celebramos a vida dos nossos irmãos!'}</p>
+
+
+            <div className="birthdays-grid">
+              {(data.birthdays.people || []).map((person, index) => (
+                <div key={index} className="birthday-card">
+                  <div className="birthday-photo-wrap">
+                    <img 
+                      src={transformImageLink(person.photo || `https://ui-avatars.com/api/?name=${encodeURIComponent(person.name)}&background=3498db&color=fff`)} 
+                      alt={person.name} 
+                    />
+                    <div className="birthday-badge">🎂</div>
+                  </div>
+                  <h3>{person.name}</h3>
+                  <span className="birthday-date">{person.date}</span>
+                </div>
+              ))}
+              {(!data.birthdays.people || data.birthdays.people.length === 0) && (
+                <div className="empty-birthdays">
+                  <p>Nenhum aniversariante este mês.</p>
+                </div>
+              )}
+            </div>
           </div>
-          <p className="section-subtitle">Conte como Deus tem te fortalecido neste ministério</p>
-          <div className="form-wrapper">
-            <form className="testimonial-form" onSubmit={(e) => { e.preventDefault(); alert('Obrigado por compartilhar!'); }}>
-              <div className="form-group">
-                <label>Nome</label>
-                <input type="text" value={testimonial.name} onChange={(e) => setTestimonial({ ...testimonial, name: e.target.value })} />
-              </div>
-              <div className="form-group">
-                <label>Idade</label>
-                <input type="number" value={testimonial.age} onChange={(e) => setTestimonial({ ...testimonial, age: e.target.value })} />
-              </div>
-              <div className="form-group">
-                <label>Email</label>
-                <input type="email" value={testimonial.email} onChange={(e) => setTestimonial({ ...testimonial, email: e.target.value })} />
-              </div>
-              <div className="form-group">
-                <label>Telefone</label>
-                <input type="tel" value={testimonial.phone} onChange={(e) => setTestimonial({ ...testimonial, phone: e.target.value })} />
-              </div>
-              <div className="form-group">
-                <label>Cidade</label>
-                <input type="text" value={testimonial.city} onChange={(e) => setTestimonial({ ...testimonial, city: e.target.value })} />
-              </div>
-              <div className="form-group">
-                <label>Mensagem</label>
-                <textarea value={testimonial.message} onChange={(e) => setTestimonial({ ...testimonial, message: e.target.value })} rows={4} />
-              </div>
-              <button className="submit-btn" type="submit">
-                <Send size={16} /> Enviar
-              </button>
-            </form>
-          </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       <section className="homens-cta">
         <div className="container">
           <Star size={40} className="cta-icon" />
           <h2>Junte-se ao Ministério de Homens</h2>
           <p>Faça parte de uma comunidade de homens comprometidos com Cristo, família e serviço.</p>
-          <a href="tel:+5561993241084" className="cta-button"><Heart size={18} /> Entrar em Contato</a>
+          <div className="cta-buttons" style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap', marginTop: '1.5rem' }}>
+            <a href="tel:+5561993241084" className="cta-button">
+              <Heart size={18} /> Entrar em Contato
+            </a>
+            {data.hero?.testimonyUrl && (
+              <a 
+                href={data.hero.testimonyUrl} 
+                target="_blank" 
+                rel="noopener noreferrer" 
+                className="cta-button secondary"
+                style={{ background: 'transparent', border: '2px solid #d4af37', color: '#d4af37' }}
+              >
+                <MessageSquare size={18} /> Enviar Testemunho
+              </a>
+            )}
+          </div>
         </div>
       </section>
     </div>
