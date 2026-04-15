@@ -125,6 +125,10 @@
   text-align: center;
   border-top: 3px solid var(--primary-color);
   transition: transform 0.3s, box-shadow 0.3s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
 }
 
 .sobre-page .value-card:hover {
@@ -134,7 +138,8 @@
 
 .sobre-page .value-card svg {
   color: var(--primary-color);
-  margin-bottom: 1rem;
+  margin: 0 auto 1rem auto;
+  display: block;
 }
 
 .sobre-page .value-card h3 {
@@ -183,6 +188,10 @@
   text-align: center;
   transition: transform 0.3s;
   border-top: 3px solid var(--primary-color);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
 }
 
 .sobre-page .team-card:hover {
@@ -194,8 +203,10 @@
   height: 120px;
   border-radius: 50%;
   border: 3px solid var(--primary-color);
-  margin-bottom: 1rem;
+  margin: 0 auto 1rem auto;
   object-fit: cover;
+  object-position: top center;
+  display: block;
 }
 
 .sobre-page .team-card h3 {
@@ -297,6 +308,10 @@
   text-align: center;
   border: 1px solid rgba(212, 175, 55, 0.1);
   transition: border-color 0.3s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
 }
 
 .sobre-page .info-card:hover {
@@ -305,7 +320,8 @@
 
 .sobre-page .info-card svg {
   color: var(--primary-color);
-  margin-bottom: 1rem;
+  margin: 0 auto 1rem auto;
+  display: block;
 }
 
 .sobre-page .info-card h3 {

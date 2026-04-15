@@ -393,20 +393,22 @@ const Missoes = () => {
             }}>
               {team.map((member, index) => (
                 <div key={index} className="team-card" style={{ textAlign: 'center' }}>
-                  <img 
-                    src={transformImageLink(member.photo)} 
-                    alt={member.name} 
-                    style={{ 
-                      width: '180px', 
-                      height: '180px', 
-                      borderRadius: '24px', 
-                      objectFit: 'cover', 
-                      marginBottom: '1.5rem',
-                      boxShadow: '0 10px 25px rgba(0,0,0,0.3)'
-                    }} 
-                  />
-                  <h3 style={{ fontSize: '1.3rem', marginBottom: '0.3rem' }}>{member.name}</h3>
-                  <p style={{ color: 'var(--primary-color)', fontWeight: '500' }}>{member.role}</p>
+                  <div style={{ display: 'flex', justifyContent: 'center', width: '100%', marginBottom: '1.5rem' }}>
+                    <img 
+                      src={transformImageLink(member.photo)} 
+                      alt={member.name} 
+                      style={{ 
+                        width: '180px', 
+                        height: '180px', 
+                        borderRadius: '24px', 
+                        objectFit: 'cover',
+                        objectPosition: 'center',
+                        boxShadow: '0 10px 25px rgba(0,0,0,0.3)'
+                      }} 
+                    />
+                  </div>
+                  <h3 style={{ fontSize: '1.3rem', marginBottom: '0.3rem', width: '100%', textAlign: 'center' }}>{member.name}</h3>
+                  <p style={{ color: 'var(--primary-color)', fontWeight: '500', width: '100%', textAlign: 'center' }}>{member.role}</p>
                 </div>
               ))}
             </div>

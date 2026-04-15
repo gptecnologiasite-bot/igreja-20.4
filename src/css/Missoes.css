@@ -36,6 +36,9 @@
   max-width: 800px;
   padding: 0 20px;
   animation: fadeInDown 1s ease-out;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .missoes-page .missoes-hero h1 {
@@ -142,6 +145,9 @@
   text-align: center;
   transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
   backdrop-filter: blur(5px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .missoes-page .stat-card:hover {
@@ -166,6 +172,9 @@
   text-align: center;
   transition: all 0.3s ease;
   overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
 
 .missoes-page .missionary-card:hover {
