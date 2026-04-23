@@ -2,7 +2,7 @@ import { useState, useEffect, useMemo } from 'react';
 import { supabase } from '../lib/supabase';
 import { INITIAL_MINISTRIES_DATA } from '../lib/constants';
 import { deepMerge, parseSafeJson } from '../lib/dbUtils';
-import { usePageUpdate } from '../hooks/usePageUpdate';
+import { usePageUpdate, broadcastUpdate } from '../hooks/usePageUpdate';
 
 export const useMinistryData = (ministryId) => {
     const defaultData = useMemo(() => 

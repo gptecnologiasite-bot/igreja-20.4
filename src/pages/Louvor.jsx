@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { transformImageLink } from '../lib/dbUtils';
-import { supabase } from '../lib/supabase';
-import { Music, Calendar, Clock, Users, MessageSquare, Send, Mic, Guitar, Headphones, Heart, Camera, Gift, Star } from 'lucide-react';
+// import { supabase } from '../lib/supabase';
+import { Music, Calendar, Clock, Users, Mic, Guitar, Headphones, Heart, Camera, Gift } from 'lucide-react';
 import { useMinistryData } from '../hooks/useMinistryData';
 import '../css/Louvor.css';
 
 const Louvor = () => {
-  const [data, , updateMinistryData] = useMinistryData('louvor');
+  const [data] = useMinistryData('louvor');
 
   const {
     hero = {

@@ -1,12 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { transformImageLink } from '../lib/dbUtils';
-import { supabase } from '../lib/supabase';
-import { Heart, Calendar, Clock, Users, Camera, MessageSquare, Send, Star, BookOpen, Sparkles, Crown, Gift } from 'lucide-react';
+// import { supabase } from '../lib/supabase';
+import { Heart, Calendar, Clock, Users, Camera, BookOpen, Sparkles, Crown, Gift } from 'lucide-react';
 import { useMinistryData } from '../hooks/useMinistryData';
 import '../css/Mulheres.css';
 
 const Mulheres = () => {
-  const [data, , updateMinistryData] = useMinistryData('mulheres');
+  const [data] = useMinistryData('mulheres');
   const [currentSlide, setCurrentSlide] = useState(0);
 
   useEffect(() => {

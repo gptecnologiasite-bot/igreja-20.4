@@ -54,7 +54,7 @@ export async function testSupabaseConnection () {
   
   try {
     // 1. Test Database connection and RLS read
-    const { data, error, status } = await supabase.from('site_settings').select('key').limit(1)
+    const { error, status } = await supabase.from('site_settings').select('key').limit(1)
     if (error) {
       result.db = false
       result.details.db = error.message
@@ -79,7 +79,7 @@ export async function testSupabaseConnection () {
 
   try {
     // 2. Test Storage connection (Bucket: site-images)
-    const { data, error } = await supabase.storage.from('site-images').list('', { limit: 1 })
+    const { error } = await supabase.storage.from('site-images').list('', { limit: 1 })
     if (error) {
       result.storage = false
       result.details.storage = error.message

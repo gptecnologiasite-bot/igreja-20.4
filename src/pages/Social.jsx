@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { transformImageLink } from '../lib/dbUtils';
-import { supabase } from '../lib/supabase';
-import { Heart, Calendar, Users, Camera, MessageSquare, MapPin, Clock, Send, Package, Utensils, Shirt, Star } from 'lucide-react';
+// import { supabase } from '../lib/supabase';
+import { Heart, Calendar, Users, Camera, MapPin, Clock, Package, Utensils, Shirt } from 'lucide-react';
 import '../css/Social.css';
 import { useMinistryData } from '../hooks/useMinistryData';
 
 const Social = () => {
-  const [data, , updateMinistryData] = useMinistryData('social');
+  const [data] = useMinistryData('social');
   // DATA LOADED FROM HOOK
 
 

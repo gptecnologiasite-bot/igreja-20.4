@@ -1307,13 +1307,13 @@ export default function PainelAdm() {
         try {
           const local = localStorage.getItem(`admac_site_settings:${key}`);
           if (local) rawData = JSON.parse(local);
-        } catch { }
+        } catch { /* ignore fallback error */ }
       }
       if (id === 'home' && (!vids || videoRes.error)) {
         try {
           const localVideos = localStorage.getItem('admac_site_settings:videos');
           if (localVideos) vids = JSON.parse(localVideos);
-        } catch { }
+        } catch { /* ignore fallback error */ }
       }
 
       const defaultData = id === 'home' ? INITIAL_HOME_DATA : id === 'pastors_contacts' ? INITIAL_PASTORS_CONTACTS : INITIAL_MINISTRIES_DATA[id];
@@ -1781,7 +1781,7 @@ export default function PainelAdm() {
           try {
             const local = localStorage.getItem(`admac_site_settings:${key}`);
             if (local) settings = JSON.parse(local);
-          } catch { }
+          } catch { /* ignore */ }
         }
 
         // Verifica se 'active' existe no JSON do banco ou local.
@@ -2034,7 +2034,7 @@ export default function PainelAdm() {
           try {
             localStorage.setItem(`admac_site_settings:${key}`, JSON.stringify(content));
             localStorage.setItem('admac_site_settings:footer', JSON.stringify(updatedFooter));
-          } catch { }
+          } catch { /* ignore */ }
           if (hasSupabase && (ePage || eFooter)) console.error('[Supabase Error] Contact/Footer:', ePage || eFooter);
           setFooterData(updatedFooter);
           broadcastUpdate(key);
@@ -2055,7 +2055,7 @@ export default function PainelAdm() {
         if (!hasSupabase || error) {
           try {
             localStorage.setItem(`admac_site_settings:${key}`, JSON.stringify(pageData));
-          } catch { }
+          } catch { /* ignore */ }
           if (hasSupabase && error) console.error(`[Supabase Error] ${key} Save:`, error);
           alert('Página salva LOCALMENTE (Offline).');
         } else {

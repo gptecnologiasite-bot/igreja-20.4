@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { BookOpen, Users, Clock, MapPin, GraduationCap, UserCheck, Download, Camera, MessageSquare, Send, Gift } from 'lucide-react';
+import { BookOpen, Users, Clock, MapPin, GraduationCap, UserCheck, Download, Camera, Gift } from 'lucide-react';
 import { transformImageLink } from '../lib/dbUtils';
 import { useMinistryData } from '../hooks/useMinistryData';
-import { supabase } from '../lib/supabase';
+// import { supabase } from '../lib/supabase';
 import '../css/EDB.css';
 
 const EDB = () => {
