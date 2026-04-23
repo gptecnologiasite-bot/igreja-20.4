@@ -356,6 +356,7 @@ export const INITIAL_MINISTRIES_DATA = {
     team: [
       { name: 'Equipe de Intercessão', role: 'Líderes', photo: 'https://ui-avatars.com/api/?name=Intercessao&background=random' }
     ],
+    whatsappUrl: '',
   },
   missoes: {
     hero: {

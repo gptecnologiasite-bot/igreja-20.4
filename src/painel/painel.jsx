@@ -2909,6 +2909,26 @@ export default function PainelAdm() {
                             </button>
                           </div>
                         </div>
+                        {ministryId === 'intercessao' && (
+                          <div className="pm-field" style={{ marginBottom: '1.5rem', padding: '1rem', background: 'rgba(37, 211, 102, 0.08)', borderRadius: '12px', border: '1px solid rgba(37, 211, 102, 0.3)' }}>
+                            <label style={{ color: '#25D366', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', fontWeight: 'bold' }}>
+                              <span>📱</span> LINK DO CONVITE DO WHATSAPP (GRUPO)
+                            </label>
+                            <div className="pm-field-wrap" style={{ marginTop: '0.5rem' }}>
+                              <span className="pm-icon">🔗</span>
+                              <input
+                                className="pm-input"
+                                style={{ borderColor: 'rgba(37, 211, 102, 0.4)' }}
+                                placeholder="https://chat.whatsapp.com/..."
+                                value={ministryData?.whatsappUrl || ''}
+                                onChange={e => setMinistryData(d => ({ ...d, whatsappUrl: e.target.value }))}
+                              />
+                            </div>
+                            <p style={{ color: palette.textMuted, fontSize: '0.78rem', marginTop: '8px', lineHeight: '1.4' }}>
+                              <strong>IMPORTANTE:</strong> Ao colar o link aqui, a seção de fotos dos líderes na página será <strong>substituída</strong> pelo botão de convite ao grupo.
+                            </p>
+                          </div>
+                        )}
                         <div className="pm-field">
                           <label>Título da Seção</label>
                           <div className="pm-field-wrap">
@@ -2920,54 +2940,6 @@ export default function PainelAdm() {
                             />
                           </div>
                         </div>
-                        <div className="pm-field">
-                          <label>Texto Descritivo</label>
-                          <textarea
-                            value={ministryData?.mission?.text || ''}
-                            onChange={e => setMinistryData(d => ({ ...d, mission: { ...d.mission, text: e.target.value } }))}
-                            style={{ width: '100%', height: 140, background: palette.bg, color: palette.text, border: `1px solid ${palette.border}`, borderRadius: 10, padding: 12, fontSize: '.9rem', outline: 'none', resize: 'vertical', fontFamily: 'Inter, sans-serif', lineHeight: 1.6 }}
-                          />
-                        </div>
-                        {ministryId === 'ebd' && (
-                          <>
-                            <div className="pm-field">
-                              <label>Horário da EBD</label>
-                              <div className="pm-field-wrap">
-                                <span className="pm-icon">⏰</span>
-                                <input
-                                  className="pm-input"
-                                  value={ministryData?.info?.time || ''}
-                                  onChange={e => setMinistryData(d => ({ ...d, info: { ...(d.info || {}), time: e.target.value } }))}
-                                  placeholder="Ex: Domingos, 9h"
-                                />
-                              </div>
-                            </div>
-                            <div className="pm-field">
-                              <label>Local da EBD</label>
-                              <div className="pm-field-wrap">
-                                <span className="pm-icon">📍</span>
-                                <input
-                                  className="pm-input"
-                                  value={ministryData?.info?.location || ''}
-                                  onChange={e => setMinistryData(d => ({ ...d, info: { ...(d.info || {}), location: e.target.value } }))}
-                                  placeholder="Ex: ADMAC - Sala 1"
-                                />
-                              </div>
-                            </div>
-                            <div className="pm-field">
-                              <label>Público Alvo</label>
-                              <div className="pm-field-wrap">
-                                <span className="pm-icon">👥</span>
-                                <input
-                                  className="pm-input"
-                                  value={ministryData?.info?.audience || ''}
-                                  onChange={e => setMinistryData(d => ({ ...d, info: { ...(d.info || {}), audience: e.target.value } }))}
-                                  placeholder="Ex: Todas as idades"
-                                />
-                              </div>
-                            </div>
-                          </>
-                        )}
                       </>
                     )}
                   </div>
