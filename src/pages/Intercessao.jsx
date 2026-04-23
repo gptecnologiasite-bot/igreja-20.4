@@ -4,6 +4,15 @@ import { Heart, Calendar, MessageSquare, Clock, Play } from 'lucide-react';
 import { useMinistryData } from '../hooks/useMinistryData';
 import '../css/Lares.css';
 
+/**
+ * ATUALIZAÇÃO - MINISTÉRIO DE INTERCESSÃO
+ * - Removido formulário de pedidos de oração (conforme solicitado pelo cliente).
+ * - Adicionado suporte a link de convite do WhatsApp via Painel Administrativo.
+ * - Centralizado os cards de agendamento para melhor visualização.
+ * - Limpeza de código e correção de erros de linting para deploy.
+ */
+
+
 const Intercessao = () => {
   const [data] = useMinistryData('intercessao');
 

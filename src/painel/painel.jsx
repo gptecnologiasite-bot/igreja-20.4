@@ -1,4 +1,12 @@
 import React, { useState, useEffect } from 'react';
+
+/**
+ * ATUALIZAÇÃO - PAINEL ADMINISTRATIVO (ADMAC)
+ * - Adicionado campo para configuração do Link do WhatsApp no Ministério de Intercessão.
+ * - Corrigidos diversos erros de linting (blocos catch vazios, variáveis não utilizadas, etc) para permitir o deploy via GitHub Actions.
+ * - Melhorada a lógica de sincronização offline e fallback de dados.
+ */
+
 import { supabase, testSupabaseConnection, hasSupabaseConfigured } from '../lib/supabase';
 import { INITIAL_HOME_DATA, INITIAL_MINISTRIES_DATA, INITIAL_FOOTER_DATA, INITIAL_HEADER_DATA, INITIAL_PASTORS_CONTACTS } from '../lib/constants';
 import { deepMerge, transformImageLink, parseSafeJson } from '../lib/dbUtils';
