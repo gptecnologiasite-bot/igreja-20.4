@@ -107,7 +107,6 @@ const Header = ({ theme, toggleTheme }) => {
   }, [toggleTheme, currentTheme]);
 
   // Visitor & Notification State
-  const [unreadCount, setUnreadCount] = useState(0);
   const [visitorLiveCount, setVisitorLiveCount] = useState(0);
   const [lastVisit, setLastVisit] = useState(null);
   const [showVisitorModal, setShowVisitorModal] = useState(false);
@@ -174,14 +173,16 @@ const Header = ({ theme, toggleTheme }) => {
         .from('site_messages')
         .select('*', { count: 'exact', head: true })
         .eq('type', 'contact');
-      if (!error) setUnreadCount(count || 0);
+      if (!error) setHasPagesNotif((count || 0) > 0);
     } catch (err) {
       console.warn('[Header] Erro ao buscar contagem de mensagens:', err.message);
     }
   };
 
   useEffect(() => {
-    fetchUnreadCount();
+    const firstTick = setTimeout(() => {
+      fetchUnreadCount();
+    }, 0);
     const msgInterval = setInterval(fetchUnreadCount, 30000);
     
     // Simulação de atividade para o Sino
@@ -205,6 +206,7 @@ const Header = ({ theme, toggleTheme }) => {
     const visitorInterval = setInterval(notifyVisitor, 90000);
 
     return () => {
+      clearTimeout(firstTick);
       clearInterval(msgInterval);
       clearInterval(visitorInterval);
       clearTimeout(firstVisitorTimer);
@@ -212,16 +214,21 @@ const Header = ({ theme, toggleTheme }) => {
   }, []);
 
   useEffect(() => {
-    loadVisitorLiveCount();
-    loadLastVisit();
-    loadVisitorTotal();
+    const firstTick = setTimeout(() => {
+      loadVisitorLiveCount();
+      loadLastVisit();
+      loadVisitorTotal();
+    }, 0);
     
     const interval = setInterval(() => {
       loadVisitorLiveCount();
       loadVisitorTotal();
     }, 20000);
 
-    return () => clearInterval(interval);
+    return () => {
+      clearTimeout(firstTick);
+      clearInterval(interval);
+    };
   }, []);
 
   // Sincronização automática via usePageUpdate
