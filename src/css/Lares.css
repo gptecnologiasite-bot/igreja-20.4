@@ -297,6 +297,7 @@
   height: 50px;
   border-radius: 50%;
   border: 2px solid #3498db;
+  object-fit: cover;
 }
 
 .lares-page .testimonial-author strong {

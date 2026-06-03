@@ -2090,8 +2090,31 @@ export default function PainelAdm() {
       const key = id === 'home' ? 'home' : `ministry_${id}`;
 
       // Busca dados atuais para não sobrescrever o resto do objeto JSON
-      const { data: dbData } = await supabase.from('site_settings').select('data').eq('key', key).single();
-      const currentData = dbData?.data || {};
+      let currentData = null;
+      try {
+        const { data: dbData } = await supabase.from('site_settings').select('data').eq('key', key).single();
+        if (dbData?.data) {
+          currentData = typeof dbData.data === 'string' ? JSON.parse(dbData.data) : dbData.data;
+        }
+      } catch (dbErr) {
+        console.warn('Erro ao buscar dados do banco para toggle:', dbErr);
+      }
+
+      // Fallback para cache local se não encontrou no banco
+      if (!currentData) {
+        try {
+          const local = localStorage.getItem(`admac_site_settings:${key}`);
+          if (local) {
+            currentData = typeof local === 'string' ? JSON.parse(local) : local;
+          }
+        } catch { /* ignore fallback error */ }
+      }
+
+      // Se mesmo assim for vazio, inicializa
+      if (!currentData) {
+        currentData = {};
+      }
+
       const nextData = { ...currentData, active: !currentStatus };
 
       // Atualiza no banco
@@ -2103,7 +2126,9 @@ export default function PainelAdm() {
         } catch { /* ignore */ }
       }
 
-      if (error && hasSupabase) throw error;
+      if (error && hasSupabase) {
+        console.warn('[Supabase Error] Falha ao atualizar status no banco:', error);
+      }
 
       // Atualiza estado local imediatamente para feedback visual instantâneo
       setPages(prev => prev.map(p => p.name === name ? { ...p, active: !currentStatus } : p));

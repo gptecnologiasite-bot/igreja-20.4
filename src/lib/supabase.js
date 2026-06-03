@@ -12,28 +12,64 @@ if (!hasEnv) {
   console.warn('[Supabase] Variáveis de ambiente ausentes. Operando em modo offline.')
 }
 
-const offlineResponse = (msg = 'Supabase não configurado') => Promise.resolve({ data: null, error: { message: msg, code: 'OFFLINE' } })
-const offlineQuery = () => ({
-  select: () => offlineResponse(),
-  upsert: () => offlineResponse(),
-  insert: () => offlineResponse(),
-  delete: () => offlineResponse(),
-  update: () => offlineResponse(),
-  order: () => offlineQuery(),
-  limit: () => offlineQuery(),
-  single: () => offlineResponse(),
-  eq: () => offlineQuery()
-})
+const offlineResponse = (msg = 'Supabase não configurado') => Promise.resolve({ data: null, error: { message: msg, code: 'OFFLINE' }, count: 0 })
+
+const offlineQuery = () => {
+  const query = {
+    then: (onFulfilled) => {
+      return Promise.resolve({
+        data: null,
+        error: { message: 'Supabase não configurado', code: 'OFFLINE' },
+        count: 0
+      }).then(onFulfilled);
+    }
+  };
+  
+  const proxy = new Proxy(query, {
+    get: (target, prop) => {
+      if (prop === 'then') {
+        return target.then;
+      }
+      return () => proxy;
+    }
+  });
+  
+  return proxy;
+};
+
+const offlineChannel = () => {
+  const channelObj = {
+    on: () => channelObj,
+    subscribe: () => channelObj
+  };
+  return channelObj;
+};
 
 export const supabase = hasEnv
   ? createClient(supabaseUrl, supabaseKey)
   : {
       from: () => offlineQuery(),
-      storage: undefined,
+      channel: () => offlineChannel(),
+      removeChannel: () => {},
+      storage: {
+        from: () => ({
+          upload: async () => ({ data: null, error: { message: 'Supabase não configurado', code: 'OFFLINE' } }),
+          getPublicUrl: () => ({ data: { publicUrl: '' } }),
+          list: async () => ({ data: [], error: { message: 'Supabase não configurado', code: 'OFFLINE' } }),
+          remove: async () => ({ data: [], error: { message: 'Supabase não configurado', code: 'OFFLINE' } })
+        })
+      },
       auth: {
         signInWithPassword: async () => ({ data: null, error: { message: 'Supabase não configurado', code: 'OFFLINE' } }),
+        signUp: async () => ({ data: { user: { id: `local-${Date.now()}` } }, error: null }),
+        signOut: async () => ({ error: null }),
+        getUser: async () => ({ data: { user: null }, error: null }),
+        getSession: async () => ({ data: { session: null }, error: null }),
+        onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => {} } } }),
         admin: {
-          listUsers: async () => ({ data: { users: [] }, error: { message: 'Supabase não configurado', code: 'OFFLINE' } })
+          listUsers: async () => ({ data: { users: [] }, error: { message: 'Supabase não configurado', code: 'OFFLINE' } }),
+          createUser: async () => ({ data: { user: null }, error: { message: 'Supabase não configurado', code: 'OFFLINE' } }),
+          deleteUser: async () => ({ data: {}, error: { message: 'Supabase não configurado', code: 'OFFLINE' } })
         }
       }
     }

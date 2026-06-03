@@ -37,7 +37,8 @@
   height: 150px;
   border-radius: 50%;
   border: 4px solid #fff;
-  margin-bottom: 1.5rem;
+  margin: 0 auto 1.5rem auto;
+  object-fit: cover;
 }
 
 .pastor-info h3 {

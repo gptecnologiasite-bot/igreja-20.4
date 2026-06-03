@@ -409,7 +409,7 @@
   height: 120px;
   border-radius: 50%;
   border: 3px solid #d4af37;
-  margin-bottom: 1.5rem;
+  margin: 0 auto 1.5rem auto;
   object-fit: cover;
   box-shadow: 0 10px 20px rgba(0,0,0,0.3);
 }

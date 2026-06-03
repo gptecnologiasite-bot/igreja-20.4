@@ -221,3 +221,11 @@ button:hover {
   display: block;
   margin: auto;
 }
+
+/* Garantir que fotos redondas de membros e líderes fiquem centralizadas e proporcionais */
+.team-photo {
+  object-fit: cover !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+  display: block !important;
+}
