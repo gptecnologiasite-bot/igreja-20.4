@@ -17,9 +17,9 @@ O painel administrativo fica sempre no endereço principal do seu site seguido d
 Na tela de entrada, insira as seguintes credenciais que foram configuradas no banco de dados (Supabase):
 
 > **E-mail:** `admin@admin.com`
-> **Senha:** `REDACTED_SENHA`
+> **Senha:** `ZArgdMkCzP8GXEmY`
 
-*(Importante: Recomendamos que você altere sua senha posteriormente dentro das configurações do painel ou crie usuários com seus e-mails pessoais por questões de segurança).*
+*(Importante: A senha padrão foi alterada por segurança. Troque-a novamente dentro das configurações do painel ou crie usuários com seus e-mails pessoais por questões de segurança).*
 
 ## 3. O Que Posso Fazer no Painel?
 

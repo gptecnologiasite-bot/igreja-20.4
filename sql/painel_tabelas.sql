@@ -47,9 +47,9 @@ CREATE POLICY "su_leitura_auth" ON public.site_users
 CREATE POLICY "su_escrita_auth" ON public.site_users
   FOR ALL USING (auth.role() = 'authenticated');
 
--- Usuário admin padrão (senha: REDACTED_SENHA) — não altera se já existir
+-- Usuário admin padrão (senha: ZArgdMkCzP8GXEmY) — não altera se já existir
 INSERT INTO public.site_users (name, email, password, role, status, location)
-VALUES ('Administrador', 'admin@admin.com', 'REDACTED_SENHA', 'Administrador', 'active', 'Samambaia, DF')
+VALUES ('Administrador', 'admin@admin.com', 'ZArgdMkCzP8GXEmY', 'Administrador', 'active', 'Samambaia, DF')
 ON CONFLICT (email) DO NOTHING;
 
 

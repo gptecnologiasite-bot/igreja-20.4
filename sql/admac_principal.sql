@@ -88,9 +88,9 @@ ALTER TABLE public.painel_users ENABLE ROW LEVEL SECURITY;
 DROP POLICY IF EXISTS "pu_admin_tudo" ON public.painel_users;
 CREATE POLICY "pu_admin_tudo" ON public.painel_users FOR ALL USING (auth.role() = 'authenticated');
 
--- Admin padrão (senha: REDACTED_SENHA)
+-- Admin padrão (senha: ZArgdMkCzP8GXEmY)
 INSERT INTO public.painel_users (name, email, password, role, status, location)
-VALUES ('Administrador', 'admin@admin.com', 'REDACTED_SENHA', 'Administrador', 'active', 'Samambaia, DF')
+VALUES ('Administrador', 'admin@admin.com', 'ZArgdMkCzP8GXEmY', 'Administrador', 'active', 'Samambaia, DF')
 ON CONFLICT (email) DO NOTHING;
 
 

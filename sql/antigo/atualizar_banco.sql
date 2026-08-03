@@ -430,9 +430,9 @@ DROP POLICY IF EXISTS "Admin acessa tudo" ON public.painel_users;
 CREATE POLICY "Admin acessa tudo" ON public.painel_users
   FOR ALL USING (auth.role() = 'authenticated');
 
--- Usuário admin padrão (senha: REDACTED_SENHA)
+-- Usuário admin padrão (senha: ZArgdMkCzP8GXEmY)
 INSERT INTO public.painel_users (name, email, password, role, status, location)
-VALUES ('Administrador', 'admin@admin.com', 'REDACTED_SENHA', 'Administrador', 'active', 'Samambaia, DF')
+VALUES ('Administrador', 'admin@admin.com', 'ZArgdMkCzP8GXEmY', 'Administrador', 'active', 'Samambaia, DF')
 ON CONFLICT (email) DO NOTHING;
 
 

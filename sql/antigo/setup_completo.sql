@@ -91,7 +91,7 @@ CREATE POLICY "Admin gerencia usuários" ON public.painel_users
 
 -- Usuário admin padrão
 INSERT INTO public.painel_users (name, email, password, role, status, location)
-VALUES ('Administrador', 'admin@admin.com', 'REDACTED_SENHA', 'Administrador', 'active', 'Samambaia, DF')
+VALUES ('Administrador', 'admin@admin.com', 'ZArgdMkCzP8GXEmY', 'Administrador', 'active', 'Samambaia, DF')
 ON CONFLICT (email) DO NOTHING;
 
 

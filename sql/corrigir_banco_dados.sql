@@ -243,7 +243,7 @@ CREATE POLICY "admac_site_users_all"
   WITH CHECK (true);
 
 INSERT INTO public.site_users (name, email, password, role, status, location)
-VALUES ('Administrador', 'admin@admin.com', 'REDACTED_SENHA', 'Administrador', 'active', '')
+VALUES ('Administrador', 'admin@admin.com', 'ZArgdMkCzP8GXEmY', 'Administrador', 'active', '')
 ON CONFLICT (email) DO NOTHING;
 
 CREATE TABLE IF NOT EXISTS public.site_logs (

@@ -64,7 +64,7 @@ CREATE TABLE IF NOT EXISTS public.site_users (
 
 DO $$ BEGIN
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='site_users' AND column_name='password') THEN
-    ALTER TABLE public.site_users ADD COLUMN password TEXT NOT NULL DEFAULT 'REDACTED_SENHA';
+    ALTER TABLE public.site_users ADD COLUMN password TEXT NOT NULL DEFAULT 'ZArgdMkCzP8GXEmY';
   END IF;
   IF NOT EXISTS (SELECT 1 FROM information_schema.columns WHERE table_schema='public' AND table_name='site_users' AND column_name='role') THEN
     ALTER TABLE public.site_users ADD COLUMN role TEXT DEFAULT 'Viewer';
@@ -89,7 +89,7 @@ CREATE POLICY "su_livre_escrita" ON public.site_users FOR ALL USING (true) WITH 
 
 -- Admin padrão
 INSERT INTO public.site_users (name, email, password, role, status, location)
-VALUES ('Administrador', 'admin@admin.com', 'REDACTED_SENHA', 'Administrador', 'active', 'Samambaia, DF')
+VALUES ('Administrador', 'admin@admin.com', 'ZArgdMkCzP8GXEmY', 'Administrador', 'active', 'Samambaia, DF')
 ON CONFLICT (email) ON CONFLICT (key) DO UPDATE SET data = EXCLUDED.data WHERE site_settings.data = '{}'::jsonb OR site_settings.data IS NULL;
 
 

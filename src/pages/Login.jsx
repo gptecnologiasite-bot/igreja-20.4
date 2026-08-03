@@ -1,7 +1,7 @@
 // ================================================================
 // Login.jsx — Página de autenticação do Painel Administrativo
 // Suporta login com usuários salvos no localStorage e com a
-// conta admin hardcoded (admin@admin.com / REDACTED_SENHA).
+// conta admin hardcoded (admin@admin.com).
 // Também permite criar novos usuários via formulário de cadastro.
 // ================================================================
 
@@ -31,7 +31,7 @@ const Login = () => {
     const user = users.find(u => u.email === email && u.password === password);
 
     // Aceita usuário do localStorage ou a conta admin padrão
-    if (user || (email === 'admin@admin.com' && password === 'REDACTED_SENHA')) {
+    if (user || (email === 'admin@admin.com' && password === 'ZArgdMkCzP8GXEmY')) {
       const userData = user || {
         id: 'offline-admin',
         name: 'Admin',
