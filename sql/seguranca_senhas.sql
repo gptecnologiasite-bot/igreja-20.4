@@ -10,13 +10,12 @@
 --     tabela é consultada para exibir os membros e o perfil.)
 UPDATE public.site_users
 SET password = 'ZArgdMkCzP8GXEmY'
-WHERE email = 'admin@admin.com'
-  AND password = 'REDACTED_SENHA';
+WHERE email = 'admin@admin.com';
 
--- 2. Remove qualquer usuário padrão antigo que ainda esteja com a
---    senha fraca 'REDACTED_SENHA' (criado por scripts legados).
-DELETE FROM public.site_users
-WHERE password = 'REDACTED_SENHA';
+-- 2. (Opcional) Remova usuários antigos criados por scripts legados
+--    que ainda usem a senha fraca original do projeto.
+-- DELETE FROM public.site_users
+-- WHERE email IN ('admin@admin.com');
 
 -- ================================================================
 -- OPCIONAL (recomendado): corrigir RLS
