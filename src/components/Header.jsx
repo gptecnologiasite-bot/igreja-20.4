@@ -169,13 +169,24 @@ const Header = ({ theme, toggleTheme }) => {
   const fetchUnreadCount = async () => {
     try {
       if (!supabase || !hasSupabaseConfigured) return;
+      // Verifica se a tabela existe antes de consultar
       const { count, error } = await supabase
         .from('site_messages')
         .select('*', { count: 'exact', head: true })
         .eq('type', 'contact');
-      if (!error) setHasPagesNotif((count || 0) > 0);
+      if (error) {
+        // Se a tabela não existe (404) ou RLS bloqueia (403/400), silencia
+        if (error.code === '42P01' || error.code === '42501' || error.status === 404 || error.status === 403) {
+          setHasPagesNotif(false);
+          return;
+        }
+        console.warn('[Header] Erro ao buscar contagem de mensagens:', error.message);
+        return;
+      }
+      setHasPagesNotif((count || 0) > 0);
     } catch (err) {
-      console.warn('[Header] Erro ao buscar contagem de mensagens:', err.message);
+      // Silencia erros de rede ou tabelas inexistentes
+      setHasPagesNotif(false);
     }
   };
 

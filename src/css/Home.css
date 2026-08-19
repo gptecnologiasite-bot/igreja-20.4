@@ -25,11 +25,39 @@
 }
 
 .pastor-card {
-  background: linear-gradient(135deg, #d4af37 0%, #c49b2a 100%);
+  background: linear-gradient(135deg, #d4af37 0%, #c49b2a 50%, #b5952f 100%);
   padding: 2rem;
-  border-radius: 16px;
+  border-radius: 20px;
   text-align: center;
-  box-shadow: 0 8px 24px rgba(212, 175, 55, 0.3);
+  box-shadow:
+    0 12px 40px rgba(212, 175, 55, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+  overflow: hidden;
+}
+
+.pastor-card::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.1) 0%, transparent 60%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.pastor-card:hover {
+  transform: translateY(-4px);
+  box-shadow:
+    0 16px 50px rgba(212, 175, 55, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.pastor-card:hover::before {
+  opacity: 1;
 }
 
 .pastor-image img {
@@ -97,21 +125,35 @@
 .spotify-section {
   padding: 4rem 1rem;
   background: #1a1a1a;
+  position: relative;
 }
 
-.spotify-section h2 {
-  text-align: center;
-  font-size: 2.5rem;
-  color: var(--primary-color);
-  margin-bottom: 0.5rem;
+.spotify-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.15), transparent);
 }
 
 .spotify-wrapper {
   max-width: 800px;
   margin: 0 auto;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
-  border-radius: 12px;
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.35),
+    0 0 0 1px rgba(212, 175, 55, 0.08);
+  border-radius: 16px;
   overflow: hidden;
+  transition: all 0.3s ease;
+}
+
+.spotify-wrapper:hover {
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.45),
+    0 0 0 1px rgba(212, 175, 55, 0.15);
+  transform: translateY(-2px);
 }
 
 /* Schedule Section */
@@ -153,16 +195,25 @@
 }
 
 .schedule-home-card {
-  background: #2a2a2a;
+  background: rgba(255, 255, 255, 0.04);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
   padding: 2rem;
-  border-radius: 12px;
+  border-radius: 14px;
   text-align: center;
   border-left: 4px solid var(--primary-color);
-  transition: transform 0.3s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  border-top: 1px solid rgba(255, 255, 255, 0.03);
+  border-right: 1px solid rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
 }
 
 .schedule-home-card:hover {
-  transform: translateY(-5px);
+  transform: translateY(-6px);
+  box-shadow:
+    0 12px 30px rgba(0, 0, 0, 0.25),
+    0 0 0 1px rgba(212, 175, 55, 0.1);
 }
 
 .schedule-home-day {
@@ -207,10 +258,20 @@
   color: var(--text-color);
   font-size: 1.1rem;
   padding: 1.5rem;
-  background: rgba(212, 175, 55, 0.1);
-  border-radius: 8px;
+  background: rgba(212, 175, 55, 0.06);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  border-radius: 14px;
   max-width: 600px;
   margin: 0 auto;
+  border: 1px solid rgba(212, 175, 55, 0.12);
+  transition: all 0.3s ease;
+}
+
+.location-info:hover {
+  background: rgba(212, 175, 55, 0.1);
+  border-color: rgba(212, 175, 55, 0.25);
+  transform: translateY(-2px);
 }
 
 .location-info svg {
@@ -239,14 +300,33 @@
 }
 
 .ministry-home-card {
-  background: #2a2a2a;
+  background: rgba(255, 255, 255, 0.04);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
   padding: 2rem;
-  border-radius: 12px;
+  border-radius: 16px;
   text-align: center;
-  border: 2px solid transparent;
-  transition: all 0.3s;
+  border: 1px solid rgba(212, 175, 55, 0.12);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
   position: relative;
   overflow: hidden;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+}
+
+.ministry-home-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, var(--primary-color), transparent);
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.ministry-home-card:hover::before {
+  opacity: 1;
 }
 
 /* Contact Dropdown Styles */
@@ -371,6 +451,16 @@
   background-color: #0d0d0d;
 }
 
+.welcome-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.2), transparent);
+}
+
 .ministry-home-card:hover {
   transform: translateY(-10px);
   box-shadow: 0 12px 24px rgba(0,0,0,0.3);
@@ -433,14 +523,21 @@
 }
 
 .activity-home-card {
-  background: #2a2a2a;
-  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.04);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border-radius: 16px;
   overflow: hidden;
-  transition: transform 0.3s;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgba(212, 175, 55, 0.1);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
 }
 
 .activity-home-card:hover {
-  transform: translateY(-5px);
+  transform: translateY(-6px);
+  box-shadow:
+    0 12px 30px rgba(0, 0, 0, 0.25),
+    0 0 0 1px rgba(212, 175, 55, 0.15);
 }
 
 .activity-home-image {
@@ -479,10 +576,28 @@
 
 /* CTA Section */
 .cta-home-section {
-  padding: 4rem 2rem;
-  background: linear-gradient(135deg, var(--primary-color) 0%, #c49b2a 100%);
+  padding: 5rem 2rem;
+  background: linear-gradient(135deg, var(--primary-color) 0%, #c49b2a 50%, #b5952f 100%);
   text-align: center;
   color: #000;
+  position: relative;
+  overflow: hidden;
+}
+
+.cta-home-section::before {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: radial-gradient(circle, rgba(255, 255, 255, 0.15) 0%, transparent 50%);
+  animation: shimmer 8s ease-in-out infinite;
+}
+
+@keyframes shimmer {
+  0%, 100% { transform: translateX(-30%) translateY(-30%); }
+  50% { transform: translateX(30%) translateY(30%); }
 }
 
 .cta-home-section h2 {
@@ -512,9 +627,24 @@
   display: inline-flex;
   align-items: center;
   gap: 0.75rem;
-  transition: transform 0.3s, box-shadow 0.3s;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   border: none;
   cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+
+.cta-home-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, transparent 0%, rgba(255, 255, 255, 0.2) 50%, transparent 100%);
+  transform: translateX(-100%);
+  transition: transform 0.5s ease;
+}
+
+.cta-home-btn:hover::before {
+  transform: translateX(100%);
 }
 
 .cta-home-btn.primary {
@@ -611,6 +741,17 @@
   padding: 4rem 1rem;
   background-color: #1a1a1a;
   text-align: center;
+  position: relative;
+}
+
+.birthdays-home-section::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.15), transparent);
 }
 
 .birthdays-home-header {
@@ -646,19 +787,27 @@
 }
 
 .birthdays-home-card {
-  background: #2a2a2a;
+  background: rgba(255, 255, 255, 0.04);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
   padding: 2rem 1.5rem;
-  border-radius: 16px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+  border-radius: 18px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
   border-top: 3px solid var(--primary-color, #d4af37);
   display: flex;
   flex-direction: column;
   align-items: center;
-  transition: transform 0.3s, border-color 0.3s;
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  border-left: 1px solid rgba(255, 255, 255, 0.03);
+  border-right: 1px solid rgba(255, 255, 255, 0.03);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
 }
 
 .birthdays-home-card:hover {
-  transform: translateY(-5px);
+  transform: translateY(-8px);
+  box-shadow:
+    0 16px 40px rgba(0, 0, 0, 0.25),
+    0 0 0 1px rgba(212, 175, 55, 0.15);
   border-color: rgba(212, 175, 55, 0.4);
 }
 
@@ -705,6 +854,9 @@
   font-size: 1rem;
   margin-top: 2rem;
   padding: 2rem;
-  background: #2a2a2a;
-  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  border-radius: 14px;
+  border: 1px dashed rgba(212, 175, 55, 0.15);
 }

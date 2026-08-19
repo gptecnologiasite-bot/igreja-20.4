@@ -1,25 +1,37 @@
+/* ============================================================
+   Contact Page — Visual Moderno Glassmorphism + Gold
+   ============================================================ */
+
 .contact-page {
   padding: 4rem 1rem;
   max-width: 1200px;
   margin: 0 auto;
 }
 
+/* ── Header / Título ─────────────────────────────────────── */
 .contact-header {
   text-align: center;
   margin-bottom: 3rem;
+  animation: fadeSlideUp 0.6s ease-out;
 }
 
 .contact-header h1 {
   font-size: 2.5rem;
   color: var(--primary-color);
   margin-bottom: 1rem;
+  font-weight: 800;
+  letter-spacing: -0.5px;
 }
 
 .contact-header p {
   color: var(--text-muted);
   font-size: 1.1rem;
+  max-width: 600px;
+  margin: 0 auto;
+  line-height: 1.7;
 }
 
+/* ── Grid Responsivo ─────────────────────────────────────── */
 .contact-container {
   display: grid;
   grid-template-columns: 1fr;
@@ -32,68 +44,159 @@
   }
 }
 
-/* Info Section */
+/* ── Info Card — Glassmorphism ────────────────────────────── */
 .info-card {
-  background-color: var(--card-bg);
+  background: rgba(255, 255, 255, 0.04);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
   padding: 2rem;
-  border-radius: 8px;
+  border-radius: 16px;
   margin-bottom: 2rem;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  border: 1px solid rgba(212, 175, 55, 0.15);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  animation: fadeSlideUp 0.6s ease-out 0.1s both;
+}
+
+.info-card:hover {
+  background: rgba(255, 255, 255, 0.07);
+  border-color: rgba(212, 175, 55, 0.35);
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.3),
+    0 0 0 1px rgba(212, 175, 55, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  transform: translateY(-2px);
 }
 
 .info-card h3 {
   color: var(--primary-color);
   margin-bottom: 1.5rem;
   font-size: 1.5rem;
+  font-weight: 700;
   border-bottom: 1px solid rgba(212, 175, 55, 0.2);
-  padding-bottom: 0.5rem;
+  padding-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
+.info-card h3::before {
+  content: '';
+  width: 4px;
+  height: 20px;
+  background: linear-gradient(180deg, var(--primary-color), rgba(212, 175, 55, 0.3));
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+/* ── Info Items ──────────────────────────────────────────── */
 .info-item {
   display: flex;
   align-items: flex-start;
   gap: 1rem;
   margin-bottom: 1.5rem;
+  padding: 0.75rem;
+  border-radius: 10px;
+  transition: background 0.2s ease;
+}
+
+.info-item:last-child {
+  margin-bottom: 0;
+}
+
+.info-item:hover {
+  background: rgba(212, 175, 55, 0.06);
 }
 
 .info-item .icon {
   color: var(--primary-color);
   flex-shrink: 0;
   margin-top: 4px;
+  width: 20px;
+  height: 20px;
 }
 
 .info-item strong {
   display: block;
   color: var(--text-color);
   margin-bottom: 0.2rem;
+  font-weight: 600;
+  font-size: 0.95rem;
 }
 
 .info-item p {
   color: var(--text-muted);
-  font-size: 0.95rem;
+  font-size: 0.9rem;
+  line-height: 1.5;
 }
 
+/* ── Map Container ───────────────────────────────────────── */
 .map-container {
-  border-radius: 8px;
+  border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(212, 175, 55, 0.15);
+  transition: all 0.3s ease;
+  animation: fadeSlideUp 0.6s ease-out 0.2s both;
 }
 
-/* Form Section */
+.map-container:hover {
+  border-color: rgba(212, 175, 55, 0.3);
+  box-shadow:
+    0 12px 40px rgba(0, 0, 0, 0.35),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.map-container iframe {
+  display: block;
+  width: 100%;
+  height: 300px;
+  border: 0;
+  transition: filter 0.3s ease;
+}
+
+.map-container:hover iframe {
+  filter: brightness(1.05);
+}
+
+/* ── Form Container — Glassmorphism ──────────────────────── */
 .form-container {
-  background-color: var(--card-bg);
+  background: rgba(255, 255, 255, 0.04);
+  -webkit-backdrop-filter: blur(16px);
+  backdrop-filter: blur(16px);
   padding: 2rem;
-  border-radius: 8px;
-  box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+  border-radius: 16px;
+  border: 1px solid rgba(212, 175, 55, 0.15);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  animation: fadeSlideUp 0.6s ease-out 0.3s both;
 }
 
 .form-container h3 {
   color: var(--text-color);
   margin-bottom: 1.5rem;
   font-size: 1.5rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
 }
 
+.form-container h3::before {
+  content: '';
+  width: 4px;
+  height: 20px;
+  background: linear-gradient(180deg, var(--primary-color), rgba(212, 175, 55, 0.3));
+  border-radius: 2px;
+  flex-shrink: 0;
+}
+
+/* ── Form Groups ─────────────────────────────────────────── */
 .form-group {
   margin-bottom: 1.5rem;
 }
@@ -103,42 +206,134 @@
   margin-bottom: 0.5rem;
   color: var(--text-color);
   font-weight: 500;
+  font-size: 0.9rem;
+  letter-spacing: 0.02em;
 }
 
 .form-group input,
 .form-group textarea {
   width: 100%;
-  padding: 12px;
-  background-color: var(--bg-color);
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  border-radius: 4px;
+  padding: 14px 16px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(212, 175, 55, 0.12);
+  border-radius: 10px;
   color: var(--text-color);
   font-family: inherit;
-  transition: border-color 0.3s;
+  font-size: 0.95rem;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  outline: none;
+}
+
+.form-group input::placeholder,
+.form-group textarea::placeholder {
+  color: var(--text-muted);
+  opacity: 0.6;
 }
 
 .form-group input:focus,
 .form-group textarea:focus {
-  outline: none;
   border-color: var(--primary-color);
+  background: rgba(212, 175, 55, 0.04);
+  box-shadow:
+    0 0 0 3px rgba(212, 175, 55, 0.1),
+    0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
+.form-group input:hover,
+.form-group textarea:hover {
+  border-color: rgba(212, 175, 55, 0.3);
+}
+
+.form-group textarea {
+  resize: vertical;
+  min-height: 120px;
+}
+
+/* ── Submit Button — Gradiente Gold ───────────────────────── */
 .submit-btn {
   width: 100%;
-  padding: 12px;
-  background-color: var(--primary-color);
+  padding: 14px;
+  background: linear-gradient(135deg, var(--primary-color) 0%, #c49b2a 50%, var(--primary-hover) 100%);
   color: #000;
   border: none;
-  border-radius: 4px;
-  font-weight: bold;
+  border-radius: 10px;
+  font-weight: 700;
   font-size: 1rem;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 10px;
-  transition: background-color 0.3s;
+  cursor: pointer;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  box-shadow:
+    0 4px 15px rgba(212, 175, 55, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  position: relative;
+  overflow: hidden;
+}
+
+.submit-btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, transparent 0%, rgba(255, 255, 255, 0.2) 50%, transparent 100%);
+  transform: translateX(-100%);
+  transition: transform 0.5s ease;
 }
 
 .submit-btn:hover {
-  background-color: var(--primary-hover);
+  transform: translateY(-2px);
+  box-shadow:
+    0 8px 25px rgba(212, 175, 55, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.submit-btn:hover::before {
+  transform: translateX(100%);
+}
+
+.submit-btn:active {
+  transform: translateY(0);
+  box-shadow:
+    0 2px 8px rgba(212, 175, 55, 0.3),
+    inset 0 1px 0 rgba(255, 255, 255, 0.2);
+}
+
+/* ── Animações ───────────────────────────────────────────── */
+@keyframes fadeSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* ── Responsivo ──────────────────────────────────────────── */
+@media (max-width: 768px) {
+  .contact-page {
+    padding: 3rem 1rem;
+  }
+
+  .contact-header h1 {
+    font-size: 2rem;
+  }
+
+  .info-card,
+  .form-container {
+    padding: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .contact-header h1 {
+    font-size: 1.7rem;
+  }
+
+  .info-card h3,
+  .form-container h3 {
+    font-size: 1.2rem;
+  }
 }

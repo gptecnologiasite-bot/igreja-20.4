@@ -80,9 +80,14 @@ const Contact = () => {
       e.target.reset();
     } catch (err) {
       console.error('Error sending message:', err);
-      const backups = JSON.parse(localStorage.getItem('admac_messages_backup') || '[]');
-      backups.push(payload);
-      localStorage.setItem('admac_messages_backup', JSON.stringify(backups));
+      // Backup local sempre que o Supabase falhar
+      try {
+        const backups = JSON.parse(localStorage.getItem('admac_messages_backup') || '[]');
+        backups.push(payload);
+        localStorage.setItem('admac_messages_backup', JSON.stringify(backups));
+      } catch (storageErr) {
+        console.warn('[Contact] Falha ao salvar backup local:', storageErr);
+      }
       alert('Mensagem enviada (Backup Local)! Em breve entraremos em contato.');
       e.target.reset();
     }
