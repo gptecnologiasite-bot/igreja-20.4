@@ -175,8 +175,8 @@ const Header = ({ theme, toggleTheme }) => {
         .select('*', { count: 'exact', head: true })
         .eq('type', 'contact');
       if (error) {
-        // Se a tabela não existe (404) ou RLS bloqueia (403/400), silencia
-        if (error.code === '42P01' || error.code === '42501' || error.status === 404 || error.status === 403) {
+        // Se a tabela não existe, RLS bloqueia, ou erro de schema (400), silencia
+        if (error.code === '42P01' || error.code === '42501' || error.status === 400 || error.status === 404 || error.status === 403) {
           setHasPagesNotif(false);
           return;
         }
