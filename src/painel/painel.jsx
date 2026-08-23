@@ -243,7 +243,8 @@ const NAV_ITEMS_DEFAULT = [
   { id: 'dashboard', label: 'Dashboard', icon: '⊞' },
   { id: 'paginas', label: 'Páginas', icon: '📄' },
   { id: 'conteudo', label: 'Conteúdo', icon: '📝' },
-  { id: 'mensagens', label: 'Mensagens', icon: '📩' }
+  { id: 'mensagens', label: 'Mensagens', icon: '📩' },
+  { id: 'whatsapp', label: 'WhatsApp', icon: '💬' }
 ];
 
 const NAV_SETTINGS_DEFAULT = [
@@ -646,6 +647,7 @@ export default function PainelAdm() {
   const [pageSaving, setPageSaving] = useState(false);
   const [visitorCount, setVisitorCount] = useState(0);
   const [visitorLiveCount, setVisitorLiveCount] = useState(0);
+  const [visitorLocations, setVisitorLocations] = useState([]);
   const [logs, setLogs] = useState([]);
   const [bars, setBars] = useState(() => buildBars([], []));
 
@@ -685,6 +687,8 @@ export default function PainelAdm() {
   ]);
   const [siteMessages, setSiteMessages] = useState([]);
   const [messagesLoading, setMessagesLoading] = useState(false);
+  const [waNumber, setWaNumber] = useState('');
+  const [waText, setWaText] = useState('Olá! Aqui é da ADMAC - Assembleia de Deus Ministério Atos e Conquistas. 🙏');
   const [showNotifBox, setShowNotifBox] = useState(false);
   const [selectedNotif, setSelectedNotif] = useState(null);
   const [currentUser, setCurrentUser] = useState(() => {
@@ -876,6 +880,31 @@ export default function PainelAdm() {
     }
   };
 
+  const loadVisitorLocations = async () => {
+    try {
+      if (!supabase) return;
+      const { data } = await supabase
+        .from('site_logs')
+        .select('user_email')
+        .eq('action', 'visitor_access')
+        .order('created_at', { ascending: false })
+        .limit(500);
+      if (!data) { setVisitorLocations([]); return; }
+      const map = {};
+      data.forEach(l => {
+        const loc = (l.user_email || '').trim() || 'Visitante Anônimo';
+        map[loc] = (map[loc] || 0) + 1;
+      });
+      const arr = Object.entries(map)
+        .map(([location, count]) => ({ location, count }))
+        .sort((a, b) => b.count - a.count)
+        .slice(0, 8);
+      setVisitorLocations(arr);
+    } catch (err) {
+      console.warn('[Admin] Erro ao carregar localidades dos visitantes:', err.message);
+    }
+  };
+
   const loadVisitorCount = async () => {
     try {
       // Carrega o total fixo
@@ -891,6 +920,7 @@ export default function PainelAdm() {
       
       // Carrega os acessos recentes (On-line)
       await loadVisitorLiveCount();
+      await loadVisitorLocations();
     } catch (err) {
       console.warn('Error loading visitor count:', err);
     }
@@ -914,7 +944,7 @@ export default function PainelAdm() {
 
 
   useEffect(() => {
-    if (activePage === 'mensagens') {
+    if (activePage === 'mensagens' || activePage === 'whatsapp') {
       loadSiteMessages();
       
       // Realtime subscription para novas mensagens
@@ -2278,9 +2308,11 @@ export default function PainelAdm() {
     return matchSearch && matchFilter;
   });
 
+  const topLocLabels = (visitorLocations || []).slice(0, 3).map(l => (l.location || '').split(',')[0].trim()).filter(Boolean).join(', ');
+
   const dynamicStats = [
     { label: 'Membros', value: (users || []).length.toString(), change: '+0%', dir: 'up', icon: '👥', color: '#6c63ff', bg: 'rgba(108,99,255,0.12)', sub: 'Localizados' },
-    { label: 'Visitantes agora', value: ((visitorCount || 0) + (visitorLiveCount || 0)).toString(), change: 'SP, RJ, GO, DF', dir: 'up', icon: '🏃', color: '#22d3a5', bg: 'rgba(34,211,165,0.12)', sub: 'Localidade' },
+    { label: 'Visitantes agora', value: ((visitorCount || 0) + (visitorLiveCount || 0)).toString(), change: topLocLabels || 'Aguardando acessos', dir: 'up', icon: '🏃', color: '#22d3a5', bg: 'rgba(34,211,165,0.12)', sub: 'Localidade' },
     { label: 'Publicações', value: (pages || []).length.toString(), change: `+${(pages || []).length}`, dir: 'up', icon: '📄', color: '#38bdf8', bg: 'rgba(56,189,248,0.12)', sub: 'Ativas' }
   ];
 
@@ -2342,6 +2374,30 @@ export default function PainelAdm() {
           )}
 
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '1.2rem', marginBottom: '1.2rem' }}>
+            <div className="painel-card">
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.2rem' }}>
+                <h3 style={{ fontSize: '.95rem', fontWeight: 600 }}>📍 Visitas por Localidade</h3>
+                <button className="painel-action-btn" onClick={() => setActivePage('logs')}>Ver Logs</button>
+              </div>
+              {(visitorLocations || []).length === 0 ? (
+                <p style={{ color: palette.textMuted, fontSize: '.85rem' }}>Nenhum acesso registrado ainda. Assim que alguém visitar o site, a cidade/estado/país aparece aqui.</p>
+              ) : (
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '.55rem' }}>
+                  {visitorLocations.map((l, i) => {
+                    const max = visitorLocations[0].count || 1;
+                    return (
+                      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '.6rem' }}>
+                        <span style={{ fontSize: '.8rem', width: '45%', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }} title={l.location}>📍 {l.location}</span>
+                        <div style={{ flex: 1, height: 8, background: 'rgba(255,255,255,.08)', borderRadius: 4, overflow: 'hidden' }}>
+                          <div style={{ width: `${Math.max(8, (l.count / max) * 100)}%`, height: '100%', background: 'linear-gradient(90deg,#22d3a5,#38bdf8)', borderRadius: 4 }} />
+                        </div>
+                        <strong style={{ fontSize: '.8rem', minWidth: 28, textAlign: 'right' }}>{l.count}</strong>
+                      </div>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
             <div className="painel-card">
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.2rem' }}>
                 <h3 style={{ fontSize: '.95rem', fontWeight: 600 }}>Páginas do Site</h3>
@@ -2491,7 +2547,23 @@ export default function PainelAdm() {
                       </td>
                       <td>
                         <div style={{ display: 'flex', gap: 6 }}>
-
+                          <a
+                            className="painel-action-btn"
+                            style={{ padding: '4px 8px', textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}
+                            href={`mailto:${m.email || ''}?subject=${encodeURIComponent('Resposta - ADMAC')}&body=${encodeURIComponent(`Olá ${m.name || ''}!\n\nRecebemos sua mensagem enviada pelo site:\n\n"${m.message || ''}"\n\nNossa resposta:\n\n\nAtenciosamente,\nADMAC - Assembleia de Deus Ministério Atos e Conquistas`)}`}
+                          >📧 E-mail</a>
+                          {m.phone && (() => {
+                            const digits = String(m.phone).replace(/\D/g, '');
+                            const full = digits.length <= 11 ? '55' + digits : digits;
+                            return (
+                              <a
+                                className="painel-action-btn"
+                                style={{ padding: '4px 8px', textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}
+                                href={`https://wa.me/${full}?text=${encodeURIComponent(`Olá ${m.name || ''}! Recebemos sua mensagem no site da ADMAC. 🙏`)}`}
+                                target="_blank" rel="noreferrer"
+                              >💬 WhatsApp</a>
+                            );
+                          })()}
                           <button className="btn-deletar" style={{ padding: '4px 8px' }} onClick={async () => {
                             if (currentUser?.role === 'Viewer') {
                               alert('Visualizadores não podem excluir mensagens.');
@@ -2522,6 +2594,92 @@ export default function PainelAdm() {
           )
           }
         </div >
+      );
+    }
+
+    if (activePage === 'whatsapp') {
+      const waContacts = (siteMessages || []).filter(m => m.phone && String(m.phone).replace(/\D/g, '').length >= 10);
+      const openWa = (phone, name, text) => {
+        const digits = String(phone).replace(/\D/g, '');
+        const full = digits.length <= 11 ? '55' + digits : digits;
+        window.open(`https://wa.me/${full}?text=${encodeURIComponent(text)}`, '_blank');
+      };
+      return (
+        <div>
+          <div className="painel-card" style={{ marginBottom: '1.2rem' }}>
+            <h3 style={{ fontSize: '.95rem', fontWeight: 600, marginBottom: '1rem' }}>💬 Enviar WhatsApp para qualquer número</h3>
+            <div style={{ display: 'flex', gap: '.6rem', flexWrap: 'wrap' }}>
+              <input
+                className="painel-input"
+                style={{ maxWidth: 200 }}
+                placeholder="(61) 99999-9999"
+                value={waNumber}
+                onChange={e => setWaNumber(e.target.value)}
+              />
+              <input
+                className="painel-input"
+                style={{ flex: 1, minWidth: 220 }}
+                placeholder="Mensagem..."
+                value={waText}
+                onChange={e => setWaText(e.target.value)}
+              />
+              <button
+                className="painel-action-btn"
+                style={{ borderColor: '#22d3a5', color: '#22d3a5' }}
+                onClick={() => {
+                  const digits = waNumber.replace(/\D/g, '');
+                  if (digits.length < 10) { alert('Digite um número válido com DDD.'); return; }
+                  openWa(waNumber, '', waText);
+                }}
+              >🚀 Abrir Conversa</button>
+            </div>
+          </div>
+
+          <div className="painel-card">
+            <div className="painel-table-bar">
+              <h3 style={{ fontSize: '.95rem', fontWeight: 600 }}>💬 Contatos com WhatsApp ({waContacts.length})</h3>
+              <button className="painel-action-btn" onClick={loadSiteMessages}>🔄 Atualizar</button>
+            </div>
+            {messagesLoading ? (
+              <div style={{ color: palette.textMuted, padding: '1rem' }}>Carregando contatos...</div>
+            ) : waContacts.length === 0 ? (
+              <p style={{ color: palette.textMuted, fontSize: '.85rem', padding: '1rem' }}>
+                Nenhum contato com telefone ainda. Quando alguém deixar mensagem no site com telefone (WhatsApp), aparece aqui para você responder.
+              </p>
+            ) : (
+              <div className="painel-table-wrap">
+                <table className="painel-table">
+                  <thead>
+                    <tr>
+                      <th>Contato</th>
+                      <th>Telefone</th>
+                      <th>Mensagem que enviou</th>
+                      <th>Data</th>
+                      <th>Ação</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {waContacts.map(m => (
+                      <tr key={m.id}>
+                        <td style={{ fontWeight: 600 }}>{m.name || 'Anônimo'}</td>
+                        <td style={{ whiteSpace: 'nowrap' }}>{m.phone}</td>
+                        <td style={{ maxWidth: 300, fontSize: '.8rem', lineHeight: 1.4 }}>{m.message}</td>
+                        <td style={{ fontSize: '.75rem', whiteSpace: 'nowrap' }}>{new Date(m.created_at).toLocaleDateString()}</td>
+                        <td>
+                          <button
+                            className="painel-action-btn"
+                            style={{ borderColor: '#22d3a5', color: '#22d3a5', whiteSpace: 'nowrap' }}
+                            onClick={() => openWa(m.phone, m.name, `Olá ${m.name || ''}! Recebemos sua mensagem no site da ADMAC:\n\n"${m.message || ''}"\n\nNossa resposta:\n`)}
+                          >🚀 Responder</button>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </div>
+        </div>
       );
     }
 
