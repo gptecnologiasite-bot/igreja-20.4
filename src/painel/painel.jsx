@@ -5340,10 +5340,6 @@ export default function PainelAdm() {
     if (activePage === 'configs') {
       return (
         <div>
-          <div className="painel-page-header">
-            <h1>Configurações do Site</h1>
-            <p>Gerencie o logotipo, favicon e outras informações globais.</p>
-          </div>
           <div className="painel-card" style={{ maxWidth: 600 }}>
             <h3 style={{ fontSize: '.95rem', fontWeight: 600, marginBottom: '1.2rem' }}>Identidade Visual</h3>
             <div className="pm-field" style={{ marginBottom: '1.5rem' }}>
