@@ -11,6 +11,7 @@ import { supabase, testSupabaseConnection, hasSupabaseConfigured } from '../lib/
 import { INITIAL_HOME_DATA, INITIAL_MINISTRIES_DATA, INITIAL_FOOTER_DATA, INITIAL_HEADER_DATA, INITIAL_PASTORS_CONTACTS } from '../lib/constants';
 import { deepMerge, transformImageLink, parseSafeJson } from '../lib/dbUtils';
 import { broadcastUpdate } from '../hooks/usePageUpdate';
+import BellSettingsCard from './BellSettingsCard';
 
 const palette = {
   bg: '#0f1117',
@@ -651,48 +652,6 @@ export default function PainelAdm() {
   const [navMain, setNavMain] = useState(NAV_ITEMS_DEFAULT);
   const [navSettings, setNavSettings] = useState(NAV_SETTINGS_DEFAULT);
 
-  const playBellOnce = () => {
-    try {
-      const AudioCtx = window.AudioContext || window.webkitAudioContext;
-      if (!AudioCtx) return Promise.reject(new Error('AudioContext indisponível'));
-
-      const ctx = new AudioCtx();
-      const now = ctx.currentTime;
-
-      const master = ctx.createGain();
-      master.gain.setValueAtTime(0.0001, now);
-      master.gain.exponentialRampToValueAtTime(0.3, now + 0.01);
-      master.gain.exponentialRampToValueAtTime(0.0001, now + 1.4);
-      master.connect(ctx.destination);
-
-      const freqs = [880, 1320, 1760];
-      const oscs = freqs.map((f, i) => {
-        const o = ctx.createOscillator();
-        const g = ctx.createGain();
-        o.type = i === 0 ? 'sine' : 'triangle';
-        o.frequency.setValueAtTime(f, now);
-        g.gain.setValueAtTime(i === 0 ? 0.7 : 0.45, now);
-        g.gain.exponentialRampToValueAtTime(0.0001, now + 1.2 + i * 0.1);
-        o.connect(g);
-        g.connect(master);
-        return o;
-      });
-
-      oscs.forEach((o) => o.start(now));
-      oscs.forEach((o, idx) => o.stop(now + 1.5 + idx * 0.05));
-
-      return Promise.resolve()
-        .then(() => (ctx.state === 'suspended' ? ctx.resume() : undefined))
-        .finally(() => {
-          setTimeout(() => {
-            try { ctx.close(); } catch { /* noop */ }
-          }, 2000);
-        });
-    } catch (e) {
-      return Promise.reject(e);
-    }
-  };
-
   // Aplica classe ao body para os estilos do painel não vazarem para o site
   useEffect(() => {
     document.body.classList.add('painel-body');
@@ -977,6 +936,7 @@ export default function PainelAdm() {
   }, [activePage]);
 
   // Header and Footer Data for Configs Tab
+  // (Sino de Avisos agora é gerenciado pelo componente isolado BellSettingsCard)
   const [headerData, setHeaderData] = useState(INITIAL_HEADER_DATA);
   const [footerData, setFooterData] = useState(INITIAL_FOOTER_DATA);
 
@@ -1252,32 +1212,6 @@ export default function PainelAdm() {
       }
     }
   }, [users, currentUser]);
-
-  // Simula alerta de visitantes e notificações persistentes
-  useEffect(() => {
-    const notifyVisitor = () => {
-      const visitorCount = Math.floor(Math.random() * 5) + 1;
-      const locations = ['São Paulo / SP', 'Rio de Janeiro / RJ', 'Goiânia / GO', 'Brasília / DF', 'Curitiba / PR', 'Belo Horizonte / MG'];
-      const loc = locations[Math.floor(Math.random() * locations.length)];
-      const newNotif = {
-        id: Date.now(),
-        title: 'Novos Visitantes',
-        text: `Neste momento há ${visitorCount} pessoas de ${loc} visitando o site. Clique para saber mais.`,
-        time: 'Agora',
-        read: false
-      };
-      setNotifications(prev => {
-        if (prev[0]?.text === newNotif.text) return prev;
-        return [newNotif, ...prev.slice(0, 19)];
-      });
-      setHasPagesNotif(true);
-      playBellOnce().catch(() => { });
-    };
-
-    const firstTimer = setTimeout(notifyVisitor, 15000);
-    const interval = setInterval(notifyVisitor, 60000);
-    return () => { clearTimeout(firstTimer); clearInterval(interval); };
-  }, []);
 
   // Alerta de novos usuários pendentes no Sino
   useEffect(() => {
@@ -5554,6 +5488,8 @@ export default function PainelAdm() {
               Salvar Identidade
             </button>
           </div>
+
+          <BellSettingsCard />
 
           <div className="painel-card" style={{ maxWidth: 600, marginTop: '1.2rem' }}>
             <h3 style={{ fontSize: '.95rem', fontWeight: 600, marginBottom: '1.2rem' }}>Informações de Contato (Rodapé)</h3>

@@ -2,6 +2,7 @@ import React from 'react';
 import { Outlet } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
+import NotificationBell from '../components/NotificationBell';
 import { useSiteData } from '../context/SiteContext';
 
 const PublicLayout = () => {
@@ -46,6 +47,7 @@ const PublicLayout = () => {
                 <Outlet />
             </main>
             <Footer />
+            <NotificationBell />
             {whatsappLink && (
                 <a 
                     href={whatsappLink} 

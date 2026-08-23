@@ -18,56 +18,13 @@ import {
   Menu,
   X,
   ShieldCheck,
-  ChevronDown,
-  Bell
+  ChevronDown
 } from 'lucide-react';
 import '../css/Header.css';
 import { supabase, hasSupabaseConfigured } from '../lib/supabase';
 import { usePageUpdate } from '../hooks/usePageUpdate';
 import { transformImageLink } from '../utils/imageUtils';
 import { useSiteData } from '../context/SiteContext';
-
-function playBellOnce() {
-  try {
-    const AudioCtx = window.AudioContext || window.webkitAudioContext;
-    if (!AudioCtx) return Promise.reject(new Error("AudioContext indisponível"));
-
-    const ctx = new AudioCtx();
-    const now = ctx.currentTime;
-
-    const master = ctx.createGain();
-    master.gain.setValueAtTime(0.0001, now);
-    master.gain.exponentialRampToValueAtTime(0.35, now + 0.01);
-    master.gain.exponentialRampToValueAtTime(0.0001, now + 1.6);
-    master.connect(ctx.destination);
-
-    const freqs = [880, 1320, 1760];
-    const oscs = freqs.map((f, i) => {
-      const o = ctx.createOscillator();
-      const g = ctx.createGain();
-      o.type = i === 0 ? "sine" : "triangle";
-      o.frequency.setValueAtTime(f, now);
-      g.gain.setValueAtTime(i === 0 ? 0.7 : 0.45, now);
-      g.gain.exponentialRampToValueAtTime(0.0001, now + 1.4 + i * 0.1);
-      o.connect(g);
-      g.connect(master);
-      return o;
-    });
-
-    oscs.forEach((o) => o.start(now));
-    oscs.forEach((o, idx) => o.stop(now + 1.7 + idx * 0.05));
-
-    return Promise.resolve()
-      .then(() => (ctx.state === "suspended" ? ctx.resume() : undefined))
-      .finally(() => {
-        setTimeout(() => {
-          try { ctx.close(); } catch { /* noop */ }
-        }, 2200);
-      });
-  } catch (e) {
-    return Promise.reject(e);
-  }
-}
 
 const Header = ({ theme, toggleTheme }) => {
   const { headerData, refreshData } = useSiteData();
@@ -106,16 +63,10 @@ const Header = ({ theme, toggleTheme }) => {
     setInternalTheme(next);
   }, [toggleTheme, currentTheme]);
 
-  // Visitor & Notification State
+  // Visitor State (sino de avisos agora é o NotificationBell flutuante)
   const [visitorLiveCount, setVisitorLiveCount] = useState(0);
   const [lastVisit, setLastVisit] = useState(null);
   const [showVisitorModal, setShowVisitorModal] = useState(false);
-  const [showNotifBox, setShowNotifBox] = useState(false);
-  const [notifications, setNotifications] = useState([
-    { id: 1, title: 'Bem-vindo ao Site', text: 'Confira nossos avisos e novidades aqui no sino.', time: '01m atrás', read: false }
-  ]);
-  const [hasPagesNotif, setHasPagesNotif] = useState(false);
-  const [selectedNotif, setSelectedNotif] = useState(null);
   const [visitorTotal, setVisitorTotal] = useState(0);
 
   const loadVisitorLiveCount = async () => {
@@ -165,64 +116,6 @@ const Header = ({ theme, toggleTheme }) => {
       console.warn("[Header] Erro ao carregar last_visit:", err.message);
     }
   };
-
-  const fetchUnreadCount = async () => {
-    try {
-      if (!supabase || !hasSupabaseConfigured) return;
-      // Verifica se a tabela existe antes de consultar
-      const { count, error } = await supabase
-        .from('site_messages')
-        .select('*', { count: 'exact', head: true })
-        .eq('type', 'contact');
-      if (error) {
-        // Se a tabela não existe, RLS bloqueia, ou erro de schema (400), silencia
-        if (error.code === '42P01' || error.code === '42501' || error.status === 400 || error.status === 404 || error.status === 403) {
-          setHasPagesNotif(false);
-          return;
-        }
-        console.warn('[Header] Erro ao buscar contagem de mensagens:', error.message);
-        return;
-      }
-      setHasPagesNotif((count || 0) > 0);
-    } catch (err) {
-      // Silencia erros de rede ou tabelas inexistentes
-      setHasPagesNotif(false);
-    }
-  };
-
-  useEffect(() => {
-    const firstTick = setTimeout(() => {
-      fetchUnreadCount();
-    }, 0);
-    const msgInterval = setInterval(fetchUnreadCount, 30000);
-    
-    // Simulação de atividade para o Sino
-    const notifyVisitor = () => {
-      const visitorCount = Math.floor(Math.random() * 5) + 1;
-      const locations = ['São Paulo / SP', 'Rio de Janeiro / RJ', 'Curitiba / PR', 'Brasília / DF', 'Goiânia / GO'];
-      const loc = locations[Math.floor(Math.random() * locations.length)];
-      const newNotif = {
-        id: 'visitor-' + Date.now(),
-        title: 'Novos Visitantes',
-        text: `Neste momento há ${visitorCount} pessoas de ${loc} visitando o site.`,
-        time: 'Agora',
-        read: false
-      };
-      setNotifications(prev => (prev[0]?.text === newNotif.text) ? prev : [newNotif, ...prev.slice(0, 15)]);
-      setHasPagesNotif(true);
-      playBellOnce().catch(() => { });
-    };
-
-    const firstVisitorTimer = setTimeout(notifyVisitor, 12000);
-    const visitorInterval = setInterval(notifyVisitor, 90000);
-
-    return () => {
-      clearTimeout(firstTick);
-      clearInterval(msgInterval);
-      clearInterval(visitorInterval);
-      clearTimeout(firstVisitorTimer);
-    };
-  }, []);
 
   useEffect(() => {
     const firstTick = setTimeout(() => {
@@ -436,81 +329,14 @@ const Header = ({ theme, toggleTheme }) => {
             {currentTheme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
           </button>
 
-          {/* Sino de Notificações */}
+          {/* Visitantes (sino de avisos agora é o NotificationBell flutuante) */}
           <div className="nav-notification-area" style={{ position: 'relative' }}>
-            <button
-              className="nav-notification-btn"
-              title={hasPagesNotif ? 'Há novas notificações' : 'Sem novas notificações'}
-              onClick={() => {
-                setShowNotifBox(!showNotifBox);
-                setHasPagesNotif(false);
-              }}
-            >
-              <Bell size={18} color="#fff" />
-              {hasPagesNotif && <span className="nav-notification-badge" />}
-            </button>
-
             <span className="nav-visitor-stats">
               <span className="nav-visitor-number">
                 {visitorTotal + visitorLiveCount}
               </span>
               <span className="nav-visitor-label">visitas</span>
             </span>
-
-            {showNotifBox && (
-              <div className="nav-notif-dropdown" style={{
-                position: 'absolute',
-                top: '120%',
-                right: 0,
-                width: 300,
-                background: '#1a1d27',
-                border: '1px solid #2a2f45',
-                borderRadius: 14,
-                boxShadow: '0 15px 40px rgba(0,0,0,0.6)',
-                zIndex: 2000,
-                overflow: 'hidden'
-              }}>
-                <div style={{ padding: '12px 16px', background: '#101218', borderBottom: '1px solid #2a2f45', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                  <span style={{ fontWeight: 700, fontSize: '0.85rem', color: '#fff' }}>Notificações</span>
-                  <button
-                    type="button"
-                    style={{ background: 'none', border: 'none', color: '#8b84ff', fontSize: '0.7rem', cursor: 'pointer' }}
-                    onClick={() => { setNotifications([]); setHasPagesNotif(false); setShowNotifBox(false); }}
-                  >
-                    Limpar tudo
-                  </button>
-                </div>
-                <div style={{ maxHeight: 280, overflowY: 'auto' }}>
-                  {notifications.length === 0 ? (
-                    <div style={{ padding: '2rem', textAlign: 'center', color: '#7c82a0', fontSize: '0.8rem' }}>
-                      Nenhuma notificação por enquanto.
-                    </div>
-                  ) : notifications.map(n => (
-                    <div
-                      key={n.id}
-                      style={{
-                        padding: '12px 16px',
-                        borderBottom: '1px solid rgba(42,47,69,0.5)',
-                        cursor: 'pointer',
-                        background: n.read ? 'transparent' : 'rgba(108, 99, 255, 0.05)',
-                        transition: 'background .2s'
-                      }}
-                      onClick={() => {
-                        setNotifications(prev => prev.map(item => item.id === n.id ? { ...item, read: true } : item));
-                        setSelectedNotif(n);
-                        setShowNotifBox(false);
-                      }}
-                    >
-                      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                        <b style={{ fontSize: '0.8rem', color: '#8b84ff' }}>{n.title}</b>
-                        <span style={{ fontSize: '0.65rem', color: '#7c82a0', marginLeft: 'auto' }}>{n.time}</span>
-                      </div>
-                      <p style={{ fontSize: '0.75rem', color: '#e8eaf0', margin: 0, lineHeight: 1.4 }}>{n.text}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            )}
           </div>
 
           <Link 
@@ -620,7 +446,7 @@ const Header = ({ theme, toggleTheme }) => {
             </Link>
           </div>
 
-          {/* Visit Count / Notification Mobile Sticky Area */}
+          {/* Visit Count Mobile Sticky Area */}
           <div style={{ display: 'flex', justifyContent: 'center', paddingBottom: '20px' }}>
             <button 
               onClick={(e) => { handleVisitorBellClick(e); }}
@@ -637,64 +463,11 @@ const Header = ({ theme, toggleTheme }) => {
                 cursor: 'pointer'
               }}
             >
-              <Bell size={20} />
-              {hasPagesNotif && (
-                <span style={{
-                  position: 'absolute',
-                  top: 0,
-                  right: 0,
-                  width: 10,
-                  height: 10,
-                  background: '#f43f5e',
-                  borderRadius: '50%',
-                  border: '2px solid #0a0a0a'
-                }} />
-              )}
               <span style={{ fontWeight: 850, fontSize: '1.05rem' }}>{visitorTotal + visitorLiveCount}</span>
               <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', opacity: 0.8 }}>visitas</span>
             </button>
           </div>
         </nav>
-      )}
-
-      {/* Modal de Notificação */}
-      {selectedNotif && (
-        <div className="notif-modal-overlay" onClick={() => setSelectedNotif(null)}>
-          <div
-            className="notif-modal-content"
-            style={{
-              background: '#1a1d27',
-              borderRadius: 16,
-              border: '1px solid #2a2f45',
-              width: 'min(400px, 100%)',
-              padding: '24px',
-              boxShadow: '0 20px 50px rgba(0,0,0,0.5)'
-            }}
-            onClick={e => e.stopPropagation()}
-          >
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-              <h3 style={{ margin: 0, fontSize: '1.1rem', color: '#fff' }}>{selectedNotif.title}</h3>
-              <button onClick={() => setSelectedNotif(null)} style={{ background: 'none', border: 'none', color: '#7c82a0', fontSize: '1.2rem', cursor: 'pointer' }}>×</button>
-            </div>
-            <p style={{ color: '#e8eaf0', lineHeight: 1.5 }}>{selectedNotif.text}</p>
-            <button
-              onClick={() => setSelectedNotif(null)}
-              style={{
-                marginTop: 16,
-                width: '100%',
-                padding: '10px',
-                borderRadius: 8,
-                background: 'linear-gradient(135deg, #c19a6b 0%, #8b6b4a 100%)',
-                color: '#fff',
-                border: 'none',
-                fontWeight: 700,
-                cursor: 'pointer'
-              }}
-            >
-              Entendi
-            </button>
-          </div>
-        </div>
       )}
 
       {/* Modal de Visitantes */}

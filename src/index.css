@@ -1,13 +1,18 @@
 :root {
-  /* Default Dark Theme */
+  /* Default Dark Theme — paleta dourada ADMAC */
   --primary-color: #d4af37; /* Gold/Yellow accent */
-  --primary-hover: #b5952f;
-  --bg-color: #1a1a1a;
+  --primary-hover: #e6c14f;
+  --primary-deep: #b5952f;
+  --bg-color: #0f0e0c; /* preto quente (mais profundo que antes) */
+  --bg-elevated: #171511; /* superfície elevada p/ cards e seções */
   --card-bg: #ffffff;
-  --text-color: #ffffff;
+  --text-color: #f5f1e6; /* branco levemente quente */
   --text-dark: #333333;
-  --text-muted: #888888;
-  --nav-bg: #111111;
+  --text-muted: #a39a85; /* muted com tom dourado suave */
+  --nav-bg: rgba(15, 14, 12, 0.92);
+  --border-gold: rgba(212, 175, 55, 0.16);
+  --border-gold-strong: rgba(212, 175, 55, 0.38);
+  --glow-gold: rgba(212, 175, 55, 0.28);
   --font-main: "Inter", system-ui, Avenir, Helvetica, Arial, sans-serif;
 }
 
@@ -31,9 +36,18 @@ html, body {
   position: relative;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   font-family: var(--font-main);
+  /* Fundo em camadas: brilho dourado suave no topo + profundidade quente */
   background-color: var(--bg-color);
+  background-image:
+    radial-gradient(ellipse 80% 50% at 50% -10%, rgba(212, 175, 55, 0.10), transparent 60%),
+    radial-gradient(ellipse 60% 40% at 100% 100%, rgba(212, 175, 55, 0.05), transparent 65%);
+  background-attachment: fixed;
   color: var(--text-color);
   line-height: 1.6;
   font-weight: 400;
@@ -63,7 +77,17 @@ button {
 
 button:hover {
   filter: brightness(1.1);
-  transform: translateY(-2px);
+}
+
+/* Controles flutuantes e de carrossel: sem deslocamento no hover.
+   (transform no hover faz o botao "fugir" do cursor na borda -> tremor,
+   e desloca o alvo entre o calculo da posicao e o clique) */
+.carousel-btn:hover,
+.carousel-arrow:hover,
+.carousel-dot:hover,
+.bell-float-btn:hover,
+.whatsapp-float-btn:hover {
+  transform: none;
 }
 
 .container {
@@ -107,21 +131,21 @@ button:hover {
   background: rgba(255, 255, 255, 0.04);
   -webkit-backdrop-filter: blur(16px);
   backdrop-filter: blur(16px);
-  border: 1px solid rgba(212, 175, 55, 0.12);
+  border: 1px solid var(--border-gold);
   box-shadow:
-    0 8px 32px rgba(0, 0, 0, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    0 8px 32px rgba(0, 0, 0, 0.25),
+    inset 0 1px 0 rgba(212, 175, 55, 0.08);
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .glass:hover {
-  background: rgba(255, 255, 255, 0.07);
-  border: 1px solid rgba(212, 175, 55, 0.3);
+  background: rgba(212, 175, 55, 0.06);
+  border: 1px solid var(--border-gold-strong);
   box-shadow:
-    0 12px 40px rgba(0, 0, 0, 0.3),
-    0 0 0 1px rgba(212, 175, 55, 0.1),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08);
-  transform: translateY(-2px);
+    0 12px 40px rgba(0, 0, 0, 0.35),
+    0 0 24px var(--glow-gold),
+    inset 0 1px 0 rgba(212, 175, 55, 0.12);
+  transform: translateY(-3px);
 }
 
 @supports not ((-webkit-backdrop-filter: blur(10px)) or (backdrop-filter: blur(10px))) {
@@ -136,9 +160,9 @@ button:hover {
 .card:hover {
   transform: translateY(-4px);
   box-shadow:
-    0 12px 30px rgba(0, 0, 0, 0.4),
-    0 0 0 1px rgba(212, 175, 55, 0.15),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
+    0 12px 30px rgba(0, 0, 0, 0.45),
+    0 0 20px rgba(212, 175, 55, 0.12),
+    inset 0 1px 0 rgba(212, 175, 55, 0.08);
 }
 
 /* NOVA MELHORIA: Scrollbar Melhorado e Moderno no padrão da paleta dourada/cinza */
@@ -281,4 +305,145 @@ button:hover {
   outline: 2px solid var(--primary-color);
   outline-offset: 2px;
   border-radius: 4px;
+}
+
+/* ── Sino de Avisos (flutuante) ───────────────────────────── */
+.bell-widget {
+  position: fixed;
+  right: 20px;
+  bottom: 96px;
+  z-index: 999;
+}
+
+.bell-float-btn {
+  position: relative;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, var(--primary-color), var(--primary-deep));
+  color: #1a1608;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 18px var(--glow-gold), 0 2px 6px rgba(0, 0, 0, 0.35);
+  border: 1px solid var(--border-gold-strong);
+}
+
+.bell-icon {
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.bell-float-btn.has-unread .bell-icon {
+  animation: bell-swing 1.6s ease-in-out infinite;
+  transform-origin: top center;
+}
+
+@keyframes bell-swing {
+  0%, 100% { transform: rotate(0deg); }
+  20% { transform: rotate(14deg); }
+  40% { transform: rotate(-12deg); }
+  60% { transform: rotate(8deg); }
+  80% { transform: rotate(-6deg); }
+}
+
+.bell-badge {
+  position: absolute;
+  top: 3px;
+  right: 3px;
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #e53935;
+  border: 2px solid #fff;
+  animation: bell-pulse 1.4s ease-in-out infinite;
+}
+
+@keyframes bell-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(229, 57, 53, 0.55); }
+  50% { box-shadow: 0 0 0 7px rgba(229, 57, 53, 0); }
+}
+
+.bell-popup {
+  position: absolute;
+  bottom: 64px;
+  right: 0;
+  width: min(320px, calc(100vw - 40px));
+  background: var(--bg-elevated);
+  border: 1px solid var(--border-gold-strong);
+  border-radius: 14px;
+  box-shadow: 0 10px 34px rgba(0, 0, 0, 0.45), 0 0 22px var(--glow-gold);
+  overflow: hidden;
+  animation: bell-pop 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes bell-pop {
+  from { opacity: 0; transform: translateY(10px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.bell-popup-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--primary-color);
+  background: rgba(212, 175, 55, 0.08);
+  border-bottom: 1px solid var(--border-gold);
+}
+
+.bell-close {
+  background: none;
+  border: none;
+  color: var(--text-muted);
+  font-size: 0.95rem;
+  padding: 2px 6px;
+}
+
+.bell-message {
+  padding: 14px;
+  font-size: 0.92rem;
+  line-height: 1.55;
+  color: var(--text-color);
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.bell-popup-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 10px 12px;
+  border-top: 1px solid var(--border-gold);
+  flex-wrap: wrap;
+}
+
+.bell-sound-toggle,
+.bell-read-btn {
+  font-size: 0.78rem;
+  font-weight: 600;
+  padding: 7px 12px;
+  border-radius: 999px;
+  transition: all 0.25s ease;
+}
+
+.bell-sound-toggle.on {
+  background: rgba(212, 175, 55, 0.16);
+  color: var(--primary-color);
+  border: 1px solid var(--border-gold-strong);
+}
+
+.bell-sound-toggle.off {
+  background: transparent;
+  color: var(--text-muted);
+  border: 1px solid var(--border-gold);
+}
+
+.bell-read-btn {
+  background: var(--primary-color);
+  color: #1a1608;
+  border: none;
 }

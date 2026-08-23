@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { Instagram, Youtube, Facebook, Phone, Music, Mail, MapPin, Clock, Heart, ChevronRight } from 'lucide-react';
+import { Instagram, Youtube, Facebook, Phone, Music, Mail, MapPin, Clock, Heart, ChevronRight, Search } from 'lucide-react';
 import '../css/Footer.css';
 import { transformImageLink } from '../utils/imageUtils';
 import { usePageUpdate } from '../hooks/usePageUpdate';
@@ -8,9 +8,17 @@ import { useSiteData } from '../context/SiteContext';
 
 const Footer = () => {
   const { footerData, headerData, refreshData } = useSiteData();
+  const [searchQuery, setSearchQuery] = useState('');
 
   // Sincronização automática via usePageUpdate
   usePageUpdate(['footer', 'header'], refreshData);
+
+  const handleGoogleSearch = (e) => {
+    e.preventDefault();
+    const q = (searchQuery || '').trim();
+    if (!q) return;
+    window.open('https://www.google.com/search?q=' + encodeURIComponent(q), '_blank', 'noopener');
+  };
 
   // Configuração dos links rápidos no centro do rodapé
   const quickLinks = [
@@ -146,6 +154,22 @@ const Footer = () => {
             )}
           </div>
         </div>
+      </div>
+
+      {/* Buscador Google */}
+      <div className="container footer-search-wrap">
+        <form className="footer-search" onSubmit={handleGoogleSearch} role="search">
+          <Search size={18} className="footer-search-icon" />
+          <input
+            type="text"
+            className="footer-search-input"
+            placeholder="Pesquisar no Google…"
+            value={searchQuery}
+            onChange={e => setSearchQuery(e.target.value)}
+            aria-label="Pesquisar no Google"
+          />
+          <button type="submit" className="footer-search-btn">Buscar</button>
+        </form>
       </div>
 
       {/* Footer Bottom */}
