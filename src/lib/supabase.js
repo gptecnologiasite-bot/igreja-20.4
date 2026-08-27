@@ -12,8 +12,6 @@ if (!hasEnv) {
   console.warn('[Supabase] Variáveis de ambiente ausentes. Operando em modo offline.')
 }
 
-const offlineResponse = (msg = 'Supabase não configurado') => Promise.resolve({ data: null, error: { message: msg, code: 'OFFLINE' }, count: 0 })
-
 const offlineQuery = () => {
   const query = {
     then: (onFulfilled) => {
