@@ -738,20 +738,23 @@
    Home Birthdays Section
    ========================================================================== */
 .birthdays-home-section {
-  padding: 4rem 1rem;
-  background-color: #1a1a1a;
+  padding: 5rem 1rem;
+  background: linear-gradient(180deg, #141414 0%, #1a1a1a 50%, #121212 100%);
   text-align: center;
   position: relative;
+  overflow: hidden;
 }
 
 .birthdays-home-section::before {
   content: '';
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  height: 1px;
-  background: linear-gradient(90deg, transparent, rgba(212, 175, 55, 0.15), transparent);
+  top: -30%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 90%;
+  height: 60%;
+  background: radial-gradient(ellipse at center, rgba(212, 175, 55, 0.08) 0%, transparent 70%);
+  pointer-events: none;
 }
 
 .birthdays-home-header {
@@ -760,16 +763,22 @@
   justify-content: center;
   gap: 1rem;
   margin-bottom: 0.5rem;
+  position: relative;
 }
 
 .birthdays-home-icon {
   font-size: 2.5rem;
+  filter: drop-shadow(0 0 15px rgba(212, 175, 55, 0.4));
 }
 
 .birthdays-home-header h2 {
   font-size: 2.5rem;
   color: var(--primary-color, #d4af37);
   margin: 0;
+  background: linear-gradient(to bottom, #ffffff, #d4af37);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
 }
 
 .birthdays-home-subtitle {
@@ -784,68 +793,124 @@
   gap: 2rem;
   max-width: 1200px;
   margin: 0 auto;
+  position: relative;
 }
 
 .birthdays-home-card {
-  background: rgba(255, 255, 255, 0.04);
-  -webkit-backdrop-filter: blur(12px);
-  backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.03);
+  -webkit-backdrop-filter: blur(14px);
+  backdrop-filter: blur(14px);
   padding: 2rem 1.5rem;
-  border-radius: 18px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
-  border-top: 3px solid var(--primary-color, #d4af37);
+  border-radius: 24px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(212, 175, 55, 0.12);
   display: flex;
   flex-direction: column;
   align-items: center;
-  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-  border-left: 1px solid rgba(255, 255, 255, 0.03);
-  border-right: 1px solid rgba(255, 255, 255, 0.03);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  position: relative;
+  overflow: hidden;
+}
+
+.birthdays-home-card::before {
+  content: '';
+  position: absolute;
+  top: -60%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 200%;
+  height: 120%;
+  background: radial-gradient(ellipse at center, rgba(212, 175, 55, 0.12) 0%, transparent 60%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
 }
 
 .birthdays-home-card:hover {
-  transform: translateY(-8px);
-  box-shadow:
-    0 16px 40px rgba(0, 0, 0, 0.25),
-    0 0 0 1px rgba(212, 175, 55, 0.15);
-  border-color: rgba(212, 175, 55, 0.4);
+  transform: translateY(-10px) scale(1.02);
+  border-color: rgba(212, 175, 55, 0.5);
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5), 0 0 30px rgba(212, 175, 55, 0.15);
 }
 
-.birthdays-home-card img {
-  width: 100px;
-  height: 100px;
+.birthdays-home-card:hover::before {
+  opacity: 1;
+}
+
+.birthdays-home-photo-wrap {
+  position: relative;
+  width: 110px;
+  height: 110px;
+  margin-bottom: 1.2rem;
+  border-radius: 50%;
+  padding: 5px;
+  background: linear-gradient(135deg, #d4af37 0%, #b8860b 50%, rgba(212, 175, 55, 0.2) 100%);
+  box-shadow: 0 10px 25px rgba(184, 134, 11, 0.35);
+}
+
+.birthdays-home-photo-wrap img {
+  width: 100%;
+  height: 100%;
   border-radius: 50%;
   object-fit: cover;
-  margin-bottom: 1.2rem;
-  border: 3px solid var(--primary-color, #d4af37);
-  padding: 3px;
+  border: 3px solid #1a1a1a;
+  padding: 0;
   background: #1a1a1a;
+  margin: 0;
+  transition: transform 0.4s ease;
+}
+
+.birthdays-home-card:hover .birthdays-home-photo-wrap img {
+  transform: scale(1.05);
+}
+
+.birthdays-home-badge {
+  position: absolute;
+  bottom: 2px;
+  right: 2px;
+  background: linear-gradient(135deg, #d4af37 0%, #b8860b 100%);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  border: 2px solid #1a1a1a;
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
 }
 
 .birthdays-home-name {
   color: #fff;
   font-size: 1.2rem;
   font-weight: 700;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.6rem;
   text-align: center;
 }
 
 .birthdays-home-date {
-  color: var(--primary-color, #d4af37);
-  font-size: 0.95rem;
-  font-weight: 600;
-  margin-bottom: 0.5rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: rgba(212, 175, 55, 0.1);
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  color: #d4af37;
+  padding: 0.35rem 1rem;
+  border-radius: 50px;
+  font-size: 0.9rem;
+  font-weight: 700;
+  margin-bottom: 1rem;
 }
 
 .birthdays-home-ministry {
-  background: rgba(212, 175, 55, 0.1);
-  color: var(--primary-color, #d4af37);
-  padding: 0.3rem 0.8rem;
-  border-radius: 20px;
-  font-size: 0.8rem;
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.7);
+  padding: 0.35rem 0.9rem;
+  border-radius: 50px;
+  font-size: 0.78rem;
   font-weight: 600;
   margin-top: auto;
-  border: 1px solid rgba(212, 175, 55, 0.3);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  letter-spacing: 0.02em;
 }
 
 .birthdays-home-empty {

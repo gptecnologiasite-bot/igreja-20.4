@@ -349,10 +349,13 @@ const Home = () => {
           <div className="birthdays-home-grid">
             {allBirthdays.map((person, index) => (
               <div key={index} className="birthdays-home-card">
-                <img
-                  src={transformImageLink(person.photo) || `https://ui-avatars.com/api/?name=${encodeURIComponent(person.name || 'A')}&background=d4af37&color=000&bold=true&size=150`}
-                  alt={person.name || ''}
-                />
+                <div className="birthdays-home-photo-wrap">
+                  <img
+                    src={transformImageLink(person.photo) || `https://ui-avatars.com/api/?name=${encodeURIComponent(person.name || 'A')}&background=d4af37&color=000&bold=true&size=150`}
+                    alt={person.name || ''}
+                  />
+                  <span className="birthdays-home-badge">🎂</span>
+                </div>
                 <div className="birthdays-home-name">{person.name || '—'}</div>
                 {person.date && (
                   <div className="birthdays-home-date">🎂 {person.date}</div>
