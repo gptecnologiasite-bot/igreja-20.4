@@ -185,23 +185,20 @@ const Midia = () => {
                         </motion.div>
 
                         {allVideos && allVideos.length > 0 && (
-                            <div className="video-gallery-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
+                            <div className="video-gallery-grid">
                                 {allVideos.map((vid, idx) => (
                                     <motion.div
                                         key={idx}
                                         className="video-thumb-card"
                                         {...fadeIn}
                                         transition={{ delay: idx * 0.1 }}
-                                        style={{ background: 'rgba(255,255,255,0.05)', borderRadius: '12px', overflow: 'hidden', cursor: 'pointer' }}
                                         onClick={() => window.open(vid.url.replace('embed/', 'watch?v='), '_blank')}
                                     >
-                                        <div style={{ position: 'relative', height: '180px' }}>
+                                        <div className="video-thumb-media">
                                             <img
                                                 src={transformImageLink(vid.thumbnail) || getYoutubeThumbnail(vid.url) || 'https://via.placeholder.com/640x360?text=ADMAC+Video'}
                                                 alt={vid.title}
-                                                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                                 onError={(e) => {
-                                                    // Se falhar, tenta o thumbnail do YouTube do URL se já não for ele
                                                     const ytThumb = getYoutubeThumbnail(vid.url);
                                                     if (ytThumb && e.target.src !== ytThumb) {
                                                         e.target.src = ytThumb;
@@ -210,13 +207,13 @@ const Midia = () => {
                                                     }
                                                 }}
                                             />
-                                            <div style={{ position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.3)' }}>
+                                            <div className="video-thumb-play">
                                                 <Play fill="white" size={40} />
                                             </div>
                                         </div>
-                                        <div style={{ padding: '1rem' }}>
-                                            <h4 style={{ margin: '0 0 0.5rem 0', fontSize: '1rem' }}>{vid.title}</h4>
-                                            <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.8rem', color: 'rgba(255,255,255,0.6)' }}>
+                                        <div className="video-thumb-body">
+                                            <h4>{vid.title}</h4>
+                                            <div className="video-thumb-meta">
                                                 <span>{vid.date}</span>
                                                 <span>{vid.views} visualizações</span>
                                             </div>
@@ -343,28 +340,16 @@ const Midia = () => {
                             <h2>Documentos</h2>
                             <p>Materiais e documentos disponíveis para download.</p>
                         </div>
-                        <div style={{ maxWidth: 720, margin: '0 auto' }}>
+                        <div className="docs-list">
                             {texts.map((doc, idx) => (
                                 <a
                                     key={idx}
                                     href={getDriveDisplayUrl(doc.id, doc.mimeType)}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    style={{
-                                        display: 'flex',
-                                        justifyContent: 'space-between',
-                                        alignItems: 'center',
-                                        padding: '1rem 1.2rem',
-                                        background: 'rgba(255,255,255,0.05)',
-                                        borderRadius: '10px',
-                                        marginBottom: '0.75rem',
-                                        color: 'inherit',
-                                        textDecoration: 'none',
-                                        border: '1px solid rgba(255,255,255,0.08)',
-                                        transition: 'background 0.2s'
-                                    }}
+                                    className="doc-item"
                                 >
-                                    <span style={{ fontWeight: 600 }}>{doc.name}</span>
+                                    <span>{doc.name}</span>
                                     <ExternalLink size={18} />
                                 </a>
                             ))}

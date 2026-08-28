@@ -19,6 +19,7 @@ const Sobre = () => {
             }}>
                 <div className="hero-overlay"></div>
                 <div className="hero-content">
+                    <span className="hero-badge">Nossa História • ADMAC</span>
                     <Church size={80} className="hero-icon" />
                     <h1>{data.hero?.title || 'Sobre a ADMAC'}</h1>
                     <p className="hero-subtitle">{data.hero?.subtitle || 'Nossa história, missão e valores'}</p>

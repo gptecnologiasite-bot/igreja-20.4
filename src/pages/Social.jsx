@@ -25,9 +25,15 @@ const Social = () => {
       }}>
         <div className="hero-overlay"></div>
         <div className="hero-content">
+          <span className="hero-badge">Ação Social • ADMAC</span>
           <Heart size={64} className="hero-icon" />
           <h1>{data.hero?.title || 'Ação Social'}</h1>
           <p className="hero-subtitle">{data.hero?.subtitle || 'Servindo com amor'}</p>
+          {data.hero?.verse && (
+            <div className="hero-verse">
+              <p>{data.hero.verse}</p>
+            </div>
+          )}
           <div className="hero-stats">
             <div className="stat-card">
               <Users size={32} />

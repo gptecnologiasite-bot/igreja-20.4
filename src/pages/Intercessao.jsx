@@ -25,6 +25,7 @@ const Intercessao = () => {
       }}>
         <div className="hero-overlay"></div>
         <div className="hero-content">
+          <span className="hero-badge">Intercessão • ADMAC</span>
           {data?.whatsappUrl ? (
             <MessageSquare size={80} className="hero-icon" color="#25D366" style={{ filter: 'drop-shadow(0 0 20px rgba(37, 211, 102, 0.4))' }} />
           ) : (
@@ -94,31 +95,15 @@ const Intercessao = () => {
           </div>
           <p className="section-subtitle">Participe dos nossos encontros de intercessão</p>
 
-          <div className="schedule-grid" style={{
-            display: 'grid',
-            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
-            gap: '2rem',
-            marginTop: '3rem'
-          }}>
+          <div className="schedule-grid">
             {(data?.schedule || []).map((item, index) => (
-              <div key={index} className="schedule-card" style={{
-                background: 'rgba(255, 255, 255, 0.03)',
-                border: '1px solid rgba(212, 175, 55, 0.2)',
-                borderRadius: '12px',
-                padding: '2.5rem 2rem',
-                transition: 'all 0.3s ease',
-                textAlign: 'center',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center'
-              }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', marginBottom: '1.2rem', justifyContent: 'center' }}>
-                  <Clock size={24} color="var(--primary-color)" />
-                  <h3 style={{ margin: 0, color: 'var(--primary-color)', fontSize: '1.2rem' }}>{item.day}</h3>
+              <div key={index} className="schedule-card">
+                <div className="schedule-card-head">
+                  <Clock size={24} />
+                  <h3>{item.day}</h3>
                 </div>
-                <p style={{ fontSize: '2rem', fontWeight: 'bold', margin: '0.5rem 0', color: '#fff' }}>{item.time}</p>
-                <p style={{ color: 'rgba(255, 255, 255, 0.7)', fontSize: '1.1rem', marginTop: '0.5rem' }}>{item.activity}</p>
+                <p className="schedule-time">{item.time}</p>
+                <p className="schedule-activity">{item.activity}</p>
               </div>
             ))}
           </div>
@@ -136,28 +121,12 @@ const Intercessao = () => {
                 <p className="section-subtitle">Substituímos a galeria de fotos pelo nosso grupo oficial de oração</p>
               </div>
               
-              <div className="team-card" style={{ 
-                borderTop: '5px solid #25D366', 
-                padding: '4rem 2rem', 
-                background: 'rgba(37, 211, 102, 0.03)',
-                boxShadow: '0 20px 40px rgba(0,0,0,0.3)',
-                borderRadius: '20px'
-              }}>
-                <div style={{ 
-                  background: 'linear-gradient(135deg, #25D366 0%, #128C7E 100%)', 
-                  width: '100px', 
-                  height: '100px', 
-                  borderRadius: '50%', 
-                  margin: '0 auto 2rem',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  boxShadow: '0 10px 20px rgba(37, 211, 102, 0.3)'
-                }}>
+              <div className="team-card whatsapp-card">
+                <div className="whatsapp-icon-wrap">
                   <MessageSquare size={50} color="#fff" />
                 </div>
-                <h3 style={{ fontSize: '2rem', marginBottom: '1rem' }}>Entre em Nosso Grupo</h3>
-                <p style={{ color: 'rgba(255, 255, 255, 0.8)', marginBottom: '2.5rem', fontSize: '1.2rem', lineHeight: '1.6' }}>
+                <h3 className="whatsapp-title">Entre em Nosso Grupo</h3>
+                <p className="whatsapp-text">
                   A nossa equipe de intercessores está reunida no WhatsApp. <br/>
                   Clique abaixo para entrar e deixar seus pedidos ou orar conosco em tempo real.
                 </p>
@@ -165,18 +134,7 @@ const Intercessao = () => {
                   href={data.whatsappUrl} 
                   target="_blank" 
                   rel="noopener noreferrer" 
-                  className="submit-btn" 
-                  style={{ 
-                    background: '#25D366', 
-                    width: 'auto', 
-                    padding: '1.2rem 3rem', 
-                    fontSize: '1.1rem',
-                    fontWeight: 'bold',
-                    borderRadius: '50px',
-                    display: 'inline-flex',
-                    alignItems: 'center',
-                    gap: '12px'
-                  }}
+                  className="whatsapp-btn"
                 >
                   <MessageSquare size={24} />
                   ACESSAR WHATSAPP AGORA
