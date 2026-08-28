@@ -108,9 +108,15 @@ const Homens = () => {
           <div className="team-grid">
             {data.team.map((member, index) => (
               <div key={index} className="team-card">
-                <img src={transformImageLink(member.photo)} alt={member.name} className="team-photo" />
+                <div className="team-photo-wrap">
+                  <img src={transformImageLink(member.photo)} alt={member.name} className="team-photo" />
+                </div>
                 <h3>{member.name}</h3>
-                <p>{member.role}</p>
+                <p className="team-role">{member.role}</p>
+                <div className="team-excellence">
+                  <Star size={14} />
+                  <span>Servindo a Deus com excelência</span>
+                </div>
               </div>
             ))}
           </div>

@@ -1,6 +1,6 @@
 import React from 'react';
 import { transformImageLink } from '../lib/dbUtils';
-import { Heart, Calendar, MessageSquare, Clock, Play } from 'lucide-react';
+import { Heart, Calendar, MessageSquare, Clock, Play, Sparkles } from 'lucide-react';
 import { useMinistryData } from '../hooks/useMinistryData';
 import '../css/Lares.css';
 
@@ -152,7 +152,11 @@ const Intercessao = () => {
                       <img src={transformImageLink(member.photo)} alt={member.name} className="team-photo" />
                     </div>
                     <h3>{member.name}</h3>
-                    <p>{member.role}</p>
+                    <p className="team-role">{member.role}</p>
+                    <div className="team-excellence">
+                      <Sparkles size={14} />
+                      <span>Servindo a Deus com excelência</span>
+                    </div>
                   </div>
                 ))}
               </div>

@@ -245,47 +245,113 @@
 
 .sobre-page .team-card {
   background: rgba(255, 255, 255, 0.03);
-  padding: 2rem;
-  border-radius: 20px;
+  padding: 2.5rem 2rem;
+  border-radius: 24px;
   text-align: center;
-  transition: transform 0.4s ease, box-shadow 0.4s ease, border-color 0.4s ease;
-  border: 1px solid rgba(212, 175, 55, 0.2);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  border: 1px solid rgba(212, 175, 55, 0.1);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
   backdrop-filter: blur(14px);
+  position: relative;
+  overflow: hidden;
+}
+
+.sobre-page .team-card::before {
+  content: '';
+  position: absolute;
+  top: -60%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 200%;
+  height: 120%;
+  background: radial-gradient(ellipse at center, rgba(212, 175, 55, 0.12) 0%, transparent 60%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
 }
 
 .sobre-page .team-card:hover {
-  transform: translateY(-8px);
+  transform: translateY(-12px) scale(1.02);
   border-color: rgba(212, 175, 55, 0.5);
-  box-shadow: 0 25px 50px rgba(212, 175, 55, 0.2);
+  box-shadow: 0 25px 50px rgba(0, 0, 0, 0.5), 0 0 30px rgba(212, 175, 55, 0.15);
+}
+
+.sobre-page .team-card:hover::before {
+  opacity: 1;
+}
+
+.sobre-page .team-photo-wrap {
+  position: relative;
+  width: 130px;
+  height: 130px;
+  margin: 0 auto 1.5rem;
+  border-radius: 50%;
+  padding: 5px;
+  background: linear-gradient(135deg, #d4af37 0%, #b8860b 50%, rgba(212, 175, 55, 0.2) 100%);
+  box-shadow: 0 10px 25px rgba(184, 134, 11, 0.35);
 }
 
 .sobre-page .team-photo {
-  width: 120px;
-  height: 120px;
+  width: 100%;
+  height: 100%;
   border-radius: 50%;
-  border: 3px solid #d4af37;
-  margin: 0 auto 1rem auto;
+  border: 3px solid #050508;
+  margin: 0;
   object-fit: cover;
   object-position: top center;
   display: block;
-  box-shadow: 0 0 20px rgba(212, 175, 55, 0.3);
+  box-shadow: none;
+  transition: transform 0.4s ease;
+}
+
+.sobre-page .team-card:hover .team-photo {
+  transform: scale(1.05);
 }
 
 .sobre-page .team-card h3 {
   color: #fff;
   margin-bottom: 0.5rem;
-  font-size: 1.1rem;
+  font-size: 1.15rem;
   font-weight: 700;
 }
 
-.sobre-page .team-card p {
+.sobre-page .team-role {
   color: #f1d27a;
-  font-size: 0.9rem;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 1.25rem;
+}
+
+.sobre-page .team-excellence {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(212, 175, 55, 0.08);
+  border: 1px solid rgba(212, 175, 55, 0.2);
+  border-radius: 50px;
+  padding: 0.5rem 1rem;
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 0.75rem;
   font-weight: 600;
+  letter-spacing: 0.02em;
+  line-height: 1.3;
+  transition: all 0.3s ease;
+}
+
+.sobre-page .team-excellence svg {
+  color: #d4af37;
+  flex-shrink: 0;
+}
+
+.sobre-page .team-card:hover .team-excellence {
+  background: rgba(212, 175, 55, 0.15);
+  border-color: rgba(212, 175, 55, 0.4);
+  color: #fff;
 }
 
 /* ===== GALLERY ===== */

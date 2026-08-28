@@ -392,23 +392,20 @@ const Missoes = () => {
                margin: '0 auto'
             }}>
               {team.map((member, index) => (
-                <div key={index} className="team-card" style={{ textAlign: 'center' }}>
-                  <div style={{ display: 'flex', justifyContent: 'center', width: '100%', marginBottom: '1.5rem' }}>
+                <div key={index} className="team-card">
+                  <div className="team-photo-wrap">
                     <img 
                       src={transformImageLink(member.photo)} 
                       alt={member.name} 
-                      style={{ 
-                        width: '180px', 
-                        height: '180px', 
-                        borderRadius: '24px', 
-                        objectFit: 'cover',
-                        objectPosition: 'center',
-                        boxShadow: '0 10px 25px rgba(0,0,0,0.3)'
-                      }} 
+                      className="team-photo"
                     />
                   </div>
-                  <h3 style={{ fontSize: '1.3rem', marginBottom: '0.3rem', width: '100%', textAlign: 'center' }}>{member.name}</h3>
-                  <p style={{ color: 'var(--primary-color)', fontWeight: '500', width: '100%', textAlign: 'center' }}>{member.role}</p>
+                  <h3>{member.name}</h3>
+                  <p className="team-role">{member.role}</p>
+                  <div className="team-excellence">
+                    <Star size={14} />
+                    <span>Servindo a Deus com excelência</span>
+                  </div>
                 </div>
               ))}
             </div>

@@ -1,7 +1,7 @@
 import React from 'react';
 import { transformImageLink } from '../lib/dbUtils';
 // import { supabase } from '../lib/supabase';
-import { Music, Calendar, Clock, Users, Mic, Guitar, Headphones, Heart, Camera, Gift } from 'lucide-react';
+import { Music, Calendar, Clock, Users, Mic, Guitar, Headphones, Heart, Camera, Gift, Sparkles } from 'lucide-react';
 import { useMinistryData } from '../hooks/useMinistryData';
 import '../css/Louvor.css';
 
@@ -112,9 +112,15 @@ const Louvor = () => {
           <div className="team-grid">
             {team.map((member, index) => (
               <div key={index} className="team-card">
-                <img src={transformImageLink(member.photo || `https://ui-avatars.com/api/?name=${encodeURIComponent(member.name)}`)} alt={member.name} className="team-photo" />
+                <div className="team-photo-wrap">
+                  <img src={transformImageLink(member.photo || `https://ui-avatars.com/api/?name=${encodeURIComponent(member.name)}`)} alt={member.name} className="team-photo" />
+                </div>
                 <h3>{member.name}</h3>
-                <p>{member.role}</p>
+                <p className="team-role">{member.role}</p>
+                <div className="team-excellence">
+                  <Sparkles size={14} />
+                  <span>Servindo a Deus com excelência</span>
+                </div>
               </div>
             ))}
           </div>

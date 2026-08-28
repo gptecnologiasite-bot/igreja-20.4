@@ -77,13 +77,19 @@ const Sobre = () => {
                         <div className="team-grid">
                             {data.team.map((member, index) => (
                                 <div key={index} className="team-card">
-                                    <img
-                                        src={member.photo || `https://ui-avatars.com/api/?name=${encodeURIComponent(member.name || 'Membro')}`}
-                                        alt={member.name || 'Membro'}
-                                        className="team-photo"
-                                    />
+                                    <div className="team-photo-wrap">
+                                        <img
+                                            src={member.photo || `https://ui-avatars.com/api/?name=${encodeURIComponent(member.name || 'Membro')}`}
+                                            alt={member.name || 'Membro'}
+                                            className="team-photo"
+                                        />
+                                    </div>
                                     <h3>{member.name}</h3>
-                                    <p>{member.role}</p>
+                                    <p className="team-role">{member.role}</p>
+                                    <div className="team-excellence">
+                                        <Star size={14} />
+                                        <span>Pastores e líderes dedicados ao serviço</span>
+                                    </div>
                                 </div>
                             ))}
                         </div>

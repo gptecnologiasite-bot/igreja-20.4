@@ -282,38 +282,111 @@
 }
 
 .retiro-page .team-card {
-  background: #2a2a2a;
-  padding: 2rem;
-  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.03);
+  padding: 2.5rem 2rem;
+  border-radius: 24px;
   text-align: center;
   box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-  transition: transform 0.3s;
-  border-top: 3px solid #16a34a;
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  border: 1px solid rgba(22, 163, 74, 0.1);
+  backdrop-filter: blur(12px);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+}
+
+.retiro-page .team-card::before {
+  content: '';
+  position: absolute;
+  top: -60%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 200%;
+  height: 120%;
+  background: radial-gradient(ellipse at center, rgba(22, 163, 74, 0.12) 0%, transparent 60%);
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  pointer-events: none;
 }
 
 .retiro-page .team-card:hover {
-  transform: translateY(-10px);
+  transform: translateY(-12px) scale(1.02);
+  border-color: rgba(22, 163, 74, 0.5);
+  box-shadow: 0 25px 50px rgba(0,0,0,0.5), 0 0 30px rgba(22, 163, 74, 0.15);
+}
+
+.retiro-page .team-card:hover::before {
+  opacity: 1;
+}
+
+.retiro-page .team-photo-wrap {
+  position: relative;
+  width: 130px;
+  height: 130px;
+  margin: 0 auto 1.5rem;
+  border-radius: 50%;
+  padding: 5px;
+  background: linear-gradient(135deg, #16a34a 0%, #15803d 50%, rgba(22, 163, 74, 0.2) 100%);
+  box-shadow: 0 10px 25px rgba(21, 128, 61, 0.35);
 }
 
 .retiro-page .team-photo {
-  width: 100px;
-  height: 100px;
+  width: 100%;
+  height: 100%;
   border-radius: 50%;
-  border: 3px solid #16a34a;
-  margin: 0 auto 1rem auto;
+  border: 3px solid #1a1a1a;
+  margin: 0;
   object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.retiro-page .team-card:hover .team-photo {
+  transform: scale(1.05);
 }
 
 .retiro-page .team-card h3 {
   color: var(--text-color);
   margin-bottom: 0.5rem;
-  font-size: 1rem;
+  font-size: 1.15rem;
+  font-weight: 700;
 }
 
-.retiro-page .team-card p {
+.retiro-page .team-role {
   color: #16a34a;
   font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  margin-bottom: 1.25rem;
+}
+
+.retiro-page .team-excellence {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: rgba(22, 163, 74, 0.08);
+  border: 1px solid rgba(22, 163, 74, 0.2);
+  border-radius: 50px;
+  padding: 0.5rem 1rem;
+  color: rgba(255, 255, 255, 0.75);
+  font-size: 0.75rem;
   font-weight: 600;
+  letter-spacing: 0.02em;
+  line-height: 1.3;
+  transition: all 0.3s ease;
+}
+
+.retiro-page .team-excellence svg {
+  color: #16a34a;
+  flex-shrink: 0;
+}
+
+.retiro-page .team-card:hover .team-excellence {
+  background: rgba(22, 163, 74, 0.15);
+  border-color: rgba(22, 163, 74, 0.4);
+  color: #fff;
 }
 
 /* Gallery Section */
