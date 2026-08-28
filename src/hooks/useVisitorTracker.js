@@ -86,7 +86,7 @@ export const useVisitorTracker = () => {
                     const parsed = api.parse(data);
                     if (parsed) return parsed;
                 } catch (e) {
-                    console.warn(`[Tracker] Falha na API ${api.url}:`, e.message);
+                    console.warn('[Tracker] Falha na API', api.url, ':', e.message);
                 }
             }
             return { label: 'Visitante Anônimo', city: '', region: '', country: '' };

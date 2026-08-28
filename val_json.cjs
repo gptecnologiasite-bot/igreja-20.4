@@ -9,7 +9,7 @@ while ((match = regex.exec(sql)) !== null) {
   try {
     JSON.parse(match[1]);
   } catch (e) {
-    console.error(`Syntax error in JSON block ${i}:`, e.message);
+    console.error('Syntax error in JSON block', i, ':', e.message);
     console.error(match[1].substring(0, 50) + '...');
   }
 }

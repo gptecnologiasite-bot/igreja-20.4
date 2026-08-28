@@ -23,7 +23,7 @@ export const useMinistryData = (ministryId) => {
                 if (!active) return;
 
                 if (error) {
-                    console.error(`❌ [Supabase] Erro ao carregar ministério ${ministryId}:`, error.message, error.details || '');
+                    console.error('❌ [Supabase] Erro ao carregar ministério', ministryId, ':', error.message, error.details || '');
                     
                     // Fallback para localStorage
                     const raw = localStorage.getItem(`admac_site_settings:ministry_${ministryId}`);
@@ -31,10 +31,10 @@ export const useMinistryData = (ministryId) => {
                         try {
                             const local = JSON.parse(raw);
                             setData(deepMerge(defaultData, local));
-                            console.info(`[Storage] Usando cache local para ${ministryId}.`);
+                            console.info('[Storage] Usando cache local para', ministryId, '.');
                             return;
                         } catch (e) {
-                            console.error(`[Storage] JSON inválido para ${ministryId}:`, e);
+                            console.error('[Storage] JSON inválido para', ministryId, ':', e);
                         }
                     }
                     setData(defaultData);
@@ -56,7 +56,7 @@ export const useMinistryData = (ministryId) => {
                 }
             } catch (err) {
                 if (!active) return;
-                console.error(`[useMinistryData] Exceção crítica em ${ministryId}:`, err);
+                console.error('[useMinistryData] Exceção crítica em', ministryId, ':', err);
                 setData(defaultData);
             }
         };
@@ -78,7 +78,7 @@ export const useMinistryData = (ministryId) => {
                 if (!activeCallback) return;
                 
                 if (error) {
-                    console.warn(`[Realtime Update] Erro ao sincronizar ${ministryId}:`, error.message);
+                    console.warn('[Realtime Update] Erro ao sincronizar', ministryId, ':', error.message);
                     return;
                 }
 
@@ -93,7 +93,7 @@ export const useMinistryData = (ministryId) => {
                     localStorage.setItem(`admac_site_settings:ministry_${ministryId}`, JSON.stringify(parsed));
                 }
             } catch (err) {
-                console.error(`[Realtime Update] Exceção em ${ministryId}:`, err);
+                console.error('[Realtime Update] Exceção em', ministryId, ':', err);
             }
         };
         runUpdate();
@@ -118,7 +118,7 @@ export const useMinistryData = (ministryId) => {
             broadcastUpdate(`ministry_${ministryId}`);
             return { success: true };
         } catch (err) {
-            console.error(`[useMinistryData] Erro ao atualizar ${ministryId}:`, err);
+            console.error('[useMinistryData] Erro ao atualizar', ministryId, ':', err);
             return { success: false, error: err };
         }
     };
