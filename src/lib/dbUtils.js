@@ -23,7 +23,7 @@ export const deepMerge = (target, source) => {
       // Ignora sourceValue inválido para arrays
     }
     // Caso contrário, sobrescreve se o valor do source for válido e do tipo esperado
-    else if (sourceValue !== undefined && sourceValue !== null) {
+    else if (sourceValue !== undefined && sourceValue !== null && sourceValue !== '') {
       output[key] = sourceValue;
     }
   });
