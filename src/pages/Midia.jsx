@@ -116,7 +116,7 @@ const Midia = () => {
             date: f.modifiedDate ? new Date(f.modifiedDate).toLocaleDateString('pt-BR') : '',
             views: ''
         }));
-        return [...auto, ...drive, ...(videos || [])];
+        return [...auto, ...drive, ...(videos || [])].slice(0, 4);
     }, [config.enabled, autoVideos, driveVideos, videos]);
 
     // Funções de navegação do carrossel da Galeria
@@ -220,6 +220,20 @@ const Midia = () => {
                                         </div>
                                     </motion.div>
                                 ))}
+                            </div>
+                        )}
+
+                        {allVideos && allVideos.length > 0 && (
+                            <div style={{ textAlign: 'center', marginTop: '3rem' }}>
+                                <a
+                                    href={config.youtubeChannel || 'https://www.youtube.com/@ADMACSEDEOFICIAL316'}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="btn-secondary"
+                                >
+                                    <Youtube size={20} style={{ marginRight: '8px', verticalAlign: 'middle' }} />
+                                    Ver todos no YouTube
+                                </a>
                             </div>
                         )}
                     </div>
