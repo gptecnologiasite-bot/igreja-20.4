@@ -39,7 +39,7 @@ const PastorCarousel = ({ pastors }) => {
         setCurrentIndex(index);
     };
 
-    const currentPastor = pastors[currentIndex];
+    const currentPastor = pastors[currentIndex % pastors.length];
 
     return (
         <div className="pastor-carousel">

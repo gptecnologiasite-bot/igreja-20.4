@@ -93,12 +93,12 @@
 
 .carousel-arrow:hover {
   background: #fff;
-  transform: translateY(-50%) scale(1.1);
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
 }
 
 .carousel-arrow:active {
-  transform: translateY(-50%) scale(0.95);
+  background: #f0f0f0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
 }
 
 .carousel-arrow-left {

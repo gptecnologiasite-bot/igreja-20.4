@@ -83,7 +83,9 @@ button:hover {
    (transform no hover faz o botao "fugir" do cursor na borda -> tremor,
    e desloca o alvo entre o calculo da posicao e o clique) */
 .carousel-btn:hover,
-.carousel-arrow:hover,
+.carousel-arrow:hover {
+  transform: translateY(-50%);
+}
 .carousel-dot:hover,
 .bell-float-btn:hover,
 .whatsapp-float-btn:hover {
