@@ -860,3 +860,53 @@
   border-radius: 14px;
   border: 1px dashed rgba(212, 175, 55, 0.15);
 }
+
+/* ── Relógio / Wear OS (< 320px) ──────────────────────────── */
+@media (max-width: 320px) {
+  .welcome-section {
+    padding: 2.5rem 0.75rem;
+  }
+  .welcome-text h1 {
+    font-size: 1.5rem;
+    line-height: 1.2;
+  }
+  .welcome-text p {
+    font-size: 0.95rem;
+  }
+  .section-header h2 {
+    font-size: 1.6rem;
+  }
+  .section-subtitle {
+    font-size: 0.95rem;
+  }
+  .pastor-image img {
+    width: 110px;
+    height: 110px;
+  }
+  .pastor-card {
+    padding: 1.5rem;
+  }
+  .cta-home-section h2 {
+    font-size: 1.4rem;
+  }
+  .cta-home-section p {
+    font-size: 0.9rem;
+  }
+  .spotify-wrapper iframe {
+    height: 180px;
+  }
+  .ministries-home-section h2,
+  .activities-home-section h2,
+  .birthdays-home-header h2 {
+    font-size: 1.6rem;
+  }
+  .ministry-home-icon {
+    width: 60px;
+    height: 60px;
+    font-size: 2rem;
+  }
+  .schedule-home-card,
+  .ministry-home-card {
+    padding: 1.5rem;
+  }
+}

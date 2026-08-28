@@ -941,3 +941,53 @@ section {
     right: 10px;
   }
 }
+
+/* ── Relógio / Wear OS (< 320px) ──────────────────────────── */
+@media (max-width: 320px) {
+  section {
+    padding: 60px 0;
+  }
+  .container {
+    padding: 0 1rem;
+  }
+  .hero-title {
+    font-size: 2.2rem;
+  }
+  .hero-subtitle {
+    font-size: 1.1rem;
+  }
+  .section-header h2 {
+    font-size: 1.8rem;
+  }
+  .section-header p {
+    font-size: 1rem;
+  }
+  .carousel-btn {
+    width: 36px;
+    height: 36px;
+  }
+  .carousel-btn.prev {
+    left: 0.75rem;
+  }
+  .carousel-btn.next {
+    right: 0.75rem;
+  }
+  .gallery-info {
+    padding: 2.5rem 1.5rem 1.5rem;
+  }
+  .live-card {
+    padding: 1.5rem;
+  }
+  .testimonial-card {
+    padding: 2rem;
+  }
+  .backstage-content h3 {
+    font-size: 1.8rem;
+  }
+  .schedule-card {
+    padding: 1.5rem;
+  }
+  .schedule-info h4 {
+    font-size: 1.4rem;
+  }
+}

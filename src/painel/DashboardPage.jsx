@@ -66,7 +66,7 @@ function DashboardPage({ dynamicStats, pendingUsers, currentUser, approveUser, s
         </div>
       )}
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(400px, 1fr))', gap: '1.2rem', marginBottom: '1.2rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(280px, 100%), 1fr))', gap: '1.2rem', marginBottom: '1.2rem' }}>
         <div className="painel-card">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.2rem' }}>
             <h3 style={{ fontSize: '.95rem', fontWeight: 600 }}>📍 Visitas por Localidade</h3>

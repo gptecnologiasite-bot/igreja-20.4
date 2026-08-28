@@ -565,3 +565,52 @@
   font-weight: 800;
   cursor: pointer;
 }
+
+/* ── Relógio / Wear OS (< 320px) ──────────────────────────── */
+@media (max-width: 320px) {
+  .logo-icon img {
+    height: 36px;
+    max-width: 110px;
+  }
+  .logo-text {
+    font-size: 0.9rem;
+    max-width: 90px;
+  }
+  .header-actions {
+    gap: 8px;
+  }
+  .nav-notification-btn {
+    width: 36px;
+    height: 36px;
+  }
+  .admin-cta-button {
+    width: 36px;
+    height: 36px;
+  }
+  .mobile-menu-btn {
+    padding: 6px;
+  }
+  .mobile-nav {
+    padding: 60px 1rem 1rem;
+  }
+  .mobile-nav a {
+    font-size: 1rem;
+    padding: 0.6rem 0;
+  }
+  .mobile-dropdown-trigger {
+    font-size: 0.95rem;
+    padding: 0.6rem 0;
+  }
+}
+
+/* ── TV Android (>= 1920px) ───────────────────────────────── */
+@media (min-width: 1920px) {
+  .nav-notification-btn {
+    width: 52px;
+    height: 52px;
+  }
+  .admin-cta-button {
+    width: 52px;
+    height: 52px;
+  }
+}

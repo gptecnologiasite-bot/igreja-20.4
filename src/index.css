@@ -447,3 +447,72 @@ button:hover {
   color: #1a1608;
   border: none;
 }
+
+/* ── Relógio / Wear OS (< 320px) ──────────────────────────── */
+@media (max-width: 320px) {
+  body {
+    font-size: 0.88rem;
+  }
+  .container {
+    padding: 0 10px;
+  }
+  .whatsapp-float-btn {
+    bottom: 12px;
+    right: 12px;
+    width: 44px;
+    height: 44px;
+  }
+  .whatsapp-float-btn img {
+    width: 24px;
+    height: 24px;
+  }
+  .bell-widget {
+    right: 8px;
+    bottom: 66px;
+  }
+  .bell-float-btn {
+    width: 44px;
+    height: 44px;
+  }
+  .bell-icon {
+    font-size: 1.2rem;
+  }
+  .bell-popup {
+    width: calc(100vw - 16px);
+  }
+}
+
+/* ── TV Android (>= 1920px) ───────────────────────────────── */
+@media (min-width: 1920px) {
+  html {
+    font-size: 18px;
+  }
+  :focus-visible {
+    outline: 3px solid var(--primary-color);
+    outline-offset: 3px;
+  }
+  .container {
+    max-width: 1600px;
+  }
+  .whatsapp-float-btn {
+    bottom: 40px;
+    right: 40px;
+    width: 72px;
+    height: 72px;
+  }
+  .whatsapp-float-btn img {
+    width: 40px;
+    height: 40px;
+  }
+  .bell-widget {
+    right: 28px;
+    bottom: 130px;
+  }
+  .bell-float-btn {
+    width: 64px;
+    height: 64px;
+  }
+  .bell-icon {
+    font-size: 1.8rem;
+  }
+}

@@ -373,3 +373,21 @@
   cursor: pointer; transition: filter .2s ease;
 }
 .footer-search-btn:hover { filter: brightness(1.1); }
+
+/* ── Relógio / Wear OS (< 320px) ──────────────────────────── */
+@media (max-width: 320px) {
+  .footer-content {
+    padding: 3rem 0.75rem 1.5rem;
+    gap: 2rem;
+  }
+  .footer-section h3 {
+    font-size: 1.2rem;
+  }
+  .footer-search {
+    padding: 6px 6px 6px 12px;
+  }
+  .footer-search-btn {
+    padding: 8px 12px;
+    font-size: 0.8rem;
+  }
+}

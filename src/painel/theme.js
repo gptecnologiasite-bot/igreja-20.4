@@ -62,7 +62,7 @@ export const globalCSS = `
   .painel-avatar{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,${palette.accent},${palette.accentLight});display:flex;align-items:center;justify-content:center;font-size:.85rem;font-weight:700}
   .painel-badge-btn{position:relative;background:none;border:none;color:${palette.textMuted};font-size:1.1rem;padding:4px;cursor:pointer}
   .painel-badge{position:absolute;top:-2px;right:-2px;width:8px;height:8px;background:${palette.danger};border-radius:50%;border:2px solid ${palette.surface}}
-  .painel-main{flex:1;margin-left:240px;margin-top:60px;padding:1.6rem;transition:margin-left .3s ease;min-height:calc(100vh - 60px)}
+  .painel-main{flex:1;min-width:0;margin-left:240px;margin-top:60px;padding:1.6rem;transition:margin-left .3s ease;min-height:calc(100vh - 60px)}
   .painel-main.full{margin-left:0}
   .painel-page-header{margin-bottom:1.6rem}
   .painel-page-header h1{font-size:1.5rem;font-weight:700}
@@ -137,6 +137,20 @@ export const globalCSS = `
     .painel-main{margin-top:55px;padding:.8rem}
     .painel-card{padding:1rem}
   }
+  @media (max-width:320px){
+    .painel-topbar{height:50px;padding:0 .6rem}
+    .painel-main{margin-top:50px;padding:.6rem}
+    .painel-page-header h1{font-size:1.15rem}
+    .painel-page-header p{font-size:.8rem}
+    .painel-card{padding:.8rem}
+    .painel-stat-card{padding:1rem}
+    .painel-stat-value{font-size:1.4rem}
+    .painel-table th,.painel-table td{padding:.55rem .6rem}
+    .painel-login-card{padding:1.2rem}
+    .painel-avatar{width:30px;height:30px;font-size:.75rem}
+    .painel-breadcrumb{font-size:.75rem}
+    .painel-search{font-size:.8rem}
+  }
   .pm-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;display:flex;align-items:center;justify-content:center;padding:1rem}
   .pm-modal{background:${palette.surface};border:1px solid ${palette.border};border-radius:18px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto;box-shadow:0 40px 80px rgba(0,0,0,.6)}
   .pm-header{display:flex;align-items:center;justify-content:space-between;padding:1.3rem 1.5rem 1rem;border-bottom:1px solid ${palette.border}}
@@ -159,4 +173,20 @@ export const globalCSS = `
   .pm-btn-save{padding:.62rem 1.4rem;border-radius:9px;border:none;cursor:pointer;background:linear-gradient(135deg,${palette.accent},${palette.accentLight});color:#fff;font-size:.88rem;font-weight:600}
   .pm-add-btn{display:flex;align-items:center;gap:6px;padding:.52rem .9rem;background:linear-gradient(135deg,${palette.accent},${palette.accentLight});border:none;border-radius:8px;color:#fff;font-size:.83rem;font-weight:600;cursor:pointer}
   .user-avatar-sm{width:32px;height:32px;border-radius:50%;object-fit:cover;border:2px solid ${palette.border};display:inline-flex;align-items:center;justify-content:center;font-size:.8rem;font-weight:700;background:${palette.accentGlow};color:${palette.accentLight}}
+  @media (min-width:1920px){
+    html{font-size:18px}
+    .painel-layout *:focus-visible{outline:3px solid ${palette.accent};outline-offset:2px;border-radius:6px}
+    .painel-sidebar{width:280px}
+    .painel-sidebar.collapsed{transform:translateX(-280px)}
+    .painel-topbar{left:280px}
+    .painel-main{margin-left:280px}
+    .painel-nav-item{padding:.8rem .9rem;font-size:.95rem}
+    .painel-btn-primary{padding:1rem;font-size:1rem}
+    .painel-input{padding:.85rem 1rem .85rem 2.4rem;font-size:1rem}
+    .painel-table{font-size:.95rem}
+    .painel-stat-value{font-size:2rem}
+    .painel-page-header h1{font-size:1.7rem}
+    .painel-card{padding:1.4rem}
+    .painel-search{width:240px}
+  }
 `;
