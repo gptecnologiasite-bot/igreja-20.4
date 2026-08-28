@@ -173,6 +173,17 @@ section {
   border-color: rgba(255, 255, 255, 0.2);
 }
 
+.midia-live .btn-see-all {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  padding: 0.9rem 1.8rem;
+  font-size: 1rem;
+  max-width: 100%;
+  white-space: nowrap;
+}
+
 /* --- 2. LIVE SECTION --- */
 .midia-live {
   background: #08080a;

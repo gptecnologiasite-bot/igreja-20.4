@@ -229,9 +229,9 @@ const Midia = () => {
                                     href={config.youtubeChannel || 'https://www.youtube.com/@ADMACSEDEOFICIAL316'}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="btn-secondary"
+                                    className="btn-secondary btn-see-all"
                                 >
-                                    <Youtube size={20} style={{ marginRight: '8px', verticalAlign: 'middle' }} />
+                                    <Youtube size={20} />
                                     Ver todos no YouTube
                                 </a>
                             </div>
