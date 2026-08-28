@@ -116,7 +116,7 @@ const Midia = () => {
             date: f.modifiedDate ? new Date(f.modifiedDate).toLocaleDateString('pt-BR') : '',
             views: ''
         }));
-        return [...auto, ...drive, ...(videos || [])].slice(0, 4);
+        return [...auto, ...drive, ...(videos || [])].slice(0, 3);
     }, [config.enabled, autoVideos, driveVideos, videos]);
 
     // Funções de navegação do carrossel da Galeria
