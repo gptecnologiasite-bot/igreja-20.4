@@ -43,7 +43,10 @@ const resolveChannelId = async (channelUrl) => {
   } catch {
     throw new Error('Canal do YouTube não encontrado. Verifique o link.');
   }
-  const match = html.match(/"channelId":"(UC[^"]+)"/);
+  const match = html.match(/"channelId":"(UC[^"]+)"/)
+    || html.match(/"externalId":"(UC[^"]+)"/)
+    || html.match(/"browseId":"(UC[^"]+)"/)
+    || html.match(/channel_id=([A-Za-z0-9_-]+)/);
   if (match && match[1]) return match[1];
   throw new Error('Não foi possível resolver o ID do canal do YouTube.');
 };
