@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { palette } from './theme';
 import { supabase, hasSupabaseConfigured } from '../lib/supabase';
 import { broadcastUpdate } from '../hooks/usePageUpdate';
@@ -6,6 +7,30 @@ import BellSettingsCard from './BellSettingsCard';
 
 function ConfigsPage({ headerData, setHeaderData, footerData, setFooterData }) {
   const hasSupabase = hasSupabaseConfigured;
+  const [automationConfig, setAutomationConfig] = useState({ enabled: false, youtubeChannel: '', driveFolder: '' });
+
+  useEffect(() => {
+    const loadAutomationConfig = async () => {
+      try {
+        const { data } = await supabase.from('site_settings').select('data').eq('key', 'automation_config').single();
+        if (data?.data) {
+          const parsed = typeof data.data === 'string' ? JSON.parse(data.data) : data.data;
+          setAutomationConfig(c => ({ ...c, ...parsed }));
+        } else {
+          try {
+            const cached = localStorage.getItem('admac_site_settings:automation_config');
+            if (cached) {
+              setAutomationConfig(c => ({ ...c, ...JSON.parse(cached) }));
+            }
+          } catch { /* ignore */ }
+        }
+      } catch (err) {
+        console.error('Error fetching automation config:', err);
+      }
+    };
+    loadAutomationConfig();
+  }, []);
+
   return (
     <div>
       <div className="painel-card" style={{ maxWidth: 600 }}>
@@ -252,6 +277,78 @@ function ConfigsPage({ headerData, setHeaderData, footerData, setFooterData }) {
           }}
         >
           Salvar Contatos e Rodapé
+        </button>
+      </div>
+
+      <div className="painel-card" style={{ maxWidth: 600, marginTop: '1.2rem' }}>
+        <h3 style={{ fontSize: '.95rem', fontWeight: 600, marginBottom: '1.2rem' }}>Automação de Conteúdo</h3>
+        <div style={{ marginBottom: '1.2rem' }}>
+          <button
+            onClick={() => setAutomationConfig(c => ({ ...c, enabled: !c.enabled }))}
+            style={{
+              width: '100%',
+              padding: '.7rem',
+              borderRadius: 10,
+              border: 'none',
+              cursor: 'pointer',
+              fontWeight: 600,
+              fontSize: '.9rem',
+              color: '#fff',
+              background: automationConfig.enabled ? palette.success : palette.danger,
+              boxShadow: automationConfig.enabled ? '0 4px 16px rgba(34,211,165,.25)' : '0 4px 16px rgba(244,63,94,.25)'
+            }}
+          >
+            {automationConfig.enabled ? '✅ Automação LIGADA' : '⛔ Automação DESLIGADA'}
+          </button>
+        </div>
+        <div className="pm-field" style={{ marginBottom: '1rem' }}>
+          <label>Link do Canal do YouTube</label>
+          <div className="pm-field-wrap">
+            <span className="pm-icon">📺</span>
+            <input
+              className="pm-input"
+              value={automationConfig.youtubeChannel || ''}
+              onChange={e => setAutomationConfig(c => ({ ...c, youtubeChannel: e.target.value }))}
+              placeholder="https://www.youtube.com/@suaigreja"
+            />
+          </div>
+        </div>
+        <div className="pm-field" style={{ marginBottom: '1rem' }}>
+          <label>Link da Pasta do Google Drive</label>
+          <div className="pm-field-wrap">
+            <span className="pm-icon">📁</span>
+            <input
+              className="pm-input"
+              value={automationConfig.driveFolder || ''}
+              onChange={e => setAutomationConfig(c => ({ ...c, driveFolder: e.target.value }))}
+              placeholder="https://drive.google.com/drive/folders/XXXX"
+            />
+          </div>
+        </div>
+        <p style={{ fontSize: '.85rem', color: palette.textMuted, marginTop: '8px', marginBottom: '1rem' }}>
+          A pasta do Drive deve estar compartilhada como 'Qualquer pessoa com o link'. Use o RaiDrive para organizar os arquivos. Quando ligada, o site busca vídeos do canal e imagens/vídeos/textos da pasta automaticamente.
+        </p>
+        <button
+          className="pm-btn-save"
+          style={{ width: '100%' }}
+          onClick={async () => {
+            try {
+              const payload = { ...automationConfig, lastSyncAt: new Date().toISOString() };
+              const { error } = await supabase.from('site_settings').upsert({ key: 'automation_config', data: payload });
+              if (error || !hasSupabase) {
+                try {
+                  localStorage.setItem('admac_site_settings:automation_config', JSON.stringify(payload));
+                } catch { /* ignore */ }
+              }
+              broadcastUpdate('automation_config');
+              alert(error || !hasSupabase ? "Automação salva no navegador (offline)." : "Automação salva com sucesso!");
+            } catch (err) {
+              console.error('Error saving automation config:', err);
+              alert("Erro ao salvar automação.");
+            }
+          }}
+        >
+          Salvar Automação
         </button>
       </div>
 

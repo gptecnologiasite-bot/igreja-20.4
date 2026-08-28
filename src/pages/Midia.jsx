@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 // eslint-disable-next-line no-unused-vars
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -24,6 +24,8 @@ import {
     X
 } from 'lucide-react';
 import { useMinistryData } from '../hooks/useMinistryData';
+import { useAutomation } from '../hooks/useAutomation';
+import { getDriveDisplayUrl } from '../lib/automation';
 import { transformImageLink } from '../utils/imageUtils';
 import '../css/Midia.css';
 // ---------------------------------------------------------------------------------
@@ -47,6 +49,9 @@ const getYoutubeThumbnail = (urlOrId) => {
 const Midia = () => {
     // Carrega os dados específicos do ministério de mídia do banco de dados/localStorage
     const [data] = useMinistryData('midia');
+
+    // Automação de conteúdo (YouTube + Google Drive)
+    const { config, videos: autoVideos, images: driveImages, driveVideos, texts } = useAutomation();
 
     // Estado para controlar a foto atual da galeria (carrossel)
     const [galleryIndex, setGalleryIndex] = useState(0);
@@ -84,15 +89,48 @@ const Midia = () => {
         }
     } = data || {};
 
+    // Galeria combinada: manuais + imagens automáticas do Drive
+    const allGallery = useMemo(() => {
+        if (config.enabled && driveImages && driveImages.length > 0) {
+            return [...(gallery || []), ...driveImages.map(img => ({ url: getDriveDisplayUrl(img.id, img.mimeType), caption: img.name }))];
+        }
+        return gallery || [];
+    }, [config.enabled, gallery, driveImages]);
+
+    // Vídeos combinados: automáticos (YouTube) + Drive + manuais
+    const allVideos = useMemo(() => {
+        if (!config.enabled) return videos || [];
+        const auto = (autoVideos || []).map(v => ({
+            id: v.id,
+            title: v.title,
+            url: v.url,
+            thumbnail: v.thumbnail,
+            date: v.date ? new Date(v.date).toLocaleDateString('pt-BR') : '',
+            views: ''
+        }));
+        const drive = (driveVideos || []).map(f => ({
+            id: f.id,
+            title: f.name,
+            url: getDriveDisplayUrl(f.id, f.mimeType),
+            thumbnail: 'https://via.placeholder.com/640x360?text=Video',
+            date: f.modifiedDate ? new Date(f.modifiedDate).toLocaleDateString('pt-BR') : '',
+            views: ''
+        }));
+        return [...auto, ...drive, ...(videos || [])];
+    }, [config.enabled, autoVideos, driveVideos, videos]);
+
     // Funções de navegação do carrossel da Galeria
     const nextPhoto = () => {
-        if (!gallery || gallery.length === 0) return;
-        setGalleryIndex(prev => (prev + 1) % gallery.length);
+        if (!allGallery || allGallery.length === 0) return;
+        setGalleryIndex(prev => (prev + 1) % allGallery.length);
     };
     const prevPhoto = () => {
-        if (!gallery || gallery.length === 0) return;
-        setGalleryIndex(prev => (prev - 1 + gallery.length) % gallery.length);
+        if (!allGallery || allGallery.length === 0) return;
+        setGalleryIndex(prev => (prev - 1 + allGallery.length) % allGallery.length);
     };
+
+    // Mantém o índice válido quando a galeria muda de tamanho
+    const safeIndex = allGallery.length > 0 ? Math.min(galleryIndex, allGallery.length - 1) : 0;
 
     // Configurações padrão de animação para as seções (efeito de "subir" ao rolar a página)
     const fadeIn = {
@@ -146,9 +184,9 @@ const Midia = () => {
                             </div>
                         </motion.div>
 
-                        {videos && videos.length > 0 && (
+                        {allVideos && allVideos.length > 0 && (
                             <div className="video-gallery-grid" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '1.5rem' }}>
-                                {videos.map((vid, idx) => (
+                                {allVideos.map((vid, idx) => (
                                     <motion.div
                                         key={idx}
                                         className="video-thumb-card"
@@ -254,9 +292,9 @@ const Midia = () => {
 
                     <div className="gallery-main">
                         <AnimatePresence mode="wait">
-                            {gallery && gallery.length > 0 && gallery[galleryIndex] && (
+                            {allGallery && allGallery.length > 0 && allGallery[safeIndex] && (
                                 <motion.div
-                                    key={galleryIndex}
+                                    key={safeIndex}
                                     className="gallery-slide"
                                     initial={{ opacity: 0, scale: 1.1 }}
                                     animate={{ opacity: 1, scale: 1 }}
@@ -264,17 +302,17 @@ const Midia = () => {
                                     transition={{ duration: 0.6 }}
                                 >
                                     <img 
-                                        src={transformImageLink(gallery[galleryIndex].url)} 
-                                        alt={gallery[galleryIndex].caption} 
-                                        onClick={() => setSelectedImage(gallery[galleryIndex])}
+                                        src={transformImageLink(allGallery[safeIndex].url)} 
+                                        alt={allGallery[safeIndex].caption} 
+                                        onClick={() => setSelectedImage(allGallery[safeIndex])}
                                     />
                                     <div className="gallery-info">
-                                        <p>{gallery[galleryIndex].caption}</p>
+                                        <p>{allGallery[safeIndex].caption}</p>
                                     </div>
                                 </motion.div>
                             )}
                         </AnimatePresence>
-                        {gallery && gallery.length > 1 && (
+                        {allGallery && allGallery.length > 1 && (
                             <>
                                 <button className="carousel-btn prev" onClick={prevPhoto}><ChevronLeft /></button>
                                 <button className="carousel-btn next" onClick={nextPhoto}><ChevronRight /></button>
@@ -283,10 +321,10 @@ const Midia = () => {
                     </div>
 
                     <div className="thumb-grid">
-                        {gallery && gallery.map((thumb, idx) => (
+                        {allGallery && allGallery.map((thumb, idx) => (
                             <div
                                 key={idx}
-                                className={`thumb-item ${idx === galleryIndex ? 'active' : ''}`}
+                                className={`thumb-item ${idx === safeIndex ? 'active' : ''}`}
                                 onClick={() => setGalleryIndex(idx)}
                             >
                                 <img src={transformImageLink(thumb.url)} alt={`Minis ${idx}`} />
@@ -295,6 +333,45 @@ const Midia = () => {
                     </div>
                 </div>
             </section>
+
+            {/* --- 6.5 DOCUMENTOS (AUTOMAÇÃO) --- */}
+            {config.enabled && texts && texts.length > 0 && (
+                <section id="documentos" className="midia-docs">
+                    <div className="container">
+                        <div className="section-header">
+                            <Newspaper className="section-icon" />
+                            <h2>Documentos</h2>
+                            <p>Materiais e documentos disponíveis para download.</p>
+                        </div>
+                        <div style={{ maxWidth: 720, margin: '0 auto' }}>
+                            {texts.map((doc, idx) => (
+                                <a
+                                    key={idx}
+                                    href={getDriveDisplayUrl(doc.id, doc.mimeType)}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    style={{
+                                        display: 'flex',
+                                        justifyContent: 'space-between',
+                                        alignItems: 'center',
+                                        padding: '1rem 1.2rem',
+                                        background: 'rgba(255,255,255,0.05)',
+                                        borderRadius: '10px',
+                                        marginBottom: '0.75rem',
+                                        color: 'inherit',
+                                        textDecoration: 'none',
+                                        border: '1px solid rgba(255,255,255,0.08)',
+                                        transition: 'background 0.2s'
+                                    }}
+                                >
+                                    <span style={{ fontWeight: 600 }}>{doc.name}</span>
+                                    <ExternalLink size={18} />
+                                </a>
+                            ))}
+                        </div>
+                    </div>
+                </section>
+            )}
 
             {/* --- 7. TEAM --- */}
             <section id="equipe" className="midia-team">

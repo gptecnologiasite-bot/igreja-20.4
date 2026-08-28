@@ -5,10 +5,13 @@ import { supabase } from '../lib/supabase';
 import { parseSafeJson } from '../lib/dbUtils';
 
 import { usePageUpdate } from '../hooks/usePageUpdate';
+import { useAutomation } from '../hooks/useAutomation';
 
 const RecentVideos = ({ limit = 2, category = null }) => {
     const [remoteVideos, setRemoteVideos] = useState(null);
     const [loading, setLoading] = useState(true);
+
+    const { config, videos: autoVideos } = useAutomation();
 
     // Transforma uma URL qualquer do YouTube em embed nocookie
     const toEmbed = (url) => {
@@ -88,7 +91,25 @@ const RecentVideos = ({ limit = 2, category = null }) => {
     // Sincronização reativa quando os dados mudam no painel
     usePageUpdate('videos', load);
 
-    const videos = useMemo(() => remoteVideos || [], [remoteVideos]);
+    const autoVideosNormalized = useMemo(() => {
+        if (!config.enabled) return [];
+        return (autoVideos || []).slice(0, limit).map(v => ({
+            id: v.id,
+            title: v.title,
+            embed: `https://www.youtube-nocookie.com/embed/${v.id}`,
+            watch: v.url || `https://www.youtube.com/watch?v=${v.id}`,
+            thumbnail: v.thumbnail,
+            description: ''
+        }));
+    }, [config.enabled, autoVideos, limit]);
+
+    const videos = useMemo(() => {
+        const manual = remoteVideos || [];
+        if (autoVideosNormalized.length > 0) {
+            return [...autoVideosNormalized, ...manual].slice(0, limit);
+        }
+        return manual;
+    }, [autoVideosNormalized, remoteVideos, limit]);
 
     if (videos.length === 0) {
         return loading ? null : null;
