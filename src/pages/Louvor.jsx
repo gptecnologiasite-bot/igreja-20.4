@@ -175,7 +175,7 @@ const Louvor = () => {
                   <div className="birthday-badge">🎂</div>
                 </div>
                 <h3>{person.name}</h3>
-                <span className="birthday-date">{person.date}</span>
+                <span className="birthday-date">{person.date || 'Data a definir'}</span>
               </div>
             ))}
             {(!birthdays.people || birthdays.people.length === 0) && (

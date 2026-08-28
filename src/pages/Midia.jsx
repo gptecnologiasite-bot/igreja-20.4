@@ -285,7 +285,7 @@ const Midia = () => {
                                     <img src={transformImageLink(person.photo) || `https://ui-avatars.com/api/?name=${encodeURIComponent(person.name)}`} alt={person.name} />
                                 </div>
                                 <h4>{person.name}</h4>
-                                <span className="birthday-date">{person.date}</span>
+                                <span className="birthday-date">{person.date || 'Data a definir'}</span>
                             </motion.div>
                         ))}
                     </div>

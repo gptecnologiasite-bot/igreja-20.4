@@ -358,7 +358,7 @@ const Home = () => {
                 </div>
                 <div className="birthdays-home-name">{person.name || '—'}</div>
                 {person.date && (
-                  <div className="birthdays-home-date">🎂 {person.date}</div>
+                  <div className="birthdays-home-date">🎂 {person.date || 'Data a definir'}</div>
                 )}
                 <div className="birthdays-home-ministry">{person.ministryLabel}</div>
               </div>
