@@ -31,7 +31,7 @@ const Login = () => {
     const user = users.find(u => u.email === email && u.password === password);
 
     // Aceita usuário do localStorage ou a conta admin padrão
-    if (user || (email === 'admin@admin.com' && password === 'ZArgdMkCzP8GXEmY')) {
+    if (user || (email === 'admin@admin.com' && password === 'admac2024')) {
       const userData = user || {
         id: 'offline-admin',
         name: 'Admin',

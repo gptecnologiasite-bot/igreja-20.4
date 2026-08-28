@@ -97,7 +97,7 @@ const NAV_SETTINGS_DEFAULT = [
   { id: 'configs', label: 'Configurações', icon: '⚙️' }
 ];
 
-const CREDENTIALS = { email: 'admin@admin.com', password: 'ZArgdMkCzP8GXEmY' };
+const CREDENTIALS = { email: 'admin@admin.com', password: 'admac2024' };
 
 // --------- Helpers para edição amigável de páginas específicas ---------
 
@@ -1111,7 +1111,7 @@ export default function PainelAdm() {
     try {
       // Prioridade 1: Bypass para contas administrativas padrão (offline ou primeiro acesso)
       // ATENÇÃO: senhas padrão devem ser trocadas. Prefira contas reais via Supabase Auth.
-      if ((email === 'admin@admin.com' && password === 'ZArgdMkCzP8GXEmY') || 
+      if ((email === 'admin@admin.com' && password === 'admac2024') || 
           (email === 'aelda@800' && password === '9hGzhdrEXwFtcbxp') ||
           (email === 'sansunghumberto13@gmail.com' && password === 'nFnUmqpmTwQ8KmxN')) {
         
@@ -1204,7 +1204,7 @@ export default function PainelAdm() {
         } catch (authErr) {
           // Captura erros de rede como "Failed to fetch"
           console.error('[Auth Exception]', authErr);
-          if (loginData.email === 'admin@admin.com' && loginData.password === 'ZArgdMkCzP8GXEmY') {
+          if (loginData.email === 'admin@admin.com' && loginData.password === 'admac2024') {
             const user = { id: 'offline-admin', name: 'Admin', email: 'admin@admin.com', role: 'Administrador', status: 'active', photo: null };
             sessionStorage.setItem('painel_auth', '1');
             localStorage.setItem('admac_current_user', JSON.stringify(user));
