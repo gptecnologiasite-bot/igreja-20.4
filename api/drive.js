@@ -69,12 +69,15 @@ module.exports = async (req, res) => {
     }
     const html = await fetchText(`https://drive.google.com/drive/folders/${folderId}`);
     if (!html.includes('_DRIVE_ivd')) {
-      return res.status(500).json({ error: 'Não foi possível ler a pasta. Verifique se ela está compartilhada como "Qualquer pessoa com o link".' });
+      return res.status(404).json({ error: 'Não foi possível ler a pasta. Verifique se ela está compartilhada como "Qualquer pessoa com o link".' });
     }
     const result = parseDrivePage(html);
+    if (!result.files.length) {
+      return res.status(404).json({ error: 'A pasta está vazia ou não foi possível listar os arquivos.' });
+    }
     res.status(200).json(result);
   } catch (err) {
-    res.status(500).json({ error: err.message || 'Erro ao buscar arquivos do Google Drive.' });
+    res.status(404).json({ error: err.message || 'Erro ao buscar arquivos do Google Drive. Verifique o link da pasta.' });
   }
 };
 

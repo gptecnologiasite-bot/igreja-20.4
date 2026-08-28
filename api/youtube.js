@@ -37,7 +37,12 @@ const resolveChannelId = async (channelUrl) => {
   const extracted = extractChannelId(channelUrl);
   if (!extracted) throw new Error('Link de canal do YouTube inválido.');
   if (extracted.startsWith('UC')) return extracted;
-  const html = await fetchText(`https://www.youtube.com/${extracted}`);
+  let html;
+  try {
+    html = await fetchText(`https://www.youtube.com/${extracted}`);
+  } catch {
+    throw new Error('Canal do YouTube não encontrado. Verifique o link.');
+  }
   const match = html.match(/"channelId":"(UC[^"]+)"/);
   if (match && match[1]) return match[1];
   throw new Error('Não foi possível resolver o ID do canal do YouTube.');
@@ -83,11 +88,19 @@ module.exports = async (req, res) => {
       return res.status(400).json({ error: 'Parâmetro "channel" é obrigatório.' });
     }
     const channelId = await resolveChannelId(channel);
-    const xml = await fetchText(`https://www.youtube.com/feeds/videos.xml?channel_id=${channelId}`);
+    let xml;
+    try {
+      xml = await fetchText(`https://www.youtube.com/feeds/videos.xml?channel_id=${channelId}`);
+    } catch {
+      return res.status(404).json({ error: 'Canal do YouTube não encontrado ou sem vídeos públicos. Verifique o link.' });
+    }
     const result = parseFeed(xml);
+    if (!result.videos.length) {
+      return res.status(404).json({ error: 'Nenhum vídeo público encontrado neste canal.' });
+    }
     res.status(200).json(result);
   } catch (err) {
-    res.status(500).json({ error: err.message || 'Erro ao buscar vídeos do YouTube.' });
+    res.status(404).json({ error: err.message || 'Erro ao buscar vídeos do YouTube.' });
   }
 };
 
