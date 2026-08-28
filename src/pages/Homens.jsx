@@ -1,13 +1,14 @@
 import React, { useState, useEffect } from 'react';
 import { transformImageLink } from '../lib/dbUtils';
 // import { supabase } from '../lib/supabase';
-import { Shield, Calendar, Clock, Users, Camera, MessageSquare, Heart, MapPin, Star, Gift } from 'lucide-react';
+import { Shield, Calendar, Clock, Users, Camera, MessageSquare, Heart, MapPin, Star, Gift, ZoomIn, X } from 'lucide-react';
 import { useMinistryData } from '../hooks/useMinistryData';
 import '../css/Homens.css';
 
 const Homens = () => {
   const [data] = useMinistryData('homens');
   const [currentSlide, setCurrentSlide] = useState(0);
+  const [selectedImage, setSelectedImage] = useState(null);
 
   useEffect(() => {
     if (data.gallery && data.gallery.length > 0) {
@@ -138,14 +139,31 @@ const Homens = () => {
               { url: 'https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=400&h=300&fit=crop', caption: 'Louvor e Oração' },
               { url: 'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=400&h=300&fit=crop', caption: 'Retiro' }
             ]).map((item, index) => (
-              <div key={index} className="gallery-item">
+              <div key={index} className="gallery-item" onClick={() => setSelectedImage({ url: item.url, caption: item.caption })}>
                 <img src={transformImageLink(item.url)} alt={item.caption || 'Foto'} />
-                <div className="gallery-overlay">{item.caption || 'Momentos'}</div>
+                <div className="gallery-overlay">
+                  <ZoomIn size={18} />
+                  <span>{item.caption || 'Momentos'}</span>
+                </div>
               </div>
             ))}
           </div>
         </div>
       </section>
+
+      {selectedImage && (
+        <div className="gallery-lightbox" onClick={() => setSelectedImage(null)}>
+          <div className="gallery-lightbox-content" onClick={(e) => e.stopPropagation()}>
+            <button className="gallery-lightbox-close" onClick={() => setSelectedImage(null)} aria-label="Fechar">
+              <X size={24} />
+            </button>
+            <img src={transformImageLink(selectedImage.url)} alt={selectedImage.caption || 'Foto'} />
+            {selectedImage.caption && (
+              <div className="gallery-lightbox-caption">{selectedImage.caption}</div>
+            )}
+          </div>
+        </div>
+      )}
 
 
       {/* Birthdays Section */}
