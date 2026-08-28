@@ -16,7 +16,13 @@ const EDB = () => {
   return (
     <div className="edb-page">
       {/* Hero Section */}
-      <div className="edb-hero">
+      <div className="edb-hero" style={{
+        backgroundImage: data.hero?.image
+          ? `linear-gradient(135deg, rgba(26,26,26,0.85), rgba(42,42,42,0.85)), url(${transformImageLink(data.hero.image)})`
+          : undefined,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center'
+      }}>
         <GraduationCap size={64} className="hero-icon" />
         <h1>{data.hero?.title || 'Escola Bíblica Dominical'}</h1>
         <p className="hero-subtitle">{data.hero?.subtitle || 'Crescendo no conhecimento'}</p>

@@ -16,7 +16,13 @@ const Social = () => {
   return (
     <div className="social-page">
       {/* Hero Section */}
-      <div className="social-hero">
+      <div className="social-hero" style={{
+        backgroundImage: data.hero?.image
+          ? `linear-gradient(135deg, rgba(45,26,26,0.85), rgba(26,26,26,0.85)), url(${transformImageLink(data.hero.image)})`
+          : undefined,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center'
+      }}>
         <div className="hero-overlay"></div>
         <div className="hero-content">
           <Heart size={64} className="hero-icon" />

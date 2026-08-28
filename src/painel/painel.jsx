@@ -1301,10 +1301,14 @@ export default function PainelAdm() {
         // Verifica se 'active' existe no JSON do banco ou local.
         const isActive = settings?.active !== false;
 
+        const defaultPhoto = id === 'home'
+          ? INITIAL_HOME_DATA?.carousel?.[0]?.image || null
+          : INITIAL_MINISTRIES_DATA[id]?.hero?.image || null;
+
         return {
           ...pf,
           active: isActive,
-          photo: settings?.hero?.image || settings?.welcome?.image || null
+          photo: settings?.hero?.image || settings?.welcome?.image || defaultPhoto || null
         };
       });
 

@@ -10,7 +10,13 @@ const Sobre = () => {
     return (
         <div className="sobre-page">
             {/* Hero Section */}
-            <div className="sobre-hero">
+            <div className="sobre-hero" style={{
+                backgroundImage: data.hero?.image
+                    ? `linear-gradient(135deg, rgba(26,26,46,0.85), rgba(26,26,26,0.85)), url(${transformImageLink(data.hero.image)})`
+                    : undefined,
+                backgroundSize: 'cover',
+                backgroundPosition: 'center'
+            }}>
                 <div className="hero-overlay"></div>
                 <div className="hero-content">
                     <Church size={80} className="hero-icon" />

@@ -32,8 +32,8 @@ function PaginasPage({ pagesLoading, pages, openCreatePage, openEditPage, toggle
                   <tr key={p.file}>
                     <td>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
-                        <div className="user-avatar-sm" style={{ width: 40, height: 40, borderRadius: 8 }}>
-                          {p.photo ? <img src={transformImageLink(p.photo)} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 8 }} /> : '📄'}
+                        <div className="user-avatar-sm" style={{ width: 40, height: 40, borderRadius: 8, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(212,175,55,.15)', color: palette.accent, fontWeight: 700, fontSize: '1rem', overflow: 'hidden' }}>
+                          {p.photo ? <img src={transformImageLink(p.photo)} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 8 }} /> : (p.name || 'P').charAt(0).toUpperCase()}
                         </div>
                         <div>
                           <div style={{ fontWeight: 600, color: '#fff' }}>{p.name}</div>

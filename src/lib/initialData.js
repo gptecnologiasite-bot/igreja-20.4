@@ -402,7 +402,7 @@ export const INITIAL_MINISTRIES_DATA = {
     ]
   },
   revista: {
-    hero: { title: 'Revista Admac', subtitle: 'Nossa revista mensal' },
+    hero: { title: 'Revista Admac', subtitle: 'Nossa revista mensal', image: 'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=1200&h=400&fit=crop' },
     pages: [
       {
         id: 1,
@@ -503,7 +503,8 @@ export const INITIAL_MINISTRIES_DATA = {
     hero: { 
       title: 'Sobre a ADMAC', 
       subtitle: 'Nossa história, missão e valores',
-      verse: '"Até aqui nos ajudou o Senhor." - 1 Samuel 7:12'
+      verse: '"Até aqui nos ajudou o Senhor." - 1 Samuel 7:12',
+      image: 'https://images.unsplash.com/photo-1438232992991-995b7058bbb3?w=1200&h=400&fit=crop'
     },
     mission: { 
       title: 'Nossa Missão', 
@@ -519,7 +520,7 @@ export const INITIAL_MINISTRIES_DATA = {
     ]
   },
   casais: {
-    hero: { title: 'Ministério de Casais', subtitle: 'Edificando famílias sobre a Rocha', verse: '"Portanto, o que Deus ajuntou não o separe o homem." - Mateus 19:6', image: 'https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=1200&h=400&fit=crop' },
+    hero: { title: 'Ministério de Casais', subtitle: 'Edificando famílias sobre a Rocha', verse: '"Portanto, o que Deus ajuntou não o separe o homem." - Mateus 19:6', image: 'https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=1200&h=400&fit=crop' },
     mission: { title: 'Nossa Missão', text: 'Fortalecer o vínculo matrimonial através do ensino bíblico, comunhão e apoio mútuo, visando lares centralizados em Cristo.' },
     schedule: [
       { activity: 'Culto de Casais', day: 'Último Sábado do Mês', time: '19:30', location: 'Templo Principal', description: 'Uma noite especial de ministração, louvor e renovação para casais.' },

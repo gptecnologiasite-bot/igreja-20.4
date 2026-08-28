@@ -110,8 +110,8 @@ function DashboardPage({ dynamicStats, pendingUsers, currentUser, approveUser, s
                   <tr key={p.file}>
                     <td>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                        <div className="user-avatar-sm" style={{ width: 32, height: 32, borderRadius: 6 }}>
-                          {p.photo ? <img src={transformImageLink(p.photo)} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 6 }} /> : '📄'}
+                        <div className="user-avatar-sm" style={{ width: 32, height: 32, borderRadius: 6, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(212,175,55,.15)', color: palette.accent, fontWeight: 700, fontSize: '.85rem', overflow: 'hidden' }}>
+                          {p.photo ? <img src={transformImageLink(p.photo)} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 6 }} /> : (p.name || 'P').charAt(0).toUpperCase()}
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column' }}>
                           <span style={{ fontWeight: 600 }}>{p.name}</span>
