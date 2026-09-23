@@ -152,9 +152,41 @@ const Header = ({ theme, toggleTheme }) => {
     }
   }, [headerData?.logo?.icon]);
 
-  const toggleMenu = () => setIsMenuOpen(!isMenuOpen);
+  const toggleMenu = () => {
+    setIsMenuOpen(open => {
+      const next = !open
+      if (!next) {
+        setShowMinistries(false)
+        setIsMinistriesFixed(false)
+        setShowMedia(false)
+        setIsMediaFixed(false)
+        setShowSocial(false)
+        setIsSocialFixed(false)
+      }
+      return next
+    })
+  };
 
-  // Handlers Dropdowns
+  const closeAllDropdowns = () => {
+    setShowMinistries(false)
+    setIsMinistriesFixed(false)
+    setShowMedia(false)
+    setIsMediaFixed(false)
+    setShowSocial(false)
+    setIsSocialFixed(false)
+  };
+
+  // Fechar dropdowns ao clicar fora (desktop)
+  useEffect(() => {
+    const onDocClick = (e) => {
+      if (e.target.closest('.nav-dropdown')) return
+      closeAllDropdowns()
+    }
+    document.addEventListener('click', onDocClick)
+    return () => document.removeEventListener('click', onDocClick)
+  }, []);
+
+  // Handlers Dropdowns — apertar o botão SEMPRE alterna (abre/fecha); não "gruda" aberto
   const handleMinistriesMouseEnter = () => {
     if (ministriesTimeout) clearTimeout(ministriesTimeout);
     setShowMinistries(true);
@@ -168,8 +200,13 @@ const Header = ({ theme, toggleTheme }) => {
   };
   const toggleMinistries = (e) => {
     e.stopPropagation();
-    setIsMinistriesFixed(!isMinistriesFixed);
-    setShowMinistries(!isMinistriesFixed);
+    const open = !showMinistries
+    setShowMinistries(open);
+    setIsMinistriesFixed(open);
+    if (open) {
+      setShowMedia(false); setIsMediaFixed(false);
+      setShowSocial(false); setIsSocialFixed(false);
+    }
   };
 
   const handleMediaMouseEnter = () => {
@@ -185,8 +222,13 @@ const Header = ({ theme, toggleTheme }) => {
   };
   const toggleMedia = (e) => {
     e.stopPropagation();
-    setIsMediaFixed(!isMediaFixed);
-    setShowMedia(!isMediaFixed);
+    const open = !showMedia
+    setShowMedia(open);
+    setIsMediaFixed(open);
+    if (open) {
+      setShowMinistries(false); setIsMinistriesFixed(false);
+      setShowSocial(false); setIsSocialFixed(false);
+    }
   };
 
   const handleSocialMouseEnter = () => {
@@ -202,8 +244,13 @@ const Header = ({ theme, toggleTheme }) => {
   };
   const toggleSocial = (e) => {
     e.stopPropagation();
-    setIsSocialFixed(!isSocialFixed);
-    setShowSocial(!isSocialFixed);
+    const open = !showSocial
+    setShowSocial(open);
+    setIsSocialFixed(open);
+    if (open) {
+      setShowMinistries(false); setIsMinistriesFixed(false);
+      setShowMedia(false); setIsMediaFixed(false);
+    }
   };
 
   const handleVisitorBellClick = async (e) => {
@@ -260,13 +307,13 @@ const Header = ({ theme, toggleTheme }) => {
           
           {/* Mídia Dropdown */}
           <div className="nav-dropdown" onMouseEnter={handleMediaMouseEnter} onMouseLeave={handleMediaMouseLeave}>
-            <button className={`dropdown-trigger ${isMediaFixed ? 'active' : ''}`} onClick={toggleMedia}>
+            <button className={`dropdown-trigger ${showMedia ? 'active' : ''}`} onClick={toggleMedia} aria-expanded={showMedia}>
               Mídia <ChevronDown size={14} />
             </button>
             {showMedia && (
               <div className={`dropdown-menu media-dropdown-menu ${isMediaFixed ? 'fixed' : ''}`}>
                 {menuMedia.map((link, idx) => (
-                  <Link key={idx} to={link.path} className="dropdown-item" onClick={() => {setShowMedia(false); setIsMediaFixed(false);}}>{link.name}</Link>
+                  <Link key={idx} to={link.path} className="dropdown-item" onClick={closeAllDropdowns}>{link.name}</Link>
                 ))}
               </div>
             )}
@@ -274,13 +321,13 @@ const Header = ({ theme, toggleTheme }) => {
 
           {/* Ministérios Dropdown */}
           <div className="nav-dropdown" onMouseEnter={handleMinistriesMouseEnter} onMouseLeave={handleMinistriesMouseLeave}>
-            <button className={`dropdown-trigger ${isMinistriesFixed ? 'active' : ''}`} onClick={toggleMinistries}>
+            <button className={`dropdown-trigger ${showMinistries ? 'active' : ''}`} onClick={toggleMinistries} aria-expanded={showMinistries}>
               Ministérios <ChevronDown size={14} />
             </button>
             {showMinistries && (
               <div className={`dropdown-menu ${isMinistriesFixed ? 'fixed' : ''}`}>
                 {menuMinistries.map((m, idx) => (
-                  <Link key={idx} to={m.path} className="dropdown-item" onClick={() => {setShowMinistries(false); setIsMinistriesFixed(false);}}>{m.name}</Link>
+                  <Link key={idx} to={m.path} className="dropdown-item" onClick={closeAllDropdowns}>{m.name}</Link>
                 ))}
               </div>
             )}
@@ -288,20 +335,20 @@ const Header = ({ theme, toggleTheme }) => {
 
           {/* Social Dropdown */}
           <div className="nav-dropdown" onMouseEnter={handleSocialMouseEnter} onMouseLeave={handleSocialMouseLeave}>
-            <button className={`dropdown-trigger ${isSocialFixed ? 'active' : ''}`} onClick={toggleSocial}>
+            <button className={`dropdown-trigger ${showSocial ? 'active' : ''}`} onClick={toggleSocial} aria-expanded={showSocial}>
               Social <ChevronDown size={14} />
             </button>
             {showSocial && (
               <div className={`dropdown-menu social-dropdown-menu ${isSocialFixed ? 'fixed' : ''}`}>
                 {menuSocial.map((link, idx) => (
-                  <Link key={idx} to={link.path} className="dropdown-item" onClick={() => {setShowSocial(false); setIsSocialFixed(false);}}>{link.name}</Link>
+                  <Link key={idx} to={link.path} className="dropdown-item" onClick={closeAllDropdowns}>{link.name}</Link>
                 ))}
               </div>
             )}
           </div>
 
-          <Link to="/sobre" className="nav-link">Sobre</Link>
-          <Link to="/contato" className="nav-link">Contato</Link>
+          <Link to="/sobre" className="nav-link" onClick={closeAllDropdowns}>Sobre</Link>
+          <Link to="/contato" className="nav-link" onClick={closeAllDropdowns}>Contato</Link>
         </nav>
 
         <div className="header-actions">
@@ -377,13 +424,19 @@ const Header = ({ theme, toggleTheme }) => {
           
           {/* Mídia Mobile Dropdown */}
           <div className="mobile-dropdown">
-            <button className="mobile-dropdown-trigger" onClick={() => setShowMedia(!showMedia)}>
+            <button className="mobile-dropdown-trigger" onClick={() => {
+              setShowMedia(v => !v)
+              setShowMinistries(false)
+              setIsMinistriesFixed(false)
+              setShowSocial(false)
+              setIsSocialFixed(false)
+            }}>
               Mídia <ChevronDown size={16} />
             </button>
             {showMedia && (
               <div className="mobile-dropdown-content">
                 {menuMedia.map((link, idx) => (
-                  <Link key={idx} to={link.path} onClick={toggleMenu}>{link.name}</Link>
+                  <Link key={idx} to={link.path} onClick={() => { setShowMedia(false); toggleMenu(); }}>{link.name}</Link>
                 ))}
               </div>
             )}
@@ -391,13 +444,19 @@ const Header = ({ theme, toggleTheme }) => {
 
           {/* Ministérios Mobile Dropdown */}
           <div className="mobile-dropdown">
-            <button className="mobile-dropdown-trigger" onClick={() => setShowMinistries(!showMinistries)}>
+            <button className="mobile-dropdown-trigger" onClick={() => {
+              setShowMinistries(v => !v)
+              setShowMedia(false)
+              setIsMediaFixed(false)
+              setShowSocial(false)
+              setIsSocialFixed(false)
+            }}>
               Ministérios <ChevronDown size={16} />
             </button>
             {showMinistries && (
               <div className="mobile-dropdown-content">
                 {menuMinistries.map((m, idx) => (
-                  <Link key={idx} to={m.path} onClick={toggleMenu}>{m.name}</Link>
+                  <Link key={idx} to={m.path} onClick={() => { setShowMinistries(false); toggleMenu(); }}>{m.name}</Link>
                 ))}
               </div>
             )}
@@ -405,13 +464,19 @@ const Header = ({ theme, toggleTheme }) => {
 
           {/* Social Mobile Dropdown */}
           <div className="mobile-dropdown">
-            <button className="mobile-dropdown-trigger" onClick={() => setShowSocial(!showSocial)}>
+            <button className="mobile-dropdown-trigger" onClick={() => {
+              setShowSocial(v => !v)
+              setShowMedia(false)
+              setIsMediaFixed(false)
+              setShowMinistries(false)
+              setIsMinistriesFixed(false)
+            }}>
               Social <ChevronDown size={16} />
             </button>
             {showSocial && (
               <div className="mobile-dropdown-content">
                 {menuSocial.map((link, idx) => (
-                  <Link key={idx} to={link.path} onClick={toggleMenu}>{link.name}</Link>
+                  <Link key={idx} to={link.path} onClick={() => { setShowSocial(false); toggleMenu(); }}>{link.name}</Link>
                 ))}
               </div>
             )}
