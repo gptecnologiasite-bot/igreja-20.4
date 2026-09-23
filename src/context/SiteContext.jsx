@@ -3,8 +3,30 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import { supabase } from '../lib/supabase';
 import { parseSafeJson, deepMerge } from '../lib/dbUtils';
 import { INITIAL_HEADER_DATA, INITIAL_FOOTER_DATA, INITIAL_PASTORS_CONTACTS } from '../lib/constants';
+import { transformImageLink } from '../utils/imageUtils';
 
 const SiteDataContext = createContext();
+
+const applyFavicon = (icon) => {
+  if (!icon || typeof icon !== 'string') return;
+  const trimmed = icon.trim();
+  const isImage = trimmed.startsWith('data:image') || trimmed.startsWith('http') || trimmed.startsWith('/') || trimmed.startsWith('imagem/');
+  if (!isImage) return;
+  const base = trimmed.startsWith('imagem/') ? transformImageLink(trimmed) : trimmed;
+  const href = base.startsWith('data:') ? base : `${base}${base.includes('?') ? '&' : '?'}v=${Date.now()}`;
+  const links = document.querySelectorAll("link[rel~='icon'], link[rel='apple-touch-icon'], link[rel='shortcut icon']");
+  if (!links.length) {
+    const link = document.createElement('link');
+    link.rel = 'icon';
+    link.href = href;
+    document.head.appendChild(link);
+    return;
+  }
+  links.forEach(link => {
+    link.removeAttribute('type');
+    link.href = href;
+  });
+};
 
 export const useSiteData = () => {
   const context = useContext(SiteDataContext);
@@ -52,6 +74,10 @@ export const SiteDataProvider = ({ children }) => {
   useEffect(() => {
     loadGlobalData();
   }, []);
+
+  useEffect(() => {
+    applyFavicon(headerData?.logo?.icon);
+  }, [headerData?.logo?.icon]);
 
   const value = {
     headerData,

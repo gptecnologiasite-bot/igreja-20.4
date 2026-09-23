@@ -1698,13 +1698,15 @@ export default function PainelAdm() {
           <div className="painel-login-card">
             <div className="painel-login-logo">
               <div className="painel-login-logo-icon">
-                {headerData?.logo?.icon ? (
-                  headerData.logo.icon.includes('http') || headerData.logo.icon.includes('data:image') ? (
-                    <img src={headerData.logo.icon} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                {(() => {
+                  const icon = headerData?.logo?.icon;
+                  const showImg = icon && typeof icon === 'string' && (icon.includes('http') || icon.includes('data:image') || icon.startsWith('/') || icon.startsWith('imagem/'));
+                  return showImg ? (
+                    <img src={icon.trim()} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
                   ) : (
-                    <span style={{ fontSize: '1.4rem' }}>{headerData.logo.icon}</span>
-                  )
-                ) : '⛪'}
+                    <span style={{ fontSize: '1.4rem' }}>{icon || '⛪'}</span>
+                  );
+                })()}
               </div>
               <span>{headerData?.logo?.text || 'ADMAC'} — Painel</span>
             </div>
@@ -1917,11 +1919,15 @@ export default function PainelAdm() {
         <aside className={`painel-sidebar ${sidebarOpen ? '' : 'collapsed'}`}>
           <div className="painel-sidebar-logo">
             <div className="painel-sidebar-logo-icon" style={headerData?.logo?.icon?.includes('http') || headerData?.logo?.icon?.includes('data:image') ? { background: 'transparent' } : {}}>
-              {headerData?.logo?.icon && typeof headerData.logo.icon === 'string' && (headerData.logo.icon.includes('data:image') || headerData.logo.icon.includes('http')) ? (
-                <img src={headerData.logo.icon.trim()} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
-              ) : (
-                headerData?.logo?.icon || '⛪'
-              )}
+{(() => {
+                const icon = headerData?.logo?.icon;
+                const showImg = icon && typeof icon === 'string' && (icon.includes('data:image') || icon.includes('http') || icon.startsWith('/') || icon.startsWith('imagem/'));
+                return showImg ? (
+                  <img src={icon.trim()} alt="Logo" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
+                ) : (
+                  icon || '⛪'
+                );
+              })()}
             </div>
             <span>{headerData?.logo?.text || 'ADMAC'} Painel</span>
           </div>

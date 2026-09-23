@@ -51,7 +51,7 @@ const Footer = () => {
         <div className="footer-section">
           <div className="footer-logo">
             <div className="footer-logo-icon">
-              {headerData?.logo?.icon && typeof headerData.logo.icon === 'string' && (headerData.logo.icon.startsWith('data:image') || headerData.logo.icon.startsWith('http') || headerData.logo.icon.startsWith('/')) ? (
+              {headerData?.logo?.icon && typeof headerData.logo.icon === 'string' && (headerData.logo.icon.startsWith('data:image') || headerData.logo.icon.startsWith('http') || headerData.logo.icon.startsWith('/') || headerData.logo.icon.startsWith('imagem/')) ? (
                 <img src={transformImageLink(headerData.logo.icon)} alt="" style={{ width: '100%', height: '100%', objectFit: 'contain' }} />
               ) : (
                 headerData?.logo?.icon || footerData?.logo?.text?.substring(0, 2)

@@ -138,18 +138,26 @@ const Header = ({ theme, toggleTheme }) => {
   // Sincronização automática via usePageUpdate
   usePageUpdate(['header'], refreshData);
 
-  // Favicon dinâmico
+  // Favicon dinâmico (mesma regra do SiteContext; força bust de cache)
   useEffect(() => {
     const icon = headerData?.logo?.icon?.trim();
-    if (icon && typeof icon === 'string' && (icon.startsWith('data:image') || icon.startsWith('http'))) {
-      let link = document.querySelector("link[rel~='icon']");
-      if (!link) {
-        link = document.createElement('link');
-        link.rel = 'icon';
-        document.head.appendChild(link);
-      }
-      link.href = headerData.logo.icon;
+    if (!icon || typeof icon !== 'string') return;
+    const isImage = icon.startsWith('data:image') || icon.startsWith('http') || icon.startsWith('/') || icon.startsWith('imagem/');
+    if (!isImage) return;
+    const base = icon.startsWith('imagem/') ? transformImageLink(icon) : icon;
+    const href = base.startsWith('data:') ? base : `${base}${base.includes('?') ? '&' : '?'}v=${Date.now()}`;
+    const links = document.querySelectorAll("link[rel~='icon'], link[rel='apple-touch-icon'], link[rel='shortcut icon']");
+    if (!links.length) {
+      const link = document.createElement('link');
+      link.rel = 'icon';
+      link.href = href;
+      document.head.appendChild(link);
+      return;
     }
+    links.forEach(link => {
+      link.removeAttribute('type');
+      link.href = href;
+    });
   }, [headerData?.logo?.icon]);
 
   const toggleMenu = () => {
@@ -292,11 +300,15 @@ const Header = ({ theme, toggleTheme }) => {
         <div className="logo-section">
           <Link to="/" className="logo-link">
             <div className="logo-icon">
-              {headerData?.logo?.icon && typeof headerData.logo.icon === 'string' && (headerData.logo.icon.includes('data:image') || headerData.logo.icon.includes('http') || headerData.logo.icon.startsWith('/')) ? (
-                <img src={transformImageLink(headerData.logo.icon.trim())} alt="Logo" />
-              ) : (
-                <span>{headerData?.logo?.icon || '⛪'}</span>
-              )}
+              {(() => {
+                const icon = headerData?.logo?.icon;
+                const showImg = icon && typeof icon === 'string' && (icon.includes('data:image') || icon.includes('http') || icon.startsWith('/') || icon.startsWith('imagem/'));
+                return showImg ? (
+                  <img src={transformImageLink(icon.trim())} alt="Logo" />
+                ) : (
+                  <span>{icon || '⛪'}</span>
+                );
+              })()}
             </div>
             <span className="logo-text">{headerData?.logo?.text || 'ADMAC'}</span>
           </Link>
