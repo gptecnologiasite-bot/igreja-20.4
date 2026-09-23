@@ -1,20 +1,73 @@
-import React from 'react';
-import { Outlet } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Outlet, useLocation } from 'react-router-dom';
 import Header from '../components/Header';
 import Footer from '../components/Footer';
 import NotificationBell from '../components/NotificationBell';
 import { useSiteData } from '../context/SiteContext';
+import { supabase } from '../lib/supabase';
+import { parseSafeJson } from '../lib/dbUtils';
+
+// Mapeia a rota pública para a chave em site_settings
+// (mesma lógica do painel: pageToMinistry + `ministry_${id}`)
+const ROUTE_KEYS = {
+  '/': 'home',
+  '/mulheres': 'ministry_mulheres',
+  '/homens': 'ministry_homens',
+  '/jovens': 'ministry_jovens',
+  '/kids': 'ministry_kids',
+  '/edb': 'ministry_ebd',
+  '/social': 'ministry_social',
+  '/louvor': 'ministry_louvor',
+  '/lares': 'ministry_lares',
+  '/revista': 'ministry_revista',
+  '/missoes': 'ministry_missoes',
+  '/retiro': 'ministry_retiro',
+  '/sobre': 'ministry_sobre',
+  '/midia': 'ministry_midia',
+  '/intercessao': 'ministry_intercessao',
+  '/casais': 'ministry_casais',
+  '/contato': 'ministry_contact',
+};
 
 const PublicLayout = () => {
     const { footerData, siteStatus, loading } = useSiteData();
+    const location = useLocation();
+    // Cache por chave: só grava quando a rota tem key correspondente
+    const [activeByKey, setActiveByKey] = useState({});
 
     // Link do WhatsApp vindo dos dados globais
     const whatsappLink = footerData?.social?.whatsapp || 'https://wa.me/5561993241084';
-    
-    // Verificação de Manutenção (simplificada via SiteContext)
-    const isMaintenance = siteStatus?.maintenance?.active === true;
 
-    if (isMaintenance && !loading) {
+    // Verificação de Manutenção global (site_status) + por página (active)
+    const isGlobalMaintenance = siteStatus?.maintenance?.active === true;
+    const routeKey = ROUTE_KEYS[location.pathname];
+
+    useEffect(() => {
+      if (!routeKey) return;
+      let cancelled = false;
+      (async () => {
+        try {
+          const { data } = await supabase
+            .from('site_settings')
+            .select('data')
+            .eq('key', routeKey)
+            .single();
+          if (cancelled) return;
+          const settings = parseSafeJson(data?.data);
+          // active ausente = página ativa (compatível com dados antigos)
+          setActiveByKey(prev => ({ ...prev, [routeKey]: settings?.active !== false }));
+        } catch {
+          if (!cancelled) setActiveByKey(prev => ({ ...prev, [routeKey]: true }));
+        }
+      })();
+      return () => { cancelled = true; };
+    }, [routeKey]);
+
+    // Sem key = rota sem toggle de status; ainda não carregado = assume ativa
+    const pageActive = routeKey ? activeByKey[routeKey] !== false : true;
+    const isMaintenance = (isGlobalMaintenance && !loading) || pageActive === false;
+
+    if (isMaintenance) {
         return (
             <>
                 <Header />
@@ -26,10 +79,10 @@ const PublicLayout = () => {
                 </main>
                 <Footer />
                 {whatsappLink && (
-                    <a 
-                        href={whatsappLink} 
-                        target="_blank" 
-                        rel="noopener noreferrer" 
+                    <a
+                        href={whatsappLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
                         className="whatsapp-float-btn"
                         title="Fale conosco no WhatsApp"
                     >
@@ -49,10 +102,10 @@ const PublicLayout = () => {
             <Footer />
             <NotificationBell />
             {whatsappLink && (
-                <a 
-                    href={whatsappLink} 
-                    target="_blank" 
-                    rel="noopener noreferrer" 
+                <a
+                    href={whatsappLink}
+                    target="_blank"
+                    rel="noopener noreferrer"
                     className="whatsapp-float-btn"
                     title="Fale conosco no WhatsApp"
                 >

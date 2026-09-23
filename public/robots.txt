@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+Disallow: /painel
+Disallow: /login
+
+Sitemap: https://igreja-20-4.vercel.app/sitemap.xml
