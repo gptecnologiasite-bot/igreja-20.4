@@ -129,7 +129,7 @@ const Lares = () => {
                 <div className="gallery-card-img">
                   {item.url ? <img src={transformImageLink(item.url)} alt={item.title || item.caption} /> : <div className="img-placeholder">📸</div>}
                 </div>
-                <div className="gallery-card-body">
+                <div className={`gallery-card-body${(!item.title && !item.caption && !item.text) ? ' no-content' : ''}`}>
                   <h5 className="gallery-card-title">{item.title || item.caption || 'Foto da Galeria'}</h5>
                   <p className="gallery-card-text">{item.text || ''}</p>
                 </div>
