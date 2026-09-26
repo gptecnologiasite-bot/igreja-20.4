@@ -191,6 +191,7 @@
 
 .lares-page .section-header {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: center;
   gap: 1rem;
@@ -236,7 +237,7 @@
 
 .lares-page .schedule-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(280px,100%), 1fr));
   gap: 2rem;
   margin-top: 3rem;
   max-width: 1200px;
@@ -503,7 +504,7 @@
 
 .lares-page .gallery-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(280px,100%), 1fr));
   gap: 1.5rem;
   max-width: 1200px;
   margin: 0 auto;
@@ -511,6 +512,8 @@
 
 .lares-page .gallery-item {
   position: relative;
+  width: 100%;
+  min-width: 0;
   border-radius: 20px;
   overflow: hidden;
   aspect-ratio: 4/3;
@@ -574,7 +577,7 @@
 
 .lares-page .testimonials-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(300px,100%), 1fr));
   gap: 2rem;
   max-width: 1200px;
   margin: 0 auto;
@@ -766,7 +769,7 @@
 /* ===== GALLERY CARDS (premium) ===== */
 .lares-page .gallery-cards {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(320px,100%), 1fr));
   gap: 2rem;
   max-width: 1200px;
   margin: 0 auto;

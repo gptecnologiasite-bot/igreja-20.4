@@ -164,6 +164,7 @@
 
 .section-header {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: center;
   gap: 1rem;
@@ -188,7 +189,7 @@
 
 .schedule-home-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(250px,100%), 1fr));
   gap: 1.5rem;
   max-width: 1200px;
   margin: 0 auto 2rem;
@@ -293,7 +294,7 @@
 
 .ministries-home-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(280px,100%), 1fr));
   gap: 2rem;
   max-width: 1200px;
   margin: 0 auto;
@@ -516,7 +517,7 @@
 
 .activities-home-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(300px,100%), 1fr));
   gap: 2rem;
   max-width: 1200px;
   margin: 0 auto;
@@ -686,12 +687,12 @@
   }
 
   .ministries-home-grid {
-    grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(240px,100%), 1fr));
     gap: 1.5rem;
   }
 
   .schedule-home-grid {
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(200px,100%), 1fr));
   }
 }
 @media (max-width: 480px) {

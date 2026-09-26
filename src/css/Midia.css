@@ -191,7 +191,7 @@ section {
 
 .video-gallery-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(300px,100%), 1fr));
   gap: 1.5rem;
 }
 
@@ -349,7 +349,7 @@ section {
 /* --- 3. TESTIMONIALS --- */
 .testimonial-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(380px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(380px,100%), 1fr));
   gap: 3rem;
 }
 
@@ -474,7 +474,7 @@ section {
 
 .birthday-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(220px,100%), 1fr));
   gap: 2.5rem;
   justify-content: center;
   max-width: 1200px;
@@ -681,7 +681,7 @@ section {
 /* --- 7. TEAM --- */
 .team-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(300px,100%), 1fr));
   gap: 3rem;
 }
 
@@ -804,7 +804,7 @@ section {
 /* --- 9. NEWS --- */
 .news-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(320px,100%), 1fr));
   gap: 1.5rem;
   align-items: start;
 }
@@ -1113,7 +1113,13 @@ section {
     font-size: 1.1rem;
   }
   .section-header h2 {
-    font-size: 1.8rem;
+    font-size: 1.7rem;
+    overflow-wrap: anywhere;
+  }
+  .footer-logo {
+    min-width: 0;
+    max-width: 100%;
+    flex-wrap: wrap;
   }
   .section-header p {
     font-size: 1rem;

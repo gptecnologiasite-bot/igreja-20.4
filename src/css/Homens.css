@@ -147,6 +147,7 @@
 
 .homens-page .section-header {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: center;
   gap: 1rem;
@@ -176,7 +177,7 @@
 
 .homens-page .schedule-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(320px,100%), 1fr));
   gap: 3rem;
   max-width: 1200px;
   margin: 0 auto;
@@ -282,7 +283,7 @@
 
 .homens-page .team-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(200px,100%), 1fr));
   gap: 2rem;
   max-width: 1000px;
   margin: 0 auto;
@@ -404,7 +405,7 @@
 
 .homens-page .gallery-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(280px,100%), 1fr));
   gap: 1.5rem;
   max-width: 1200px;
   margin: 0 auto;
@@ -412,6 +413,8 @@
 
 .homens-page .gallery-item {
   position: relative;
+  width: 100%;
+  min-width: 0;
   border-radius: 20px;
   overflow: hidden;
   aspect-ratio: 4/3;
@@ -552,7 +555,7 @@
 
 .homens-page .testimonials-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(300px,100%), 1fr));
   gap: 2rem;
   max-width: 1200px;
   margin: 0 auto;

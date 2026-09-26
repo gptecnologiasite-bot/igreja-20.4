@@ -209,6 +209,7 @@
 
 .social-page .section-header {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: center;
   gap: 1rem;
@@ -365,6 +366,8 @@
 
 .social-page .gallery-item {
   position: relative;
+  width: 100%;
+  min-width: 0;
   border-radius: 20px;
   overflow: hidden;
   aspect-ratio: 4/3;

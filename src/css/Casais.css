@@ -166,6 +166,7 @@
 
 .section-header {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: center;
   gap: 1rem;
@@ -207,7 +208,7 @@
 
 .schedule-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(300px,100%), 1fr));
   gap: 2rem;
 }
 
@@ -277,7 +278,7 @@
 
 .team-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(250px,100%), 1fr));
   gap: 3rem;
   justify-items: center;
 }
@@ -396,12 +397,14 @@
 
 .gallery-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(min(280px,100%), 1fr));
   gap: 1.5rem;
 }
 
 .gallery-item {
   position: relative;
+  width: 100%;
+  min-width: 0;
   height: 250px;
   border-radius: 20px;
   overflow: hidden;
@@ -448,7 +451,7 @@
 
 .birthdays-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(200px,100%), 1fr));
   gap: 2rem;
 }
 

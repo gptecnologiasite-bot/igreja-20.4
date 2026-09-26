@@ -132,7 +132,7 @@
 
 .kids-page .info-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(300px,100%), 1fr));
   gap: 3.5rem;
   max-width: 1200px;
   margin: 0 auto;
@@ -198,7 +198,7 @@
 
 .kids-page .events-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(320px,100%), 1fr));
   gap: 2rem;
   max-width: 1200px;
   margin: 0 auto;
@@ -350,6 +350,7 @@
 
 .kids-page .section-header {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: center;
   gap: 1rem;
@@ -370,7 +371,7 @@
 
 .kids-page .gallery-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(280px,100%), 1fr));
   gap: 1.5rem;
   max-width: 1200px;
   margin: 0 auto;
@@ -378,6 +379,8 @@
 
 .kids-page .gallery-item {
   position: relative;
+  width: 100%;
+  min-width: 0;
   border-radius: 12px;
   overflow: hidden;
   aspect-ratio: 4/3;
@@ -429,7 +432,7 @@
 
 .kids-page .testimonials-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(300px,100%), 1fr));
   gap: 2rem;
   max-width: 1200px;
   margin: 0 auto;

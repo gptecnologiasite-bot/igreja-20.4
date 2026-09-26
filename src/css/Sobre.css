@@ -165,7 +165,7 @@
 
 .sobre-page .values-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(250px,100%), 1fr));
   gap: 2rem;
   max-width: 1200px;
   margin: 0 auto;
@@ -237,7 +237,7 @@
 
 .sobre-page .team-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(200px,100%), 1fr));
   gap: 2rem;
   max-width: 1200px;
   margin: 0 auto;
@@ -374,7 +374,7 @@
 
 .sobre-page .gallery-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(300px,100%), 1fr));
   gap: 1.5rem;
   max-width: 1200px;
   margin: 0 auto;
@@ -382,6 +382,8 @@
 
 .sobre-page .gallery-item {
   position: relative;
+  width: 100%;
+  min-width: 0;
   border-radius: 20px;
   overflow: hidden;
   aspect-ratio: 16/9;
@@ -445,7 +447,7 @@
 
 .sobre-page .info-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(220px,100%), 1fr));
   gap: 2rem;
   max-width: 1200px;
   margin: 0 auto;
