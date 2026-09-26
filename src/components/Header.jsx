@@ -7,6 +7,7 @@
 
 import React, { useState, useCallback, useMemo, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import { createPortal } from 'react-dom';
 import {
   Instagram,
   Youtube,
@@ -185,9 +186,12 @@ const Header = ({ theme, toggleTheme }) => {
   };
 
   // Fechar dropdowns ao clicar fora (desktop)
+  // .mobile-nav entra na exceção: os triggers do menu mobile ficam fora de
+  // .nav-dropdown e sem isso o click deles era tratado como "clique fora".
   useEffect(() => {
     const onDocClick = (e) => {
       if (e.target.closest('.nav-dropdown')) return
+      if (e.target.closest('.mobile-nav')) return
       closeAllDropdowns()
     }
     document.addEventListener('click', onDocClick)
@@ -415,7 +419,7 @@ const Header = ({ theme, toggleTheme }) => {
       </div>
 
       {/* Overlay/Backdrop para o menu mobile */}
-      {isMenuOpen && (
+      {isMenuOpen && createPortal(
         <div 
           className="mobile-overlay" 
           onClick={toggleMenu}
@@ -426,11 +430,12 @@ const Header = ({ theme, toggleTheme }) => {
             backdropFilter: 'blur(4px)',
             zIndex: 1050
           }}
-        />
+        />,
+        document.body
       )}
 
       {/* Menu Mobile */}
-      {isMenuOpen && (
+      {isMenuOpen && createPortal(
         <nav className="mobile-nav">
           <Link to="/" onClick={toggleMenu}>Início</Link>
           
@@ -544,11 +549,12 @@ const Header = ({ theme, toggleTheme }) => {
               <span style={{ fontSize: '0.75rem', textTransform: 'uppercase', opacity: 0.8 }}>visitas</span>
             </button>
           </div>
-        </nav>
+        </nav>,
+        document.body
       )}
 
       {/* Modal de Visitantes */}
-      {showVisitorModal && (
+      {showVisitorModal && createPortal(
         <div className="visitor-modal-overlay" onClick={() => setShowVisitorModal(false)}>
           <div className="visitor-modal" onClick={e => e.stopPropagation()}>
             <div className="visitor-modal-header" style={{ display: 'flex', justifyContent: 'space-between', padding: '16px 20px', borderBottom: '1px solid #2a2f45' }}>
@@ -600,7 +606,8 @@ const Header = ({ theme, toggleTheme }) => {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </header>
   );

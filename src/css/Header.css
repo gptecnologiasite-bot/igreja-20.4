@@ -3,7 +3,10 @@
   padding: 1rem 0;
   position: sticky;
   top: 0;
-  z-index: 1000;
+  /* Acima do .mobile-nav (1100) e do .mobile-overlay (1050), que agora são
+     renderizados fora do header via portal — assim o botão X de fechar o menu
+     continua clicável. */
+  z-index: 1200;
   border-bottom: 1px solid rgba(212, 175, 55, 0.2);
   transition: background-color 0.3s, box-shadow 0.3s;
   -webkit-backdrop-filter: blur(12px);

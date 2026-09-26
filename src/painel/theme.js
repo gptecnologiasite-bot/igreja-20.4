@@ -119,8 +119,9 @@ export const globalCSS = `
   .painel-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:99}
   @media (max-width:1200px){.painel-sidebar{width:200px}.painel-topbar{left:200px}.painel-main{margin-left:200px}}
   @media (max-width:992px){
-    .painel-sidebar{transform:translateX(-240px);width:260px;box-shadow:10px 0 30px rgba(0,0,0,.5)}
-    .painel-sidebar.open{transform:translateX(0)}
+    .painel-sidebar{transform:translateX(-100%);width:260px;box-shadow:10px 0 30px rgba(0,0,0,.5)}
+    .painel-sidebar.collapsed{transform:translateX(-100%)}
+    .painel-sidebar:not(.collapsed){transform:translateX(0)}
     .painel-topbar{left:0!important;padding:0 1rem}
     .painel-main{margin-left:0!important;padding:1rem}
     .painel-overlay.visible{display:block;position:fixed;inset:0;background:rgba(0,0,0,.5);z-index:98}
