@@ -34,13 +34,18 @@ const PublicLayout = () => {
     const location = useLocation();
     // Cache por chave: só grava quando a rota tem key correspondente
     const [activeByKey, setActiveByKey] = useState({});
-
-    // Link do WhatsApp vindo dos dados globais
-    const whatsappLink = footerData?.social?.whatsapp || 'https://wa.me/5561993241084';
+    // WhatsApp por chave (rota → whatsappUrl/whatsapp do ministério)
+    const [whatsappByKey, setWhatsappByKey] = useState({});
 
     // Verificação de Manutenção global (site_status) + por página (active)
     const isGlobalMaintenance = siteStatus?.maintenance?.active === true;
     const routeKey = ROUTE_KEYS[location.pathname];
+
+    // WhatsApp da página atual; sem cadastro cai no número global
+    const whatsappLink =
+        normalizeWhatsapp(whatsappByKey[routeKey]) ||
+        normalizeWhatsapp(footerData?.social?.whatsapp) ||
+        'https://wa.me/5561993241084';
 
     useEffect(() => {
       if (!routeKey) return;
@@ -56,8 +61,11 @@ const PublicLayout = () => {
           const settings = parseSafeJson(data?.data);
           // active ausente = página ativa (compatível com dados antigos)
           setActiveByKey(prev => ({ ...prev, [routeKey]: settings?.active !== false }));
+          setWhatsappByKey(prev => ({ ...prev, [routeKey]: settings?.whatsapp || settings?.whatsappUrl || '' }));
         } catch {
-          if (!cancelled) setActiveByKey(prev => ({ ...prev, [routeKey]: true }));
+          if (cancelled) return;
+          setActiveByKey(prev => ({ ...prev, [routeKey]: true }));
+          setWhatsappByKey(prev => ({ ...prev, [routeKey]: '' }));
         }
       })();
       return () => { cancelled = true; };
@@ -117,3 +125,13 @@ const PublicLayout = () => {
 };
 
 export default PublicLayout;
+
+// URL pronta → usa; só números → wa.me; inválido → vazio (cai no fallback)
+function normalizeWhatsapp(value) {
+    const raw = typeof value === 'string' ? value.trim() : '';
+    if (!raw) return '';
+    if (raw.startsWith('http')) return raw;
+    if (!/^\+?[\d\s()-]+$/.test(raw)) return '';
+    const digits = raw.replace(/\D/g, '');
+    return digits.length >= 8 ? `https://wa.me/${digits}` : '';
+}

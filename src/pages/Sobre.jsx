@@ -6,6 +6,14 @@ import '../css/Sobre.css';
 
 const Sobre = () => {
     const [data] = useMinistryData('sobre');
+    const seenUrls = new Set();
+    const gallery = (data.gallery || []).filter(photo => {
+        const url = typeof photo?.url === 'string' ? photo.url.split(/[?#]/)[0].replace(/\/+$/, '') : '';
+        if (!url) return true;
+        if (seenUrls.has(url)) return false;
+        seenUrls.add(url);
+        return true;
+    });
 
     return (
         <div className="sobre-page">
@@ -98,12 +106,12 @@ const Sobre = () => {
             )}
 
             {/* Gallery Section */}
-            {data.gallery && data.gallery.length > 0 && (
+            {gallery.length > 0 && (
                 <section className="gallery-section">
                     <div className="container">
                         <h2>Galeria</h2>
                         <div className="gallery-grid">
-                            {data.gallery.map((photo, index) => (
+                            {gallery.map((photo, index) => (
                                 <div key={index} className="gallery-item">
                                     <img src={transformImageLink(photo.url)} alt={photo.caption || 'Foto'} />
                                     <div className="gallery-overlay">

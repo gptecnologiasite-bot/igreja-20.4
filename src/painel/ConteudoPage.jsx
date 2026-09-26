@@ -359,26 +359,30 @@ export default function ConteudoPage({ ministryId, setMinistryId, ministryTab, s
                             </button>
                           </div>
                         </div>
-                        {ministryId === 'intercessao' && (
-                          <div className="pm-field" style={{ marginBottom: '1.5rem', padding: '1rem', background: 'rgba(37, 211, 102, 0.08)', borderRadius: '12px', border: '1px solid rgba(37, 211, 102, 0.3)' }}>
-                            <label style={{ color: '#25D366', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', fontWeight: 'bold' }}>
-                              <span>📱</span> LINK DO CONVITE DO WHATSAPP (GRUPO)
-                            </label>
-                            <div className="pm-field-wrap" style={{ marginTop: '0.5rem' }}>
-                              <span className="pm-icon">🔗</span>
-                              <input
-                                className="pm-input"
-                                style={{ borderColor: 'rgba(37, 211, 102, 0.4)' }}
-                                placeholder="https://chat.whatsapp.com/..."
-                                value={ministryData?.whatsappUrl || ''}
-                                onChange={e => setMinistryData(d => ({ ...d, whatsappUrl: e.target.value }))}
-                              />
-                            </div>
+                        <div className="pm-field" style={{ marginBottom: '1.5rem', padding: '1rem', background: 'rgba(37, 211, 102, 0.08)', borderRadius: '12px', border: '1px solid rgba(37, 211, 102, 0.3)' }}>
+                          <label style={{ color: '#25D366', display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', fontWeight: 'bold' }}>
+                            <span>📱</span> {ministryId === 'intercessao' ? 'LINK DO CONVITE DO WHATSAPP (GRUPO)' : 'WHATSAPP DO DEPARTAMENTO (BOTÃO FLUTUANTE DO SITE)'}
+                          </label>
+                          <div className="pm-field-wrap" style={{ marginTop: '0.5rem' }}>
+                            <span className="pm-icon">🔗</span>
+                            <input
+                              className="pm-input"
+                              style={{ borderColor: 'rgba(37, 211, 102, 0.4)' }}
+                              placeholder="https://chat.whatsapp.com/..."
+                              value={ministryData?.whatsappUrl || ''}
+                              onChange={e => setMinistryData(d => ({ ...d, whatsappUrl: e.target.value }))}
+                            />
+                          </div>
+                          {ministryId === 'intercessao' ? (
                             <p style={{ color: palette.textMuted, fontSize: '0.78rem', marginTop: '8px', lineHeight: '1.4' }}>
                               <strong>IMPORTANTE:</strong> Ao colar o link aqui, a seção de fotos dos líderes na página será <strong>substituída</strong> pelo botão de convite ao grupo.
                             </p>
-                          </div>
-                        )}
+                          ) : (
+                            <p style={{ color: palette.textMuted, fontSize: '0.78rem', marginTop: '8px', lineHeight: '1.4' }}>
+                              O botão verde flutuante do site vai abrir este link. Deixe vazio para usar o número global.
+                            </p>
+                          )}
+                        </div>
                         <div className="pm-field">
                           <label>Título da Seção</label>
                           <div className="pm-field-wrap">
