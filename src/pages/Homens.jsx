@@ -201,29 +201,47 @@ const Homens = () => {
         </section>
       )}
 
-      <section className="homens-cta">
-        <div className="container">
-          <Star size={40} className="cta-icon" />
-          <h2>Junte-se ao Ministério de Homens</h2>
-          <p>Faça parte de uma comunidade de homens comprometidos com Cristo, família e serviço.</p>
-          <div className="cta-buttons" style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap', marginTop: '1.5rem' }}>
-            <a href="tel:+5561993241084" className="cta-button">
-              <Heart size={18} /> Entrar em Contato
-            </a>
-            {data.hero?.testimonyUrl && (
-              <a 
-                href={data.hero.testimonyUrl} 
-                target="_blank" 
-                rel="noopener noreferrer" 
-                className="cta-button secondary"
-                style={{ background: 'transparent', border: '2px solid #d4af37', color: '#d4af37' }}
-              >
-                <MessageSquare size={18} /> Enviar Testemunho
-              </a>
-            )}
+      {data.hero?.testimonyUrl || data.hero?.testimonyImage ? (
+        <section className="testimony-section">
+          <div className="container">
+            <div className="testimony-card">
+              {data.hero?.testimonyImage && (
+                <div className="testimony-image">
+                  <img src={transformImageLink(data.hero.testimonyImage)} alt="Testemunho" />
+                </div>
+              )}
+              <div className="testimony-content">
+                <h3>Envie seu Testemunho</h3>
+                <p>Compartilhe como Deus tem agido na sua vida através do ministério</p>
+                {data.hero?.testimonyUrl && (
+                  <a 
+                    href={data.hero.testimonyUrl} 
+                    target="_blank" 
+                    rel="noopener noreferrer" 
+                    className="cta-button"
+                    style={{ marginTop: '1rem', display: 'inline-flex' }}
+                  >
+                    <MessageSquare size={18} /> Enviar Testemunho
+                  </a>
+                )}
+              </div>
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      ) : (
+        <section className="homens-cta">
+          <div className="container">
+            <Star size={40} className="cta-icon" />
+            <h2>Junte-se ao Ministério de Homens</h2>
+            <p>Faça parte de uma comunidade de homens comprometidos com Cristo, família e serviço.</p>
+            <div className="cta-buttons" style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap', marginTop: '1.5rem' }}>
+              <a href="tel:+5561993241084" className="cta-button">
+                <Heart size={18} /> Entrar em Contato
+              </a>
+            </div>
+          </div>
+        </section>
+      )}
     </div>
   );
 };

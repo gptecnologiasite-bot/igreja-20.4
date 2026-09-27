@@ -2717,6 +2717,30 @@ export default function PainelAdm() {
                         </div>
                       </div>
                       <div className="pm-field">
+                        <label>Imagem do Testemunho (Opcional)</label>
+                        <div className="pm-field-wrap" style={{ display: 'flex', gap: '8px' }}>
+                          <div style={{ position: 'relative', flex: 1 }}>
+                            <span className="pm-icon">🖼</span>
+                            <input className="pm-input" value={ministryData?.hero?.testimonyImage || ''} onChange={e => setMinistryData(d => ({ ...d, hero: { ...d.hero, testimonyImage: e.target.value } }))} placeholder="URL da imagem ou faça upload" />
+                          </div>
+                          <button
+                            type="button"
+                            className="pm-photo-btn"
+                            style={{ whiteSpace: 'nowrap', padding: '0 12px', height: '38px', marginTop: '0' }}
+                            onClick={() => handleFileUpload(url => {
+                              setMinistryData(d => ({ ...d, hero: { ...d.hero, testimonyImage: url } }));
+                            }, hasSupabase, supabase)}
+                          >
+                            Subir Foto
+                          </button>
+                        </div>
+                        {ministryData?.hero?.testimonyImage && (
+                          <div style={{ marginTop: '0.5rem' }}>
+                            <img src={transformImageLink(ministryData.hero.testimonyImage)} alt="Preview Testemunho" style={{ width: '100%', height: '80px', objectFit: 'cover', borderRadius: '8px', border: `1px solid ${palette.border}` }} />
+                          </div>
+                        )}
+                      </div>
+                      <div className="pm-field">
                         <label>Imagem de Fundo</label>
                         <div className="pm-field-wrap" style={{ display: 'flex', gap: '8px' }}>
                           <div style={{ position: 'relative', flex: 1 }}>
