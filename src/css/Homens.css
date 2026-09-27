@@ -852,8 +852,7 @@
   .homens-page .team-section,
   .homens-page .gallery-section,
   .homens-page .homens-cta,
-  .homens-page .video-section,
-  .homens-page .testimony-section {
+  .homens-page .video-section {
     padding: 2rem 1rem;
   }
   .homens-page .homens-hero .hero-subtitle {
@@ -873,73 +872,5 @@
   }
   .homens-page .team-card {
     padding: 1.5rem;
-  }
-}
-
-/* Testimony Section */
-.homens-page .testimony-section {
-  padding: 6rem 1rem;
-  background: linear-gradient(135deg, #121212 0%, #1a1a1a 100%);
-  text-align: center;
-  color: #fff;
-  border-top: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.homens-page .testimony-card {
-  display: flex;
-  flex-direction: column;
-  gap: 2rem;
-  max-width: 900px;
-  margin: 0 auto;
-  background: rgba(255, 255, 255, 0.03);
-  border-radius: 28px;
-  padding: 3rem;
-  box-shadow: 0 20px 40px rgba(0,0,0,0.4);
-  border: 1px solid rgba(212, 175, 55, 0.2);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
-}
-
-.homens-page .testimony-image {
-  width: 100%;
-  border-radius: 16px;
-  overflow: hidden;
-}
-
-.homens-page .testimony-image img {
-  width: 100%;
-  height: auto;
-  max-height: 400px;
-  object-fit: cover;
-  border-radius: 16px;
-}
-
-.homens-page .testimony-content h3 {
-  font-size: 2rem;
-  color: #d4af37;
-  margin-bottom: 0.5rem;
-}
-
-.homens-page .testimony-content p {
-  color: #a0a0a0;
-  margin-bottom: 1.5rem;
-}
-
-@media (min-width: 768px) {
-  .homens-page .testimony-card {
-    flex-direction: row;
-    text-align: left;
-  }
-  
-  .homens-page .testimony-image {
-    flex: 1;
-    max-width: 400px;
-  }
-  
-  .homens-page .testimony-content {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
   }
 }

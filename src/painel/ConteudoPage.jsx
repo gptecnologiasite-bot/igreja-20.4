@@ -8,6 +8,63 @@ import HomeAnivEditor from './HomeAnivEditor';
 
 export default function ConteudoPage({ ministryId, setMinistryId, ministryTab, setMinistryTab, ministryOptions, ministryData, setMinistryData, setHomeData, ministryLoading, saveMinistry, homeVideos, setHomeVideos, currentUser }) {
   const hasSupabase = hasSupabaseConfigured;
+  const [aiModal, setAiModal] = React.useState({ open: false, field: null, label: '', currentValue: '', context: '' });
+  const [aiLoading, setAiLoading] = React.useState(false);
+
+  const openAiAssistant = (field, label, currentValue, context) => {
+    setAiModal({ open: true, field, label, currentValue, context });
+  };
+
+  const handleAiGenerate = async () => {
+    if (!aiModal.field) return;
+    setAiLoading(true);
+    try {
+      const ministryLabel = ministryOptions.find(o => o.id === ministryId)?.label || ministryId;
+      const prompt = 'Contexto: Site da igreja ADMAC - Ministério ' + ministryLabel + 
+        '\nCampo: ' + aiModal.label + 
+        '\nValor atual: "' + aiModal.currentValue + '"' + 
+        '\nInstrução: ' + aiModal.context + 
+        '\n\nGere um texto melhorado, inspirador e adequado para site de igreja evangélica.' +
+        '\nMantenha tom acolhedor, bíblico e motivacional. Máximo 200 palavras.';
+
+      const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer ' + import.meta.env.VITE_GROQ_API_KEY,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          model: 'llama-3.1-70b-versatile',
+          messages: [{ role: 'user', content: prompt }],
+          max_tokens: 300,
+          temperature: 0.7
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error('Groq API error: ' + response.status);
+      }
+
+      const data = await response.json();
+      const suggestion = data.choices?.[0]?.message?.content?.trim() || 'Erro ao gerar texto';
+
+      setMinistryData(d => {
+        const path = aiModal.field.split('.');
+        let newData = JSON.parse(JSON.stringify(d));
+        let obj = newData;
+        for (let i = 0; i < path.length - 1; i++) obj = obj[path[i]];
+        obj[path[path.length - 1]] = suggestion;
+        return newData;
+      });
+      setAiModal({ ...aiModal, open: false });
+    } catch (error) {
+      console.error('AI Error:', error);
+      alert('Erro ao gerar sugestão: ' + error.message);
+    } finally {
+      setAiLoading(false);
+    }
+  };
+
   return (
         <div>
           <div className="painel-card" style={{ marginBottom: '1.2rem' }}>
@@ -293,23 +350,30 @@ export default function ConteudoPage({ ministryId, setMinistryId, ministryTab, s
                               value={ministryData?.hero?.title || ''}
                               onChange={e => setMinistryData(d => ({ ...d, hero: { ...d.hero, title: e.target.value } }))}
                             />
+                            <button type="button" className="pm-ai-btn" onClick={() => openAiAssistant('hero.title', 'Título Principal', ministryData?.hero?.title || '', 'Título impactante para o topo da página do ministério')} title="Gerar com IA">✨</button>
                           </div>
                         </div>
                         <div className="pm-field">
                           <label>Subtítulo</label>
-                          <textarea
-                            value={ministryData?.hero?.subtitle || ''}
-                            onChange={e => setMinistryData(d => ({ ...d, hero: { ...d.hero, subtitle: e.target.value } }))}
-                            style={{ width: '100%', height: 90, background: palette.bg, color: palette.text, border: `1px solid ${palette.border}`, borderRadius: 10, padding: 12, fontSize: '.9rem', outline: 'none', resize: 'vertical', fontFamily: 'Inter, sans-serif', lineHeight: 1.6 }}
-                          />
+                          <div style={{ display: 'flex', gap: '8px' }}>
+                            <textarea
+                              value={ministryData?.hero?.subtitle || ''}
+                              onChange={e => setMinistryData(d => ({ ...d, hero: { ...d.hero, subtitle: e.target.value } }))}
+                              style={{ flex: 1, height: 90, background: palette.bg, color: palette.text, border: `1px solid ${palette.border}`, borderRadius: 10, padding: 12, fontSize: '.9rem', outline: 'none', resize: 'vertical', fontFamily: 'Inter, sans-serif', lineHeight: 1.6 }}
+                            />
+                            <button type="button" className="pm-ai-btn" style={{ alignSelf: 'flex-start', marginTop: '8px' }} onClick={() => openAiAssistant('hero.subtitle', 'Subtítulo', ministryData?.hero?.subtitle || '', 'Subtítulo acolhedor que resume o propósito do ministério')} title="Gerar com IA">✨</button>
+                          </div>
                         </div>
                         <div className="pm-field">
                           <label>Versículo em Destaque (opcional)</label>
-                          <textarea
-                            value={ministryData?.hero?.verse || ''}
-                            onChange={e => setMinistryData(d => ({ ...d, hero: { ...d.hero, verse: e.target.value } }))}
-                            style={{ width: '100%', height: 70, background: palette.bg, color: palette.text, border: `1px solid ${palette.border}`, borderRadius: 10, padding: 12, fontSize: '.9rem', outline: 'none', resize: 'vertical', fontFamily: 'Inter, sans-serif', lineHeight: 1.6 }}
-                          />
+                          <div style={{ display: 'flex', gap: '8px' }}>
+                            <textarea
+                              value={ministryData?.hero?.verse || ''}
+                              onChange={e => setMinistryData(d => ({ ...d, hero: { ...d.hero, verse: e.target.value } }))}
+                              style={{ flex: 1, height: 70, background: palette.bg, color: palette.text, border: `1px solid ${palette.border}`, borderRadius: 10, padding: 12, fontSize: '.9rem', outline: 'none', resize: 'vertical', fontFamily: 'Inter, sans-serif', lineHeight: 1.6 }}
+                            />
+                            <button type="button" className="pm-ai-btn" style={{ alignSelf: 'flex-start', marginTop: '8px' }} onClick={() => openAiAssistant('hero.verse', 'Versículo em Destaque', ministryData?.hero?.verse || '', 'Versículo bíblico que representa o coração do ministério')} title="Gerar com IA">✨</button>
+                          </div>
                         </div>
                         <div className="pm-field">
                           <label>URL de Vídeo - Conheça o Trabalho (opcional)</label>

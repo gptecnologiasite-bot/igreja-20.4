@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { transformImageLink } from '../lib/dbUtils';
 // import { supabase } from '../lib/supabase';
-import { Shield, Calendar, Clock, Users, Camera, MessageSquare, Heart, MapPin, Star, Gift, ZoomIn, X } from 'lucide-react';
+import { Shield, Calendar, Clock, Users, Camera, Heart, MapPin, Star, Gift, ZoomIn, X } from 'lucide-react';
 import { useMinistryData } from '../hooks/useMinistryData';
 import '../css/Homens.css';
 
@@ -201,51 +201,18 @@ const Homens = () => {
         </section>
       )}
 
-      {data.hero?.testimonyUrl || data.hero?.testimonyImage || data.hero?.testimonyText ? (
-        <section className="testimony-section">
-          <div className="container">
-            <div className="testimony-card">
-              {data.hero?.testimonyImage && (
-                <div className="testimony-image">
-                  <img src={transformImageLink(data.hero.testimonyImage)} alt="Testemunho" />
-                </div>
-              )}
-              <div className="testimony-content">
-                <h3>Testemunho</h3>
-                {data.hero?.testimonyText && (
-                  <div className="testimony-text">
-                    <p>{data.hero.testimonyText}</p>
-                  </div>
-                )}
-                {data.hero?.testimonyUrl && (
-                  <a 
-                    href={data.hero.testimonyUrl} 
-                    target="_blank" 
-                    rel="noopener noreferrer" 
-                    className="cta-button"
-                    style={{ marginTop: '1rem', display: 'inline-flex' }}
-                  >
-                    <MessageSquare size={18} /> Enviar Testemunho
-                  </a>
-                )}
-              </div>
-            </div>
+      <section className="homens-cta">
+        <div className="container">
+          <Star size={40} className="cta-icon" />
+          <h2>Junte-se ao Ministério de Homens</h2>
+          <p>Faça parte de uma comunidade de homens comprometidos com Cristo, família e serviço.</p>
+          <div className="cta-buttons" style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap', marginTop: '1.5rem' }}>
+            <a href="tel:+5561993241084" className="cta-button">
+              <Heart size={18} /> Entrar em Contato
+            </a>
           </div>
-        </section>
-      ) : (
-        <section className="homens-cta">
-          <div className="container">
-            <Star size={40} className="cta-icon" />
-            <h2>Junte-se ao Ministério de Homens</h2>
-            <p>Faça parte de uma comunidade de homens comprometidos com Cristo, família e serviço.</p>
-            <div className="cta-buttons" style={{ display: 'flex', gap: '1rem', justifyContent: 'center', flexWrap: 'wrap', marginTop: '1.5rem' }}>
-              <a href="tel:+5561993241084" className="cta-button">
-                <Heart size={18} /> Entrar em Contato
-              </a>
-            </div>
-          </div>
-        </section>
-      )}
+        </div>
+      </section>
     </div>
   );
 };
