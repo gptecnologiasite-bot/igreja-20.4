@@ -9,6 +9,7 @@ function ConfigsPage({ headerData, setHeaderData, footerData, setFooterData }) {
   const hasSupabase = hasSupabaseConfigured;
   const [automationConfig, setAutomationConfig] = useState({ enabled: false, youtubeChannel: '', driveFolder: '' });
   const [aiConfig, setAiConfig] = useState({ groqApiKey: '' });
+  const [calendarConfig, setCalendarConfig] = useState({ enabled: false, calendarId: '', apiKey: '', webhookUrl: '', postTypes: ['image', 'video'] });
 
   useEffect(() => {
     const loadAiConfig = async () => {
@@ -28,6 +29,26 @@ function ConfigsPage({ headerData, setHeaderData, footerData, setFooterData }) {
       }
     };
     loadAiConfig();
+  }, []);
+
+  useEffect(() => {
+    const loadCalendarConfig = async () => {
+      try {
+        const { data } = await supabase.from('site_settings').select('data').eq('key', 'calendar_config').single();
+        if (data?.data) {
+          const parsed = typeof data.data === 'string' ? JSON.parse(data.data) : data.data;
+          setCalendarConfig(c => ({ ...c, ...parsed }));
+        } else {
+          try {
+            const cached = localStorage.getItem('admac_site_settings:calendar_config');
+            if (cached) setCalendarConfig(c => ({ ...c, ...JSON.parse(cached) }));
+          } catch { /* ignore */ }
+        }
+      } catch (err) {
+        console.error('Error fetching Calendar config:', err);
+      }
+    };
+    loadCalendarConfig();
   }, []);
 
   useEffect(() => {
@@ -412,6 +433,148 @@ function ConfigsPage({ headerData, setHeaderData, footerData, setFooterData }) {
           }}
         >
           Salvar Configuração IA
+        </button>
+      </div>
+
+      <div className="painel-card" style={{ maxWidth: 600, marginTop: '1.2rem' }}>
+        <h3 style={{ fontSize: '.95rem', fontWeight: 600, marginBottom: '1.2rem' }}>Postagem Automática via Google Calendar</h3>
+        <div style={{ marginBottom: '1.2rem' }}>
+          <button
+            onClick={() => setCalendarConfig(c => ({ ...c, enabled: !c.enabled }))}
+            style={{
+              width: '100%',
+              padding: '.7rem',
+              borderRadius: 10,
+              border: 'none',
+              cursor: 'pointer',
+              fontWeight: 600,
+              fontSize: '.9rem',
+              color: '#fff',
+              background: calendarConfig.enabled ? palette.success : palette.danger,
+              boxShadow: calendarConfig.enabled ? '0 4px 16px rgba(34,211,165,.25)' : '0 4px 16px rgba(244,63,94,.25)'
+            }}
+          >
+            {calendarConfig.enabled ? '✅ Postagem Automática LIGADA' : '⛔ Postagem Automática DESLIGADA'}
+          </button>
+        </div>
+        <div className="pm-field" style={{ marginBottom: '1rem' }}>
+          <label>Google Calendar ID</label>
+          <div className="pm-field-wrap">
+            <span className="pm-icon">📅</span>
+            <input
+              className="pm-input"
+              value={calendarConfig.calendarId || ''}
+              onChange={e => setCalendarConfig(c => ({ ...c, calendarId: e.target.value }))}
+              placeholder="seu-calendario@gmail.com ou ID do calendário"
+            />
+          </div>
+        </div>
+        <div className="pm-field" style={{ marginBottom: '1rem' }}>
+          <label>Google Calendar API Key</label>
+          <div className="pm-field-wrap">
+            <span className="pm-icon">🔑</span>
+            <input
+              className="pm-input"
+              type="password"
+              value={calendarConfig.apiKey || ''}
+              onChange={e => setCalendarConfig(c => ({ ...c, apiKey: e.target.value }))}
+              placeholder="API Key do Google Cloud Console"
+            />
+          </div>
+        </div>
+        <div className="pm-field" style={{ marginBottom: '1rem' }}>
+          <label>Webhook URL (para receber notificações)</label>
+          <div className="pm-field-wrap">
+            <span className="pm-icon">🔗</span>
+            <input
+              className="pm-input"
+              value={calendarConfig.webhookUrl || ''}
+              onChange={e => setCalendarConfig(c => ({ ...c, webhookUrl: e.target.value }))}
+              placeholder="https://seusite.vercel.app/api/calendar-webhook"
+            />
+          </div>
+        </div>
+        <div className="pm-field" style={{ marginBottom: '1rem' }}>
+          <label>Tipos de Postagem</label>
+          <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer' }}>
+              <input
+                type="checkbox"
+                checked={calendarConfig.postTypes.includes('image')}
+                onChange={e => setCalendarConfig(c => ({
+                  ...c,
+                  postTypes: e.target.checked
+                    ? [...c.postTypes, 'image']
+                    : c.postTypes.filter(t => t !== 'image')
+                }))}
+              />
+              📷 Imagem
+            </label>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer' }}>
+              <input
+                type="checkbox"
+                checked={calendarConfig.postTypes.includes('video')}
+                onChange={e => setCalendarConfig(c => ({
+                  ...c,
+                  postTypes: e.target.checked
+                    ? [...c.postTypes, 'video']
+                    : c.postTypes.filter(t => t !== 'video')
+                }))}
+              />
+              🎥 Vídeo
+            </label>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer' }}>
+              <input
+                type="checkbox"
+                checked={calendarConfig.postTypes.includes('audio')}
+                onChange={e => setCalendarConfig(c => ({
+                  ...c,
+                  postTypes: e.target.checked
+                    ? [...c.postTypes, 'audio']
+                    : c.postTypes.filter(t => t !== 'audio')
+                }))}
+              />
+              🎵 Áudio
+            </label>
+            <label style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', cursor: 'pointer' }}>
+              <input
+                type="checkbox"
+                checked={calendarConfig.postTypes.includes('text')}
+                onChange={e => setCalendarConfig(c => ({
+                  ...c,
+                  postTypes: e.target.checked
+                    ? [...c.postTypes, 'text']
+                    : c.postTypes.filter(t => t !== 'text')
+                }))}
+              />
+              📝 Texto
+            </label>
+          </div>
+        </div>
+        <p style={{ fontSize: '.85rem', color: palette.textMuted, marginTop: '8px', marginBottom: '1rem' }}>
+          Configure no Google Cloud Console: <a href="https://console.cloud.google.com/apis/calendar" target="_blank" rel="noopener noreferrer" style={{ color: palette.accent }}>APIs Calendar</a> |
+          Webhook: <code style={{ background: palette.bg, padding: '2px 6px', borderRadius: 4 }}>/api/calendar-webhook</code>
+        </p>
+        <button
+          className="pm-btn-save"
+          style={{ width: '100%' }}
+          onClick={async () => {
+            try {
+              const { error } = await supabase.from('site_settings').upsert({ key: 'calendar_config', data: calendarConfig });
+              if (error || !hasSupabase) {
+                try {
+                  localStorage.setItem('admac_site_settings:calendar_config', JSON.stringify(calendarConfig));
+                } catch { /* ignore */ }
+              }
+              broadcastUpdate('calendar_config');
+              alert(error || !hasSupabase ? "Configuração Calendar salva no navegador (offline)." : "Configuração Calendar salva com sucesso!");
+            } catch (err) {
+              console.error('Error saving Calendar config:', err);
+              alert("Erro ao salvar configuração Calendar.");
+            }
+          }}
+        >
+          Salvar Configuração Calendar
         </button>
       </div>
 
