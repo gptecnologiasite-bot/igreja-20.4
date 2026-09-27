@@ -336,6 +336,46 @@ export default function ConteudoPage({ ministryId, setMinistryId, ministryTab, s
                           </div>
                         )}
                         <div className="pm-field">
+                          <label>Link de Testemunho (Opcional)</label>
+                          <div className="pm-field-wrap">
+                            <span className="pm-icon">🔗</span>
+                            <input className="pm-input" value={ministryData?.hero?.testimonyUrl || ''} onChange={e => setMinistryData(d => ({ ...d, hero: { ...d.hero, testimonyUrl: e.target.value } }))} placeholder="Link para formulário ou página de depoimentos" />
+                          </div>
+                        </div>
+                        <div className="pm-field">
+                          <label>Imagem do Testemunho (Opcional)</label>
+                          <div className="pm-field-wrap" style={{ display: 'flex', gap: '8px' }}>
+                            <div style={{ position: 'relative', flex: 1 }}>
+                              <span className="pm-icon">🖼</span>
+                              <input className="pm-input" value={ministryData?.hero?.testimonyImage || ''} onChange={e => setMinistryData(d => ({ ...d, hero: { ...d.hero, testimonyImage: e.target.value } }))} placeholder="URL da imagem ou faça upload" />
+                            </div>
+                            <button
+                              type="button"
+                              className="pm-photo-btn"
+                              style={{ whiteSpace: 'nowrap', padding: '0 12px', height: '38px', marginTop: '0' }}
+                              onClick={() => handleFileUpload(url => {
+                                setMinistryData(d => ({ ...d, hero: { ...d.hero, testimonyImage: url } }));
+                              }, hasSupabase, supabase)}
+                            >
+                              Subir Foto
+                            </button>
+                          </div>
+                          {ministryData?.hero?.testimonyImage && (
+                            <div style={{ marginTop: '0.5rem' }}>
+                              <img src={transformImageLink(ministryData.hero.testimonyImage)} alt="Preview Testemunho" style={{ width: '100%', height: '80px', objectFit: 'cover', borderRadius: '8px', border: `1px solid ${palette.border}` }} />
+                            </div>
+                          )}
+                        </div>
+                        <div className="pm-field">
+                          <label>Texto do Testemunho (Opcional)</label>
+                          <textarea
+                            value={ministryData?.hero?.testimonyText || ''}
+                            onChange={e => setMinistryData(d => ({ ...d, hero: { ...d.hero, testimonyText: e.target.value } }))}
+                            placeholder="Escreva aqui o texto do testemunho que aparecerá na página..."
+                            style={{ width: '100%', height: 100, background: palette.bg, color: palette.text, border: `1px solid ${palette.border}`, borderRadius: 10, padding: 12, fontSize: '.9rem', outline: 'none', resize: 'vertical', fontFamily: 'Inter, sans-serif', lineHeight: 1.6 }}
+                          />
+                        </div>
+                        <div className="pm-field">
                           <label>Imagem de Fundo</label>
                           <div className="pm-field-wrap" style={{ display: 'flex', gap: '8px' }}>
                             <div style={{ position: 'relative', flex: 1 }}>
