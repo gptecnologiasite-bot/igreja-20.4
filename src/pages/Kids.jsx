@@ -10,7 +10,8 @@ const Kids = () => {
     hero = { title: 'Ministério Kids', subtitle: 'Lugar de criança feliz!' },
     info = { schedule: [], location: '', age: '' },
     schedule = [],
-    gallery = []
+    gallery = [],
+    team = []
   } = data || {};
   
   const [currentSlide, setCurrentSlide] = useState(0);
@@ -133,31 +134,33 @@ const Kids = () => {
       </section>
 
       {/* Team Section */}
-      <section className="team-section">
-        <div className="container">
-          <div className="section-header">
-            <Users size={32} />
-            <h2>Nossa Equipe</h2>
-          </div>
-          <p className="section-subtitle">Conheça quem cuida dos nossos pequenos com amor</p>
+      {team && team.length > 0 && (
+        <section className="team-section">
+          <div className="container">
+            <div className="section-header">
+              <Users size={32} />
+              <h2>Nossa Equipe</h2>
+            </div>
+            <p className="section-subtitle">Conheça quem cuida dos nossos pequenos com amor</p>
 
-          <div className="team-grid">
-            {data.team.map((member, index) => (
-              <div key={index} className="team-card">
-                <div className="team-photo-wrap">
-                  <img src={transformImageLink(member.photo)} alt={member.name} className="team-photo" />
+            <div className="team-grid">
+              {team.map((member, index) => (
+                <div key={index} className="team-card">
+                  <div className="team-photo-wrap">
+                    <img src={transformImageLink(member.photo)} alt={member.name} className="team-photo" />
+                  </div>
+                  <h3>{member.name}</h3>
+                  <p className="team-role">{member.role}</p>
+                  <div className="team-excellence">
+                    <Sparkles size={14} />
+                    <span>Servindo a Deus com excelência</span>
+                  </div>
                 </div>
-                <h3>{member.name}</h3>
-                <p className="team-role">{member.role}</p>
-                <div className="team-excellence">
-                  <Sparkles size={14} />
-                  <span>Servindo a Deus com excelência</span>
-                </div>
-              </div>
-            ))}
+              ))}
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
 
       {/* Gallery Section */}
       <section className="gallery-section">
