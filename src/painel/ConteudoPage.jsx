@@ -10,6 +10,27 @@ export default function ConteudoPage({ ministryId, setMinistryId, ministryTab, s
   const hasSupabase = hasSupabaseConfigured;
   const [aiModal, setAiModal] = React.useState({ open: false, field: null, label: '', currentValue: '', context: '' });
   const [aiLoading, setAiLoading] = React.useState(false);
+  const [groqApiKey, setGroqApiKey] = React.useState('');
+
+  React.useEffect(() => {
+    const loadGroqKey = async () => {
+      try {
+        const { data } = await supabase.from('site_settings').select('data').eq('key', 'ai_config').single();
+        if (data?.data) {
+          const parsed = typeof data.data === 'string' ? JSON.parse(data.data) : data.data;
+          setGroqApiKey(parsed.groqApiKey || '');
+        } else {
+          try {
+            const cached = localStorage.getItem('admac_site_settings:ai_config');
+            if (cached) setGroqApiKey(JSON.parse(cached).groqApiKey || '');
+          } catch { /* ignore */ }
+        }
+      } catch (err) {
+        console.error('Error fetching Groq key:', err);
+      }
+    };
+    loadGroqKey();
+  }, []);
 
   const openAiAssistant = (field, label, currentValue, context) => {
     setAiModal({ open: true, field, label, currentValue, context });
@@ -30,7 +51,7 @@ export default function ConteudoPage({ ministryId, setMinistryId, ministryTab, s
       const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
         method: 'POST',
         headers: {
-          'Authorization': 'Bearer ' + import.meta.env.VITE_GROQ_API_KEY,
+          'Authorization': 'Bearer ' + (groqApiKey || import.meta.env.VITE_GROQ_API_KEY || ''),
           'Content-Type': 'application/json'
         },
         body: JSON.stringify({

@@ -8,6 +8,27 @@ import BellSettingsCard from './BellSettingsCard';
 function ConfigsPage({ headerData, setHeaderData, footerData, setFooterData }) {
   const hasSupabase = hasSupabaseConfigured;
   const [automationConfig, setAutomationConfig] = useState({ enabled: false, youtubeChannel: '', driveFolder: '' });
+  const [aiConfig, setAiConfig] = useState({ groqApiKey: '' });
+
+  useEffect(() => {
+    const loadAiConfig = async () => {
+      try {
+        const { data } = await supabase.from('site_settings').select('data').eq('key', 'ai_config').single();
+        if (data?.data) {
+          const parsed = typeof data.data === 'string' ? JSON.parse(data.data) : data.data;
+          setAiConfig(c => ({ ...c, ...parsed }));
+        } else {
+          try {
+            const cached = localStorage.getItem('admac_site_settings:ai_config');
+            if (cached) setAiConfig(c => ({ ...c, ...JSON.parse(cached) }));
+          } catch { /* ignore */ }
+        }
+      } catch (err) {
+        console.error('Error fetching AI config:', err);
+      }
+    };
+    loadAiConfig();
+  }, []);
 
   useEffect(() => {
     const loadAutomationConfig = async () => {
@@ -349,6 +370,48 @@ function ConfigsPage({ headerData, setHeaderData, footerData, setFooterData }) {
           }}
         >
           Salvar Automação
+        </button>
+      </div>
+
+      <div className="painel-card" style={{ maxWidth: 600, marginTop: '1.2rem' }}>
+        <h3 style={{ fontSize: '.95rem', fontWeight: 600, marginBottom: '1.2rem' }}>Inteligência Artificial (Groq)</h3>
+        <div className="pm-field" style={{ marginBottom: '1rem' }}>
+          <label>Groq API Key</label>
+          <div className="pm-field-wrap">
+            <span className="pm-icon">🔑</span>
+            <input
+              className="pm-input"
+              type="password"
+              value={aiConfig.groqApiKey || ''}
+              onChange={e => setAiConfig(c => ({ ...c, groqApiKey: e.target.value }))}
+              placeholder="gsk_xxxxxxxxxxxxxxxxxxxxxxxx"
+            />
+          </div>
+        </div>
+        <div style={{ fontSize: '.85rem', color: palette.textMuted, marginTop: '8px', marginBottom: '1rem' }}>
+          Chave da API Groq para o Assistente IA no Editor de Conteúdo. Modelo: llama-3.1-70b-versatile.
+          <br/>Obtenha em: <a href="https://console.groq.com/keys" target="_blank" rel="noopener noreferrer" style={{ color: palette.accent }}>console.groq.com/keys</a>
+        </div>
+        <button
+          className="pm-btn-save"
+          style={{ width: '100%' }}
+          onClick={async () => {
+            try {
+              const { error } = await supabase.from('site_settings').upsert({ key: 'ai_config', data: aiConfig });
+              if (error || !hasSupabase) {
+                try {
+                  localStorage.setItem('admac_site_settings:ai_config', JSON.stringify(aiConfig));
+                } catch { /* ignore */ }
+              }
+              broadcastUpdate('ai_config');
+              alert(error || !hasSupabase ? "Configuração IA salva no navegador (offline)." : "Configuração IA salva com sucesso!");
+            } catch (err) {
+              console.error('Error saving AI config:', err);
+              alert("Erro ao salvar configuração IA.");
+            }
+          }}
+        >
+          Salvar Configuração IA
         </button>
       </div>
 
