@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { transformImageLink } from '../lib/dbUtils';
-import { Calendar, Clock, MapPin, Heart, Star, Camera, Users, BookOpen } from 'lucide-react';
+import { Calendar, Clock, MapPin, Heart, Star, Camera, Users, BookOpen, Sparkles } from 'lucide-react';
 import '../css/Kids.css';
 import { useMinistryData } from '../hooks/useMinistryData';
 
@@ -125,6 +125,33 @@ const Kids = () => {
                     </div>
                   </div>
                   <button className="event-btn">Quero Participar</button>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Team Section */}
+      <section className="team-section">
+        <div className="container">
+          <div className="section-header">
+            <Users size={32} />
+            <h2>Nossa Equipe</h2>
+          </div>
+          <p className="section-subtitle">Conheça quem cuida dos nossos pequenos com amor</p>
+
+          <div className="team-grid">
+            {data.team.map((member, index) => (
+              <div key={index} className="team-card">
+                <div className="team-photo-wrap">
+                  <img src={transformImageLink(member.photo)} alt={member.name} className="team-photo" />
+                </div>
+                <h3>{member.name}</h3>
+                <p className="team-role">{member.role}</p>
+                <div className="team-excellence">
+                  <Sparkles size={14} />
+                  <span>Servindo a Deus com excelência</span>
                 </div>
               </div>
             ))}

@@ -1,0 +1,103 @@
+=====================================================
+   COMO ADMINISTRAR O SITE DA IGREJA - ADMAC
+   Atualizado em: 25/09/2026
+=====================================================
+
+-----------------------------------------------------
+1. LINKS IMPORTANTES
+-----------------------------------------------------
+
+SITE (o que o público vê):
+https://igreja-20-4.vercel.app/
+
+PAINEL (área administrativa):
+https://igreja-20-4.vercel.app/painel
+
+SPOTIFY (podcast/mensagens da igreja):
+https://creators.spotify.com/
+
+-----------------------------------------------------
+2. ENTRAR NO PAINEL
+-----------------------------------------------------
+
+1. Abra o link: https://igreja-20-4.vercel.app/painel
+2. E-mail:  admin@admin.com
+3. Senha:   admac2024
+4. Clique em "Entrar no Painel"
+
+-----------------------------------------------------
+3. O QUE DAR PARA EDITAR NO PAINEL
+-----------------------------------------------------
+
+CONTEÚDO
+- Home: slides do carrossel (banners da tela inicial)
+- Sobre / Mídia / Lares / outros ministérios:
+  galeria de fotos, equipe, textos
+
+PÁGINAS
+- Lista de páginas do site
+- Toggle liga/desliga = mostra "Página em Manutenção"
+  no site (a página some do público)
+
+CONFIGURAÇÕES
+- Logo, favicon, cores, contatos, redes sociais
+
+DEPOIS DE QUALQUER MUDANÇA:
+- Clique em SALVAR no painel
+- Abra o site e aperte Ctrl+Shift+R (atualizar)
+  para ver a mudança
+
+-----------------------------------------------------
+4. SUBIR FOTOS NO PAINEL
+-----------------------------------------------------
+
+1. Entre no painel (passo 2)
+2. Conteúdo → escolha a página (ex.: Lares)
+3. Galeria → Adicionar foto → escolher arquivo
+4. Salvar
+5. A foto aparece no site na hora
+
+-----------------------------------------------------
+5. SPOTIFY - MENSAGENS DA IGREJA
+-----------------------------------------------------
+
+1. Abra: https://creators.spotify.com/
+2. Clique em "Log in"
+3. E-mail da igreja: leilianelferreira@gmail.com
+4. Senha: admac2024
+5. Depois de logar:
+   - "Content" / Conteúdo = mensagens já enviadas
+   - "New episode" / Novo episódio = enviar prédica nova
+6. Para o site achar o podcast:
+   - pegue o link do show (open.spotify.com/show/...)
+   - no painel: Conteúdo → Home → campo Spotify URL
+
+Obs: a página "Ouça Nossas Mensagens" do site já está
+ligada ao Spotify da igreja (show IGREJA ADMAC).
+
+-----------------------------------------------------
+6. SENHAS - GUARDE ESTE BLOCO
+-----------------------------------------------------
+
+Painel do site.....: admin@admin.com / admac2024
+Spotify da igreja..: leilianelferreira@gmail.com / admac2024
+Conta Google (GSC).: gptecnologiasite@gmail.com
+Supabase (banco)...: ver CHECKPOINT.md (não publicar)
+
+-----------------------------------------------------
+7. PROBLEMAS COMUNS
+-----------------------------------------------------
+
+Site não atualizou?
+  → Ctrl+Shift+R (Windows) ou Ctrl+Shift+R (Mac: Cmd+Shift+R)
+
+Esqueceu a senha do painel?
+  → A senha está hardcoded no código (src/painel/painel.jsx)
+
+Página some do site?
+  → Painel → Páginas → o toggle está desligado
+
+Foto não aparece?
+  → Salve no painel e atualize o site (Ctrl+Shift+R)
+
+=====================================================

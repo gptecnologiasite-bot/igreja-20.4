@@ -99,6 +99,12 @@ export const INITIAL_MINISTRIES_DATA = {
       { title: 'EBD Kids', date: 'Todo Domingo', time: '9h - 10h', location: 'Sala Kids', description: 'Aulas bíblicas divididas por idade.', image: 'https://images.unsplash.com/photo-1606092195730-5d7b9af1ef4d?w=400&h=300&fit=crop' },
       { title: 'Culto Infantil', date: 'Todo Domingo', time: '18h - 20h', location: 'Auditório Kids', description: 'Louvor, palavra e muita diversão.', image: 'https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=400&h=300&fit=crop' }
     ],
+    team: [
+      { name: 'Tia Maria', role: 'Coordenadora Geral', photo: 'https://ui-avatars.com/api/?name=Tia+Maria&background=ff9f43&color=fff&size=200&bold=true' },
+      { name: 'Tio João', role: 'Líder de Louvor Kids', photo: 'https://ui-avatars.com/api/?name=Tio+Joao&background=ff6b6b&color=fff&size=200&bold=true' },
+      { name: 'Tia Ana', role: 'Professora EBD', photo: 'https://ui-avatars.com/api/?name=Tia+Ana&background=d4af37&color=fff&size=200&bold=true' },
+      { name: 'Tio Pedro', role: 'Apoio e Logística', photo: 'https://ui-avatars.com/api/?name=Tio+Pedro&background=3498db&color=fff&size=200&bold=true' }
+    ],
     gallery: [
       { url: 'https://images.unsplash.com/photo-1485546246426-74dc88dec4d9?w=400&h=300&fit=crop', caption: 'Dia das Crianças' },
       { url: 'https://images.unsplash.com/photo-1502086223501-7ea6ecd79368?w=400&h=300&fit=crop', caption: 'EBF de Férias' },

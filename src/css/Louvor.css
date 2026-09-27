@@ -577,6 +577,7 @@
   }
   .louvor-page .section-header h2 {
     font-size: 2rem;
+    overflow-wrap: anywhere;
   }
   .louvor-page .gallery-grid {
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));

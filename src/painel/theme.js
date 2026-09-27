@@ -129,7 +129,7 @@ export const globalCSS = `
     .painel-table-bar{flex-direction:column;align-items:stretch;gap:1rem}
     .painel-search{width:100%}
     .pm-modal{width:95%;margin:auto;max-height:85vh}
-    .pm-row{grid-template-columns:1fr}
+    .pm-row{grid-template-columns:1fr !important}
     .painel-page-header h1{font-size:1.3rem}
   }
   @media (max-width:480px){
@@ -149,7 +149,7 @@ export const globalCSS = `
     .painel-table th,.painel-table td{padding:.55rem .6rem}
     .painel-login-card{padding:1.2rem}
     .painel-avatar{width:30px;height:30px;font-size:.75rem}
-    .painel-breadcrumb{font-size:.75rem}
+    .painel-breadcrumb{font-size:.7rem;max-width:120px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
     .painel-search{font-size:.8rem}
   }
   .pm-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:200;display:flex;align-items:center;justify-content:center;padding:1rem}

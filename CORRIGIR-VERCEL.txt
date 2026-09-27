@@ -1,0 +1,38 @@
+CORRIGIR VERCEL — igreja-20-4
+================================
+
+PROBLEMA
+--------
+O site publicado usa o Supabase ERRADO (não existe):
+  ERRADO: https://yfghllidghmgywotqyok.supabase.co
+  Certo:  https://pzzrbwebdpiqlfwhgolw.supabase.co
+
+COMO CORRIGIR
+-------------
+1. Abra: https://vercel.com
+2. Selecione o projeto: igreja-20-4
+3. Vá em: Settings → Environment Variables
+4. Atualize (ou crie) as variáveis:
+
+   VITE_SUPABASE_URL=https://pzzrbwebdpiqlfwhgolw.supabase.co
+   VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_1E3LLZv498ATOc6jsJSspw_2UWXsTMz
+
+5. Vá em: Deployments → clique nos "..." → Redeploy
+6. Aguarde o build terminar
+7. Teste: https://igreja-20-4.vercel.app/
+
+BANCO JÁ CONFIGURADO (projeto pzzrbwebdpiqlfwhgolw)
+----------------------------------------------------
+- Tabelas: site_settings, site_users, site_messages, site_logs
+- Buckets: site-images, admac-fotos
+- 26 chaves de conteúdo (home, header, footer, ministérios)
+- Coluna "type" em site_messages (formulário de contato)
+- RLS liberado para anon (padrão do projeto)
+- Testes REST e Storage: OK
+
+CREDENCIAIS LOCAIS (já no arquivo .env do projeto)
+---------------------------------------------------
+VITE_SUPABASE_URL=https://pzzrbwebdpiqlfwhgolw.supabase.co
+VITE_SUPABASE_PUBLISHABLE_KEY=sb_publishable_1E3LLZv498ATOc6jsJSspw_2UWXsTMz
+
+NÃO commite o arquivo .env no git (contém secret key e senha).

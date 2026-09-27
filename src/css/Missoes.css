@@ -408,3 +408,10 @@
     grid-template-columns: 1fr !important;
   }
 }
+
+@media (max-width: 480px) {
+  .missoes-page .section-header h2 {
+    font-size: 2rem;
+    overflow-wrap: anywhere;
+  }
+}

@@ -84,7 +84,7 @@ const PageIndex = ({ page, onNavigate }) => {
           const Icon = iconMap[item.icon] || BookOpen;
           return (
             // Cada item navega para a página correspondente ao ser clicado
-            <div key={idx} className="index-item" onClick={() => onNavigate(item.page - 1)}>
+            <button key={idx} className="index-item" onClick={() => onNavigate(item.page - 1)} type="button">
               {/* Ícone e label do item */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                 <div style={{ padding: '0.75rem', background: 'rgba(255,255,255,0.1)', borderRadius: '8px' }}>
@@ -95,7 +95,7 @@ const PageIndex = ({ page, onNavigate }) => {
 
               {/* Número da página */}
               <span className="index-page-num">pág. {item.page}</span>
-            </div>
+            </button>
           );
         })}
       </div>
@@ -232,10 +232,10 @@ const PageDevotional = ({ page }) => (
 const PageFeature = ({ page }) => (
   <div className="page-container" style={{ height: '100%', display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
     {/* Grid de 2 colunas: info + eventos */}
-    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '3rem', alignItems: 'center', height: '100%' }}>
+    <div className="feature-grid">
 
       {/* Coluna esquerda: Título e destaque */}
-      <div style={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', textAlign: 'left' }}>
+      <div className="feature-info">
         {/* Categoria do destaque */}
         <span className="article-category" style={{ marginBottom: '1rem', display: 'block' }}>{page.category}</span>
 
@@ -253,7 +253,7 @@ const PageFeature = ({ page }) => (
       </div>
 
       {/* Coluna direita: Lista de eventos */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', overflowY: 'auto', maxHeight: '100%', paddingRight: '0.5rem' }}>
+      <div className="feature-events">
         {page.events.map((event, idx) => (
           <div key={idx} className="revista-event-card">
             {/* Box com o dia do evento */}

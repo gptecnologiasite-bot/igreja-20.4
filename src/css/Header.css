@@ -377,7 +377,9 @@
   }
 }
 
-@media (max-width: 1024px) {
+/* 1024px exato precisa cair só neste lado: com max-width:1024 o nav desktop
+   era escondido por !important ao mesmo tempo em que o hambúrguer sumia. */
+@media (max-width: 1023px) {
   .header-actions {
     gap: 12px;
   }

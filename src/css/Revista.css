@@ -500,3 +500,38 @@
 .revista-event-card:hover .revista-event-date-box {
   border-color: var(--primary-color);
 }
+
+/* Feature Page Grid */
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 3rem;
+  align-items: center;
+  height: 100%;
+}
+
+.feature-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  text-align: left;
+}
+
+.feature-events {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  overflow-y: auto;
+  max-height: 100%;
+  padding-right: 0.5rem;
+}
+
+@media (max-width: 768px) {
+  .feature-grid {
+    grid-template-columns: 1fr;
+    gap: 2rem;
+  }
+  .feature-info {
+    text-align: center;
+  }
+}

@@ -169,7 +169,7 @@ export default function PainelAdm() {
   }, [isLogged]);
 
   const [showPassword, setShowPassword] = useState(false);
-  const [sidebarOpen, setSidebarOpen] = useState(() => (typeof window !== 'undefined' ? window.innerWidth >= 768 : true));
+  const [sidebarOpen, setSidebarOpen] = useState(() => (typeof window !== 'undefined' ? window.innerWidth >= 993 : true));
   const [activePage, setActivePage] = useState('dashboard');
   const [search, setSearch] = useState('');
   const [filter, setFilter] = useState('all');
@@ -733,7 +733,7 @@ export default function PainelAdm() {
 
   useEffect(() => {
     const onResize = () => {
-      if (window.innerWidth < 768 && sidebarOpen) setSidebarOpen(false);
+      if (window.innerWidth < 993 && sidebarOpen) setSidebarOpen(false);
     };
     window.addEventListener('resize', onResize);
     return () => window.removeEventListener('resize', onResize);
