@@ -2741,6 +2741,15 @@ export default function PainelAdm() {
                         )}
                       </div>
                       <div className="pm-field">
+                        <label>Texto do Testemunho (Opcional)</label>
+                        <textarea
+                          value={ministryData?.hero?.testimonyText || ''}
+                          onChange={e => setMinistryData(d => ({ ...d, hero: { ...d.hero, testimonyText: e.target.value } }))}
+                          placeholder="Escreva aqui o texto do testemunho que aparecerá na página..."
+                          style={{ width: '100%', height: 100, background: palette.bg, color: palette.text, border: `1px solid ${palette.border}`, borderRadius: 10, padding: 12, fontSize: '.9rem', outline: 'none', resize: 'vertical', fontFamily: 'Inter, sans-serif', lineHeight: 1.6 }}
+                        />
+                      </div>
+                      <div className="pm-field">
                         <label>Imagem de Fundo</label>
                         <div className="pm-field-wrap" style={{ display: 'flex', gap: '8px' }}>
                           <div style={{ position: 'relative', flex: 1 }}>

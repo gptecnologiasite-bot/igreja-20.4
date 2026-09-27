@@ -201,7 +201,7 @@ const Homens = () => {
         </section>
       )}
 
-      {data.hero?.testimonyUrl || data.hero?.testimonyImage ? (
+      {data.hero?.testimonyUrl || data.hero?.testimonyImage || data.hero?.testimonyText ? (
         <section className="testimony-section">
           <div className="container">
             <div className="testimony-card">
@@ -211,8 +211,12 @@ const Homens = () => {
                 </div>
               )}
               <div className="testimony-content">
-                <h3>Envie seu Testemunho</h3>
-                <p>Compartilhe como Deus tem agido na sua vida através do ministério</p>
+                <h3>Testemunho</h3>
+                {data.hero?.testimonyText && (
+                  <div className="testimony-text">
+                    <p>{data.hero.testimonyText}</p>
+                  </div>
+                )}
                 {data.hero?.testimonyUrl && (
                   <a 
                     href={data.hero.testimonyUrl} 
