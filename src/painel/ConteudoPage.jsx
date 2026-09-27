@@ -1477,6 +1477,50 @@ export default function ConteudoPage({ ministryId, setMinistryId, ministryTab, s
                               </div>
                             </div>
                             <div className="pm-field">
+                              <label>Link Google Calendar (Agendar Post)</label>
+                              <div className="pm-field-wrap">
+                                <span className="pm-icon">📅</span>
+                                <input
+                                  className="pm-input"
+                                  value={v.googleCalendarUrl || ''}
+                                  onChange={e => {
+                                    if (ministryId === 'home') {
+                                      const next = [...(homeVideos || [])];
+                                      next[idx] = { ...next[idx], googleCalendarUrl: e.target.value };
+                                      setHomeVideos(next);
+                                    } else {
+                                      const next = [...(ministryData.videos || [])];
+                                      next[idx] = { ...next[idx], googleCalendarUrl: e.target.value };
+                                      setMinistryData(d => ({ ...d, videos: next }));
+                                    }
+                                  }}
+                                  placeholder="https://calendar.google.com/calendar/event?action=TEMPLATE&text=..."
+                                />
+                              </div>
+                            </div>
+                            <div className="pm-field">
+                              <label>Data/Hora Agendada (ISO)</label>
+                              <div className="pm-field-wrap">
+                                <span className="pm-icon">⏰</span>
+                                <input
+                                  type="datetime-local"
+                                  className="pm-input"
+                                  value={v.scheduledAt || ''}
+                                  onChange={e => {
+                                    if (ministryId === 'home') {
+                                      const next = [...(homeVideos || [])];
+                                      next[idx] = { ...next[idx], scheduledAt: e.target.value };
+                                      setHomeVideos(next);
+                                    } else {
+                                      const next = [...(ministryData.videos || [])];
+                                      next[idx] = { ...next[idx], scheduledAt: e.target.value };
+                                      setMinistryData(d => ({ ...d, videos: next }));
+                                    }
+                                  }}
+                                />
+                              </div>
+                            </div>
+                            <div className="pm-field">
                               <label>Visualizações (Simulado)</label>
                               <div className="pm-field-wrap">
                                 <span className="pm-icon">👁</span>
