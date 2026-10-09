@@ -1,0 +1,150 @@
+/* ================================================================
+   Visita.css — Estilos da página pública "Quero Visitar"
+   Escopo isolado com prefixo .visita- para não afetar outras páginas.
+   ================================================================ */
+
+.visita-page {
+  min-height: 100vh;
+  padding: 6rem 1rem 4rem;
+  background: linear-gradient(180deg, #141414 0%, #0f0f0f 100%);
+  color: #f5f5f5;
+}
+
+.visita-header {
+  max-width: 720px;
+  margin: 0 auto 2rem;
+  text-align: center;
+}
+
+.visita-header h1 {
+  font-size: 2.2rem;
+  color: #d4af37;
+  margin-bottom: 0.5rem;
+}
+
+.visita-header p {
+  color: rgba(245, 245, 245, 0.72);
+  font-size: 1.02rem;
+  line-height: 1.6;
+}
+
+.visita-container {
+  max-width: 640px;
+  margin: 0 auto;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(212, 175, 55, 0.25);
+  border-radius: 18px;
+  padding: 2rem;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.4);
+}
+
+.visita-form {
+  display: flex;
+  flex-direction: column;
+  gap: 1.1rem;
+}
+
+.visita-field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.visita-field label {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: rgba(245, 245, 245, 0.85);
+  letter-spacing: 0.02em;
+}
+
+.visita-field input,
+.visita-field select,
+.visita-field textarea {
+  width: 100%;
+  background: rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(212, 175, 55, 0.3);
+  border-radius: 10px;
+  padding: 0.75rem 0.9rem;
+  color: #f5f5f5;
+  font-size: 0.95rem;
+  font-family: inherit;
+  outline: none;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.visita-field input::placeholder,
+.visita-field textarea::placeholder {
+  color: rgba(245, 245, 245, 0.4);
+}
+
+.visita-field input:focus,
+.visita-field select:focus,
+.visita-field textarea:focus {
+  border-color: #d4af37;
+  box-shadow: 0 0 0 3px rgba(212, 175, 55, 0.18);
+}
+
+.visita-field select option {
+  background: #1a1a1a;
+  color: #f5f5f5;
+}
+
+.visita-btn-primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+  padding: 0.85rem 1.4rem;
+  border: none;
+  border-radius: 10px;
+  background: linear-gradient(135deg, #d4af37, #f0d264);
+  color: #1a1a1a;
+  font-size: 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.2s;
+}
+
+.visita-btn-primary:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(212, 175, 55, 0.28);
+}
+
+.visita-btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.visita-success {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 0.8rem;
+  padding: 1.5rem 0.5rem;
+  color: #22d3a5;
+}
+
+.visita-success h3 {
+  color: #f5f5f5;
+  font-size: 1.35rem;
+}
+
+.visita-success p {
+  color: rgba(245, 245, 245, 0.75);
+  line-height: 1.6;
+  max-width: 460px;
+}
+
+@media (max-width: 520px) {
+  .visita-page {
+    padding: 5rem 0.8rem 3rem;
+  }
+  .visita-header h1 {
+    font-size: 1.7rem;
+  }
+  .visita-container {
+    padding: 1.3rem;
+  }
+}

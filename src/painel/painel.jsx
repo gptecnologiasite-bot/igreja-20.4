@@ -26,6 +26,7 @@ import WhatsappPage from './WhatsappPage';
 import ConfiguracoesPage from './ConfiguracoesPage';
 import ConfigsPage from './ConfigsPage';
 import ConteudoPage from './ConteudoPage';
+import VisitasPage from './VisitasPage';
 
 const MOCK_USERS = [];
 
@@ -88,6 +89,7 @@ const NAV_ITEMS_DEFAULT = [
   { id: 'paginas', label: 'Páginas', icon: '📄' },
   { id: 'conteudo', label: 'Conteúdo', icon: '📝' },
   { id: 'mensagens', label: 'Mensagens', icon: '📩' },
+  { id: 'visitas', label: 'Visitas', icon: '🙋' },
   { id: 'whatsapp', label: 'WhatsApp', icon: '💬' }
 ];
 
@@ -1871,6 +1873,10 @@ export default function PainelAdm() {
 
     if (activePage === 'mensagens') {
       return <MensagensPage loadSiteMessages={loadSiteMessages} messagesLoading={messagesLoading} siteMessages={siteMessages} currentUser={currentUser} />;
+    }
+
+    if (activePage === 'visitas') {
+      return <VisitasPage />;
     }
 
     if (activePage === 'whatsapp') {

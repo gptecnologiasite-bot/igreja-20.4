@@ -27,6 +27,7 @@ const Social = lazy(() => import('../pages/Social'));
 const Louvor = lazy(() => import('../pages/Louvor'));
 const Lares = lazy(() => import('../pages/Lares'));
 const Contact = lazy(() => import('../pages/Contact'));
+const Visita = lazy(() => import('../pages/Visita')); // Formulário "Quero Visitar"
 const Retiro = lazy(() => import('../pages/Retiro'));
 const Sobre = lazy(() => import('../pages/Sobre'));
 const Midia = lazy(() => import('../pages/Midia')); // Restaurado p/ Midia.jsx
@@ -68,6 +69,7 @@ export const routes = [
             { path: 'intercessao', element: <Suspense fallback={pageLoader}><Intercessao /></Suspense> },
             { path: 'casais', element: <Suspense fallback={pageLoader}><Casais /></Suspense> },
             { path: 'contato', element: <Suspense fallback={pageLoader}><Contact /></Suspense> },
+            { path: 'visita', element: <Suspense fallback={pageLoader}><Visita /></Suspense> },
         ]
     },
     // Rotas Admin (painel de gerenciamento de conteúdo)
