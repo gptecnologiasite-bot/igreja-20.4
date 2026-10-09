@@ -168,6 +168,13 @@ const Home = () => {
 
   usePageUpdate(BIRTHDAY_MINISTRY_KEYS, loadBirthdays);
 
+  // Destino do botão primário do CTA "Quero Visitar".
+  // Com o formulário de visitas habilitado, aponta para /visita; links
+  // externos/personalizados continuam sendo respeitados.
+  const ctaPrimaryLink = data.cta?.primaryLink;
+  const ctaUseForm = data.cta?.visitFormEnabled !== false && (!ctaPrimaryLink || ctaPrimaryLink === '/contato');
+  const ctaPrimaryTarget = ctaUseForm ? '/visita' : ctaPrimaryLink;
+
   return (
     <div className="home">
 
@@ -412,8 +419,8 @@ const Home = () => {
             {data.cta?.subtitle || 'Venha nos visitar e experimente o amor de Deus em nossa comunidade'}
           </p>
           <div className="cta-home-buttons">
-            {/* Botão primário: link configurável (padrão: /contato) */}
-            <Link to={data.cta?.primaryLink || "/contato"} className="cta-home-btn primary">
+            {/* Botão primário: abre o formulário de visita (/visita) ou link configurável */}
+            <Link to={ctaPrimaryTarget} className="cta-home-btn primary">
               {data.cta?.primaryBtn || 'Quero Visitar'}
             </Link>
             <a

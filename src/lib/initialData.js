@@ -75,6 +75,7 @@ export const INITIAL_HOME_DATA = {
     subtitle: 'Venha nos visitar e experimente o amor de Deus em nossa comunidade',
     primaryBtn: 'Quero Visitar',
     primaryLink: '/contato',
+    visitFormEnabled: true,
     secondaryBtn: 'Ligar Agora',
     secondaryLink: 'tel:+5561993241084'
   },
