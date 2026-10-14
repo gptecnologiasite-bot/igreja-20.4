@@ -313,6 +313,10 @@ export default function PainelAdm() {
     'Midia': 'midia',
     'Revista': 'revista',
     'Revista ADMAC': 'revista',
+    'Revista Admac': 'revista',
+    // Nome derivado do arquivo (API /api/pages em dev) — sem isso o fallback
+    // toLowerCase() gerava a chave errada 'ministry_revistaadmac'
+    'RevistaAdmac': 'revista',
     'Sobre': 'sobre',
     'Casais': 'casais'
   };
@@ -3349,6 +3353,7 @@ export default function PainelAdm() {
                                   if (e.target.value === 'devotional' && !next[idx].items) next[idx].items = [];
                                   if (e.target.value === 'feature' && !next[idx].events) next[idx].events = [];
                                   if (e.target.value === 'columnist' && !next[idx].author) next[idx].author = { name: '', role: '', image: '', bio: '' };
+                                  if ((e.target.value === 'article' || e.target.value === 'columnist') && !next[idx].body) next[idx].body = '';
                                   setMinistryData(d => ({ ...d, pages: next }));
                                 }}
                                 style={{ background: palette.bg, color: palette.text }}

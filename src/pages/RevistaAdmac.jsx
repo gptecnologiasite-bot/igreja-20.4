@@ -79,12 +79,12 @@ const PageIndex = ({ page, onNavigate }) => {
 
       {/* Lista de itens do índice em grid */}
       <div className="index-list">
-        {page.items.map((item, idx) => {
+        {(page.items || []).map((item, idx) => {
           // Busca o ícone pelo nome; usa BookOpen como fallback
           const Icon = iconMap[item.icon] || BookOpen;
           return (
             // Cada item navega para a página correspondente ao ser clicado
-            <button key={idx} className="index-item" onClick={() => onNavigate(item.page - 1)} type="button">
+            <button key={idx} className="index-item" onClick={() => onNavigate((item.page || 1) - 1)} type="button">
               {/* Ícone e label do item */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                 <div style={{ padding: '0.75rem', background: 'rgba(255,255,255,0.1)', borderRadius: '8px' }}>
@@ -124,7 +124,7 @@ const PageArticle = ({ page }) => (
 
     {/* Corpo do artigo dividido em parágrafos */}
     <div className="article-body">
-      {page.body.split('\n').map((paragraph, idx) => (
+      {(page.body || '').split('\n').map((paragraph, idx) => (
         <p key={idx}>
           {/* Primeiro parágrafo recebe a letra capitular (drop cap) */}
           {idx === 0 && <span className="drop-cap">{paragraph.charAt(0)}</span>}
@@ -155,15 +155,15 @@ const PageColumnist = ({ page }) => (
     <div className="layout-sidebar">
       {/* Sidebar do autor: foto, nome, cargo e biografia */}
       <div className="author-sidebar">
-        <img src={transformImageLink(page.author.image)} alt={page.author.name} className="author-image" />
-        <div className="author-name">{page.author.name}</div>
-        <div className="author-role">{page.author.role}</div>
-        <p className="author-bio">{page.author.bio}</p>
+        {page.author?.image && <img src={transformImageLink(page.author.image)} alt={page.author.name || ''} className="author-image" />}
+        <div className="author-name">{page.author?.name}</div>
+        <div className="author-role">{page.author?.role}</div>
+        <p className="author-bio">{page.author?.bio}</p>
       </div>
 
       {/* Corpo do artigo do colunista (coluna única) */}
       <div className="article-body" style={{ columns: 1 }}>
-        {page.body.split('\n').map((paragraph, idx) => {
+        {(page.body || '').split('\n').map((paragraph, idx) => {
           // Verifica se o parágrafo é uma citação (<quote>...</quote>)
           if (paragraph.includes('<quote>')) {
             const content = paragraph.replace('<quote>', '').replace('</quote>', '');
@@ -200,7 +200,7 @@ const PageDevotional = ({ page }) => (
 
     {/* Grid de 3 colunas com os cards devocionais */}
     <div className="layout-3col">
-      {page.items.map((item, idx) => (
+      {(page.items || []).map((item, idx) => (
         <div key={idx} className="devotional-card">
           {/* Data do devocional (ex: "01 DEZ") */}
           <div className="devotional-date">{item.date}</div>
@@ -254,12 +254,12 @@ const PageFeature = ({ page }) => (
 
       {/* Coluna direita: Lista de eventos */}
       <div className="feature-events">
-        {page.events.map((event, idx) => (
+        {(page.events || []).map((event, idx) => (
           <div key={idx} className="revista-event-card">
             {/* Box com o dia do evento */}
             <div className="revista-event-date-box">
               <div style={{ fontSize: '0.7rem', textTransform: 'uppercase', color: 'var(--primary-color)', fontWeight: 'bold' }}>DEZ</div>
-              <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#fff' }}>{event.date.split('/')[0]}</div>
+              <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#fff' }}>{event.date?.split('/')[0]}</div>
             </div>
 
             {/* Detalhes do evento: título, data e horário */}
@@ -313,8 +313,19 @@ export default function RevistaAdmac() {
   const prevPage = () => setCurrentPage((prev) => (prev - 1 + totalPages) % totalPages);
   const goToPage = (index) => setCurrentPage(index);
 
-  // Se não houver dados de páginas, não renderiza nada
-  if (!magazineData.length) return null;
+  // Se não houver páginas publicadas, mostra um aviso em vez de tela vazia
+  if (!magazineData.length) return (
+    <div className="revista-container">
+      <div className="revista-wrapper" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+        <p style={{ color: 'rgba(255,255,255,0.6)', textAlign: 'center', padding: '2rem' }}>
+          Edição em preparação — volte em breve.
+        </p>
+      </div>
+    </div>
+  );
+
+  // Página atual com fallback seguro (índice fora do intervalo ou item inválido)
+  const current = magazineData[currentPage] || magazineData[0] || {};
 
   return (
     <div className="revista-container">
@@ -362,12 +373,13 @@ export default function RevistaAdmac() {
               style={{ height: '100%' }}
             >
               {/* Renderiza o componente correto baseado no tipo de página */}
-              {magazineData[currentPage].type === "cover" && <PageCover page={magazineData[currentPage]} />}
-              {magazineData[currentPage].type === "index" && <PageIndex page={magazineData[currentPage]} onNavigate={goToPage} />}
-              {magazineData[currentPage].type === "article" && <PageArticle page={magazineData[currentPage]} />}
-              {magazineData[currentPage].type === "columnist" && <PageColumnist page={magazineData[currentPage]} />}
-              {magazineData[currentPage].type === "devotional" && <PageDevotional page={magazineData[currentPage]} />}
-              {magazineData[currentPage].type === "feature" && <PageFeature page={magazineData[currentPage]} />}
+              {current.type === "cover" && <PageCover page={current} />}
+              {current.type === "index" && <PageIndex page={current} onNavigate={goToPage} />}
+              {current.type === "article" && <PageArticle page={current} />}
+              {current.type === "columnist" && <PageColumnist page={current} />}
+              {current.type === "devotional" && <PageDevotional page={current} />}
+              {current.type === "feature" && <PageFeature page={current} />}
+              {!["cover", "index", "article", "columnist", "devotional", "feature"].includes(current.type) && <PageArticle page={current} />}
             </MotionDiv>
           </AnimatePresence>
         </div>

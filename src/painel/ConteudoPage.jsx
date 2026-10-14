@@ -2258,6 +2258,7 @@ export default function ConteudoPage({ ministryId, setMinistryId, ministryTab, s
                                 if (e.target.value === 'devotional' && !next[idx].items) next[idx].items = [];
                                 if (e.target.value === 'feature' && !next[idx].events) next[idx].events = [];
                                 if (e.target.value === 'columnist' && !next[idx].author) next[idx].author = { name: '', role: '', image: '', bio: '' };
+                                if ((e.target.value === 'article' || e.target.value === 'columnist') && !next[idx].body) next[idx].body = '';
                                 setMinistryData(d => ({ ...d, pages: next }));
                               }}
                               style={{ background: palette.bg, color: palette.text }}
