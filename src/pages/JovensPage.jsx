@@ -25,7 +25,7 @@ const Jovens = () => {
       {/* Hero Section */}
       <div className="jovens-hero">
         <div className="hero-slideshow">
-          {data.gallery && data.gallery.map((photo, index) => (
+          {(data.gallery && data.gallery.length > 0 ? data.gallery : (data.hero?.image ? [{ url: data.hero.image }] : [])).map((photo, index) => (
             <div
               key={index}
               className={`hero-slide ${index === currentSlide ? 'active' : ''}`}
@@ -145,6 +145,32 @@ const Jovens = () => {
       </section>
 
 
+
+      {/* Birthdays Section */}
+      {(data.birthdays?.people || []).length > 0 && (
+        <section className="team-section">
+          <div className="container">
+            <h2>{data.birthdays.title || 'Aniversariantes do Mês'}</h2>
+            <p className="section-subtitle">{data.birthdays.text || 'Celebramos a vida dos nossos jovens!'}</p>
+
+            <div className="team-grid">
+              {(data.birthdays.people || []).map((person, index) => (
+                <div key={index} className="team-card">
+                  <div className="team-photo-wrap">
+                    <img
+                      src={transformImageLink(person.photo) || `https://ui-avatars.com/api/?name=${encodeURIComponent(person.name || '')}&background=3498db&color=fff`}
+                      alt={person.name}
+                      className="team-photo"
+                    />
+                  </div>
+                  <h3>{person.name}</h3>
+                  <p className="team-role">{person.date || 'Data a definir'}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* CTA Section */}
       <section className="jovens-cta">

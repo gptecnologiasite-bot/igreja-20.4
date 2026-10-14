@@ -189,8 +189,10 @@ const Retiro = () => {
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowFullScreen
                   />
-                ) : (
+                ) : /\.(mp4|webm|ogg|mov|m4v)(\?|#|$)/i.test(data.birthdays.videoUrl) ? (
                   <video controls width="100%" src={transformImageLink(data.birthdays.videoUrl)} />
+                ) : (
+                  <img src={transformImageLink(data.birthdays.videoUrl)} alt="Aniversariantes" style={{ width: '100%', display: 'block', borderRadius: 12 }} />
                 )}
               </div>
             )}

@@ -164,7 +164,7 @@ const Mulheres = () => {
           <p className="section-subtitle">Momentos especiais do ministério</p>
 
           <div className="gallery-grid">
-            {data.gallery?.map((photo, index) => (
+          {(data.gallery && data.gallery.length > 0 ? data.gallery : (data.hero?.image ? [{ url: data.hero.image }] : [])).map((photo, index) => (
               <div key={index} className="gallery-item">
                 <img src={transformImageLink(photo.url)} alt={photo.caption} />
                 <div className="gallery-overlay">
@@ -198,11 +198,17 @@ const Mulheres = () => {
                     allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                     allowFullScreen
                   ></iframe>
-                ) : (
+                ) : /\.(mp4|webm|ogg|mov|m4v)(\?|#|$)/i.test(data.birthdays.videoUrl) ? (
                   <video 
                     controls 
                     width="100%" 
                     src={transformImageLink(data.birthdays.videoUrl)}
+                  />
+                ) : (
+                  <img 
+                    src={transformImageLink(data.birthdays.videoUrl)} 
+                    alt="Aniversariantes" 
+                    style={{ width: '100%', display: 'block', borderRadius: 12 }} 
                   />
                 )}
               </div>

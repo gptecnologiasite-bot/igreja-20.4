@@ -25,11 +25,11 @@ const Homens = () => {
     <div className="homens-page">
       <div className="homens-hero">
         <div className="hero-slideshow">
-          {(data.gallery && data.gallery.length > 0 ? data.gallery : [
+          {(data.gallery && data.gallery.length > 0 ? data.gallery : (data.hero?.image ? [{ url: data.hero.image }] : [
             { url: 'https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=1600&h=900&fit=crop' },
             { url: 'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=1600&h=900&fit=crop' },
             { url: 'https://images.unsplash.com/photo-1529070538774-1843cb3265df?w=1600&h=900&fit=crop' }
-          ]).map((photo, index) => (
+          ])).map((photo, index) => (
             <div
               key={index}
               className={`hero-slide ${index === currentSlide ? 'active' : ''}`}
@@ -132,13 +132,13 @@ const Homens = () => {
           </div>
           <p className="section-subtitle">Registros de encontros, confraternizações e projetos</p>
           <div className="gallery-grid">
-            {(data.gallery && data.gallery.length > 0 ? data.gallery : [
+          {(data.gallery && data.gallery.length > 0 ? data.gallery : (data.hero?.image ? [{ url: data.hero.image }] : [
               { url: 'https://images.unsplash.com/photo-1511632765486-a01980e01a18?w=400&h=300&fit=crop', caption: 'Encontro dos Homens' },
               { url: 'https://images.unsplash.com/photo-1500534314209-a25ddb2bd429?w=400&h=300&fit=crop', caption: 'Estudo Bíblico' },
               { url: 'https://images.unsplash.com/photo-1529070538774-1843cb3265df?w=400&h=300&fit=crop', caption: 'Confraternização' },
               { url: 'https://images.unsplash.com/photo-1511379938547-c1f69419868d?w=400&h=300&fit=crop', caption: 'Louvor e Oração' },
               { url: 'https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?w=400&h=300&fit=crop', caption: 'Retiro' }
-            ]).map((item, index) => (
+            ])).map((item, index) => (
               <div key={index} className="gallery-item" onClick={() => setSelectedImage({ url: item.url, caption: item.caption })}>
                 <img src={transformImageLink(item.url)} alt={item.caption || 'Foto'} />
                 <div className="gallery-overlay">

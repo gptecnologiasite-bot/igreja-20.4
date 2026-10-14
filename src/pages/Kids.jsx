@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { transformImageLink } from '../lib/dbUtils';
-import { Calendar, Clock, MapPin, Heart, Star, Camera, Users, BookOpen, Sparkles } from 'lucide-react';
+import { Calendar, Clock, MapPin, Heart, Star, Camera, Users, BookOpen, Sparkles, Gift } from 'lucide-react';
 import '../css/Kids.css';
 import { useMinistryData } from '../hooks/useMinistryData';
 
@@ -30,11 +30,11 @@ const Kids = () => {
       {/* Hero Section */}
       <div className="kids-hero">
         <div className="hero-slideshow">
-          {(gallery && gallery.length > 0 ? gallery : [
+          {(gallery && gallery.length > 0 ? gallery : (hero.image ? [{ url: hero.image }] : [
             { url: 'https://images.unsplash.com/photo-1472162072942-cd5147eb3902?w=1600&h=900&fit=crop' },
             { url: 'https://images.unsplash.com/photo-1489710437720-ebb67ec84dd2?w=1600&h=900&fit=crop' },
             { url: 'https://images.unsplash.com/photo-1502086223501-7ea6ecd79368?w=1600&h=900&fit=crop' }
-          ]).map((photo, index) => (
+          ])).map((photo, index) => (
             <div
               key={index}
               className={`hero-slide ${index === currentSlide ? 'active' : ''} `}
@@ -183,6 +183,35 @@ const Kids = () => {
           </div>
         </div>
       </section>
+
+      {/* Birthdays Section */}
+      {(data.birthdays?.people || []).length > 0 && (
+        <section className="team-section">
+          <div className="container">
+            <div className="section-header">
+              <Gift size={32} />
+              <h2>{data.birthdays.title || 'Aniversariantes do Mês'}</h2>
+            </div>
+            <p className="section-subtitle">{data.birthdays.text || 'Celebramos a vida dos nossos pequenos!'}</p>
+
+            <div className="team-grid">
+              {(data.birthdays.people || []).map((person, index) => (
+                <div key={index} className="team-card">
+                  <div className="team-photo-wrap">
+                    <img
+                      src={transformImageLink(person.photo) || `https://ui-avatars.com/api/?name=${encodeURIComponent(person.name || '')}&background=ff9f43&color=fff`}
+                      alt={person.name}
+                      className="team-photo"
+                    />
+                  </div>
+                  <h3>{person.name}</h3>
+                  <p className="team-role">{person.date || 'Data a definir'}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* CTA Section */}
       <section className="kids-cta">

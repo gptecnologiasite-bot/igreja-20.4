@@ -1,6 +1,6 @@
 import React from 'react';
 import { transformImageLink } from '../utils/imageUtils';
-import { Church, Heart, Users, Book, Star, MapPin, Clock, Phone, Mail } from 'lucide-react';
+import { Church, Heart, Users, Book, Star, MapPin, Clock, Phone, Mail, Gift } from 'lucide-react';
 import { useMinistryData } from '../hooks/useMinistryData';
 import '../css/Sobre.css';
 
@@ -87,7 +87,7 @@ const Sobre = () => {
                                 <div key={index} className="team-card">
                                     <div className="team-photo-wrap">
                                         <img
-                                            src={member.photo || `https://ui-avatars.com/api/?name=${encodeURIComponent(member.name || 'Membro')}`}
+                                            src={transformImageLink(member.photo) || `https://ui-avatars.com/api/?name=${encodeURIComponent(member.name || 'Membro')}`}
                                             alt={member.name || 'Membro'}
                                             className="team-photo"
                                         />
@@ -117,6 +117,35 @@ const Sobre = () => {
                                     <div className="gallery-overlay">
                                         <span>{photo.caption}</span>
                                     </div>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                </section>
+            )}
+
+            {/* Birthdays Section */}
+            {(data.birthdays?.people || []).length > 0 && (
+                <section className="team-section">
+                    <div className="container">
+                        <div className="section-header">
+                            <Gift size={32} />
+                            <h2>{data.birthdays.title || 'Aniversariantes do Mês'}</h2>
+                        </div>
+                        <p className="section-subtitle">{data.birthdays.text || 'Celebramos a vida dos nossos irmãos!'}</p>
+
+                        <div className="team-grid">
+                            {(data.birthdays.people || []).map((person, index) => (
+                                <div key={index} className="team-card">
+                                    <div className="team-photo-wrap">
+                                        <img
+                                            src={transformImageLink(person.photo) || `https://ui-avatars.com/api/?name=${encodeURIComponent(person.nickname || person.name || 'Membro')}&background=d4af37&color=000`}
+                                            alt={person.nickname || person.name || 'Membro'}
+                                            className="team-photo"
+                                        />
+                                    </div>
+                                    <h3>{person.nickname || person.name}</h3>
+                                    <p className="team-role">{person.date || 'Data a definir'}</p>
                                 </div>
                             ))}
                         </div>

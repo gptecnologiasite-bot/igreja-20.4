@@ -236,6 +236,36 @@ const Home = () => {
         </div>
       </section>
 
+      {/* ── Aplicativos (Bíblia / Harpa) — imagem e links configuráveis no painel ── */}
+      {(data.appsImage || data.appsBibliaLink || data.appsHarpaLink) && (
+        <section className="welcome-section" style={{ padding: '2rem 0' }}>
+          <div className="container">
+            <h2 style={{ marginBottom: '1rem' }}>Nossos Aplicativos</h2>
+            <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+              {data.appsImage && (
+                <img
+                  src={transformImageLink(data.appsImage)}
+                  alt="Aplicativos ADMAC"
+                  style={{ width: 140, height: 140, objectFit: 'cover', borderRadius: 12, border: '1px solid rgba(212,175,55,0.3)' }}
+                />
+              )}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '.75rem' }}>
+                {data.appsBibliaLink && (
+                  <a href={data.appsBibliaLink} target="_blank" rel="noopener noreferrer" className="welcome-btn">
+                    App Bíblia
+                  </a>
+                )}
+                {data.appsHarpaLink && (
+                  <a href={data.appsHarpaLink} target="_blank" rel="noopener noreferrer" className="welcome-btn">
+                    App Harpa Cristã
+                  </a>
+                )}
+              </div>
+            </div>
+          </div>
+        </section>
+      )}
+
       {/* ── Seção do Podcast Spotify ── */}
       <section className="spotify-section">
         <div className="container">

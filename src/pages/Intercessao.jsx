@@ -20,7 +20,7 @@ const Intercessao = () => {
     <div className="lares-page">
       {/* Hero Section */}
       <div className="lares-hero" style={{
-        backgroundImage: `url(${data?.hero?.image || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=1600&q=80'})`,
+        backgroundImage: `url(${transformImageLink(data?.hero?.image) || 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=1600&q=80'})`,
         backgroundBlendMode: 'overlay'
       }}>
         <div className="hero-overlay"></div>

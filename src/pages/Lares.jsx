@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { transformImageLink } from '../lib/dbUtils';
-import { Home, Users, Calendar, Camera, MessageSquare, Send, Heart, MapPin, Clock, Star, Play } from 'lucide-react';
+import { Home, Users, Calendar, Camera, MessageSquare, Send, Heart, MapPin, Clock, Star, Play, Gift } from 'lucide-react';
 import { useMinistryData } from '../hooks/useMinistryData';
 import '../css/Lares.css';
 
@@ -143,6 +143,35 @@ const Lares = () => {
           </div>
         </div>
       </section>
+
+      {/* Birthdays Section */}
+      {(data?.birthdays?.people || []).length > 0 && (
+        <section className="team-section">
+          <div className="container">
+            <div className="section-header">
+              <Gift size={32} />
+              <h2>{data?.birthdays?.title || 'Aniversariantes do Mês'}</h2>
+            </div>
+            <p className="section-subtitle">{data?.birthdays?.text || 'Celebramos a vida dos nossos irmãos!'}</p>
+
+            <div className="team-grid">
+              {(data?.birthdays?.people || []).map((person, index) => (
+                <div key={index} className="team-card">
+                  <div className="team-photo-wrap">
+                    <img
+                      src={transformImageLink(person.photo) || `https://ui-avatars.com/api/?name=${encodeURIComponent(person.nickname || person.name || '')}&background=3498db&color=fff`}
+                      alt={person.nickname || person.name}
+                      className="team-photo"
+                    />
+                  </div>
+                  <h3>{person.nickname || person.name}</h3>
+                  <p className="team-role">{person.date || 'Data a definir'}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
 
       {/* Registration Form Section */}
       <section className="registration-form-section">
