@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { transformImageLink } from '../lib/dbUtils';
 // import { supabase } from '../lib/supabase';
-import { Heart, Calendar, Clock, Users, Camera, BookOpen, Sparkles, Crown, Gift } from 'lucide-react';
+import { Heart, Calendar, Clock, Users, Camera, BookOpen, Sparkles, Crown, Gift, MapPin } from 'lucide-react';
 import { useMinistryData } from '../hooks/useMinistryData';
 import '../css/Mulheres.css';
 
@@ -118,7 +118,7 @@ const Mulheres = () => {
                         <span>{item.time}</span>
                       </div>
                       <div className="detail-item">
-                        <Users size={16} />
+                        <MapPin size={16} />
                         <span>{item.location}</span>
                       </div>
                     </div>

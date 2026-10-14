@@ -178,7 +178,7 @@ const Footer = () => {
           <div className="footer-bottom-content">
             <p>&copy; {new Date().getFullYear()} {footerData?.logo?.text} - Assembleia de Deus Ministério Atos e Conquistas. Todos os direitos reservados.</p>
             <p className="footer-credits">
-              Desenvolvido com <Heart size={14} className="heart-icon" /> pela equipe {footerData?.logo?.text}
+              Desenvolvido com amor <Heart size={14} className="heart-icon" /> pela equipe {footerData?.logo?.text}
             </p>
           </div>
         </div>

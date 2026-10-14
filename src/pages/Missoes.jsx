@@ -345,7 +345,7 @@ const Missoes = () => {
                 }}>
                   <img 
                     src={transformImageLink(img.url)} 
-                    alt={img.description || 'Galeria Missões'} 
+                    alt={img.description || 'Galeria de Missões'} 
                     style={{ 
                       width: '100%', 
                       height: '100%', 
@@ -491,7 +491,7 @@ const Missoes = () => {
                   value={donation.missionary}
                   onChange={(e) => setDonation({ ...donation, missionary: e.target.value })}
                 >
-                  <option value="geral">Missões Geral</option>
+                  <option value="geral">Missões Gerais</option>
                   {missionaries && missionaries.map((m, idx) => (
                     <option key={idx} value={m.name.toLowerCase().replace(/\s+/g, '-')}>
                       {m.name} ({m.country || m.location})

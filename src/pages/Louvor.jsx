@@ -1,7 +1,7 @@
 import React from 'react';
 import { transformImageLink } from '../lib/dbUtils';
 // import { supabase } from '../lib/supabase';
-import { Music, Calendar, Clock, Users, Mic, Guitar, Headphones, Heart, Camera, Gift, Sparkles } from 'lucide-react';
+import { Music, Calendar, Clock, MapPin, Mic, Guitar, Headphones, Heart, Camera, Gift, Sparkles } from 'lucide-react';
 import { useMinistryData } from '../hooks/useMinistryData';
 import '../css/Louvor.css';
 
@@ -91,7 +91,7 @@ const Louvor = () => {
                         <span>{item.time}</span>
                       </div>
                       <div className="detail-item">
-                        <Users size={16} />
+                        <MapPin size={16} />
                         <span>{item.location}</span>
                       </div>
                     </div>

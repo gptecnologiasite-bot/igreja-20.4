@@ -108,7 +108,7 @@ export const INITIAL_MINISTRIES_DATA = {
     ],
     gallery: [
       { url: 'https://images.unsplash.com/photo-1485546246426-74dc88dec4d9?w=400&h=300&fit=crop', caption: 'Dia das Crianças' },
-      { url: 'https://images.unsplash.com/photo-1502086223501-7ea6ecd79368?w=400&h=300&fit=crop', caption: 'EBF de Férias' },
+      { url: 'https://images.unsplash.com/photo-1502086223501-7ea6ecd79368?w=400&h=300&fit=crop', caption: 'EBD de Férias' },
       { url: 'https://images.unsplash.com/photo-1516627145497-ae6968895b74?w=400&h=300&fit=crop', caption: 'Apresentação de Natal' }
     ],
     birthdays: {
@@ -409,7 +409,7 @@ export const INITIAL_MINISTRIES_DATA = {
     ]
   },
   revista: {
-    hero: { title: 'Revista Admac', subtitle: 'Nossa revista mensal', image: 'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=1200&h=400&fit=crop' },
+    hero: { title: 'Revista ADMAC', subtitle: 'Nossa revista mensal', image: 'https://images.unsplash.com/photo-1524995997946-a1c2e315a42f?w=1200&h=400&fit=crop' },
     pages: [
       {
         id: 1,
@@ -598,7 +598,7 @@ export const INITIAL_PAGES_DATA = [
   { id: 'retiro', name: 'Retiros', path: '/retiro', status: 'online', type: 'system' },
   { id: 'social', name: 'Ação Social', path: '/social', status: 'online', type: 'system' },
   { id: 'ebd', name: 'EBD', path: '/ebd', status: 'online', type: 'system' },
-  { id: 'midia', name: 'Midia', path: '/midia', status: 'online', type: 'system' },
+  { id: 'midia', name: 'Mídia', path: '/midia', status: 'online', type: 'system' },
   { id: 'missoes', name: 'Missões', path: '/missoes', status: 'online', type: 'system' },
   { id: 'intercessao', name: 'Intercessão', path: '/intercessao', status: 'online', type: 'system' },
   { id: 'casais', name: 'Casais', path: '/casais', status: 'online', type: 'system' },

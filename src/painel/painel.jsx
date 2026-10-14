@@ -95,7 +95,7 @@ const NAV_ITEMS_DEFAULT = [
 
 const NAV_SETTINGS_DEFAULT = [
   { id: 'usuarios', label: 'Usuários', icon: '👤' },
-  { id: 'logs', label: 'Histórico Logs', icon: '📜' },
+  { id: 'logs', label: 'Histórico de Logs', icon: '📜' },
   { id: 'configs', label: 'Configurações', icon: '⚙️' }
 ];
 
@@ -312,7 +312,7 @@ export default function PainelAdm() {
     'Missoes': 'missoes',
     'Midia': 'midia',
     'Revista': 'revista',
-    'Revista Admac': 'revista',
+    'Revista ADMAC': 'revista',
     'Sobre': 'sobre',
     'Casais': 'casais'
   };
@@ -1277,7 +1277,7 @@ export default function PainelAdm() {
           { name: 'Sobre', file: 'Sobre.jsx' },
           { name: 'Contact', file: 'Contact.jsx' },
           { name: 'Missões', file: 'Missoes.jsx' },
-          { name: 'Revista Admac', file: 'RevistaAdmac.jsx' },
+          { name: 'Revista ADMAC', file: 'RevistaAdmac.jsx' },
           { name: 'Intercessão', file: 'Intercessao.jsx' },
           { name: 'Casais', file: 'casais.jsx' }
         ];
@@ -1501,13 +1501,13 @@ export default function PainelAdm() {
         await loadPages();
         if (!hasSupabase || error) {
           let hint = '';
-          if (error?.code === '42P01') hint = '\n\nDICA: Tabela site_settings n\u00e3o encontrada. Execute o SQL de configura\u00e7\u00e3o.';
-          else if (error?.code === '42501') hint = '\n\nDICA: Permiss\u00e3o negada (RLS). Libere acesso an\u00f4nimo ou fa\u00e7a login com uma conta real.';
-          else if (error?.message?.includes('payload too large')) hint = '\n\nDICA: Suas imagens s\u00e3o muito grandes. Tente usar fotos menores ou links externos.';
+          if (error?.code === '42P01') hint = '\n\nDICA: Tabela site_settings não encontrada. Execute o SQL de configuração.';
+          else if (error?.code === '42501') hint = '\n\nDICA: Permissão negada (RLS). Libere acesso anônimo ou faça login com uma conta real.';
+          else if (error?.message?.includes('payload too large')) hint = '\n\nDICA: Suas imagens são muito grandes. Tente usar fotos menores ou links externos.';
           else if (error) hint = `\n\nDetalhe: ${error.message}`;
-          alert(`Minist\u00e9rio salvo LOCALMENTE (modo offline).${hint}`);
+          alert(`Ministério salvo LOCALMENTE (modo offline).${hint}`);
         } else {
-          alert('Minist\u00e9rio salvo com sucesso no banco de dados!');
+          alert('Ministério salvo com sucesso no banco de dados!');
         }
         return;
       }
@@ -1765,7 +1765,7 @@ export default function PainelAdm() {
                   <div className="pm-body">
                     <div className="pm-photo-wrap">
                       <div className="pm-photo-preview">
-                        {newUser.photo ? <img src={newUser.photo} alt="preview" /> : '👤'}
+                        {newUser.photo ? <img src={newUser.photo} alt="Prévia" /> : '👤'}
                       </div>
                       <label 
                         className="pm-photo-btn" 
@@ -2112,7 +2112,7 @@ export default function PainelAdm() {
               <div className="pm-body">
                 <div className="pm-photo-wrap">
                   <div className="pm-photo-preview">
-                    {newUser.photo ? <img src={newUser.photo} alt="preview" /> : '👤'}
+                    {newUser.photo ? <img src={newUser.photo} alt="Prévia" /> : '👤'}
                   </div>
                   <label 
                     className="pm-photo-btn" 
@@ -2241,7 +2241,7 @@ export default function PainelAdm() {
                       </div>
                     </div>
                     <div className="pm-field">
-                      <label>Email</label>
+                      <label>E-mail</label>
                       <div className="pm-field-wrap">
                         <span className="pm-icon">✉</span>
                         <input
@@ -2393,7 +2393,7 @@ export default function PainelAdm() {
                         </div>
                         {homeData?.appsImage && (
                           <div style={{ marginTop: '0.5rem' }}>
-                            <img src={transformImageLink(homeData.appsImage)} alt="Preview" style={{ width: 100, height: 100, borderRadius: 8, objectFit: 'cover', border: `1px solid ${palette.border}` }} />
+                            <img src={transformImageLink(homeData.appsImage)} alt="Prévia" style={{ width: 100, height: 100, borderRadius: 8, objectFit: 'cover', border: `1px solid ${palette.border}` }} />
                           </div>
                         )}
                       </div>
@@ -2742,7 +2742,7 @@ export default function PainelAdm() {
                         </div>
                         {ministryData?.hero?.testimonyImage && (
                           <div style={{ marginTop: '0.5rem' }}>
-                            <img src={transformImageLink(ministryData.hero.testimonyImage)} alt="Preview Testemunho" style={{ width: '100%', height: '80px', objectFit: 'cover', borderRadius: '8px', border: `1px solid ${palette.border}` }} />
+                            <img src={transformImageLink(ministryData.hero.testimonyImage)} alt="Prévia do Testemunho" style={{ width: '100%', height: '80px', objectFit: 'cover', borderRadius: '8px', border: `1px solid ${palette.border}` }} />
                           </div>
                         )}
                       </div>
@@ -2775,7 +2775,7 @@ export default function PainelAdm() {
                         </div>
                         {ministryData?.hero?.image && (
                           <div style={{ marginTop: '0.5rem' }}>
-                            <img src={transformImageLink(ministryData.hero.image)} alt="Preview Hero" style={{ width: '100%', height: '80px', objectFit: 'cover', borderRadius: '8px', border: `1px solid ${palette.border}` }} />
+                            <img src={transformImageLink(ministryData.hero.image)} alt="Prévia da Imagem de Fundo" style={{ width: '100%', height: '80px', objectFit: 'cover', borderRadius: '8px', border: `1px solid ${palette.border}` }} />
                           </div>
                         )}
                       </div>
@@ -2917,7 +2917,7 @@ export default function PainelAdm() {
                                   next[idx].photo = url;
                                   next[idx].image = url;
                                   setMinistryData(d => ({ ...d, missionaries: next }));
-                                }, hasSupabase, supabase)}>Up</button>
+                                }, hasSupabase, supabase)}>Subir Foto</button>
                               </div>
                             </div>
                             <div className="pm-field">
@@ -3058,7 +3058,7 @@ export default function PainelAdm() {
                         <div key={idx} className="pm-row" style={{ marginBottom: '1.5rem', background: palette.surfaceHover, padding: '1rem', borderRadius: '12px', border: `1px solid ${palette.border}` }}>
                           <div className="pm-photo-wrap" style={{ gridColumn: '1 / -1', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '1rem' }}>
                             <div className="pm-photo-preview" style={{ width: 60, height: 60 }}>
-                              {p.photo ? <img src={transformImageLink(p.photo)} alt="preview" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} /> : '👤'}
+                              {p.photo ? <img src={transformImageLink(p.photo)} alt="Prévia" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '50%' }} /> : '👤'}
                             </div>
                             <button 
                               type="button" 
@@ -3394,7 +3394,7 @@ export default function PainelAdm() {
                                 <label>Imagem de Fundo</label>
                                 <div style={{ display: 'flex', gap: '8px' }}>
                                   <input className="pm-input" value={page.image || ''} onChange={e => { const next = [...(ministryData.pages)]; next[idx] = { ...next[idx], image: e.target.value }; setMinistryData(d => ({...d, pages: next})); }} />
-                                  <button type="button" className="pm-photo-btn" onClick={() => handleFileUpload(url => { const next = [...(ministryData.pages)]; next[idx] = { ...next[idx], image: url }; setMinistryData(d => ({...d, pages: next})); }, hasSupabase, supabase)}>Upload</button>
+                                  <button type="button" className="pm-photo-btn" onClick={() => handleFileUpload(url => { const next = [...(ministryData.pages)]; next[idx] = { ...next[idx], image: url }; setMinistryData(d => ({...d, pages: next})); }, hasSupabase, supabase)}>Subir Foto</button>
                                 </div>
                               </div>
                             </div>
@@ -3419,7 +3419,7 @@ export default function PainelAdm() {
                                 <label>Imagem do Artigo</label>
                                 <div style={{ display: 'flex', gap: '8px' }}>
                                   <input className="pm-input" value={page.image || ''} onChange={e => { const next = [...(ministryData.pages)]; next[idx] = { ...next[idx], image: e.target.value }; setMinistryData(d => ({...d, pages: next})); }} />
-                                  <button type="button" className="pm-photo-btn" onClick={() => handleFileUpload(url => { const next = [...(ministryData.pages)]; next[idx] = { ...next[idx], image: url }; setMinistryData(d => ({...d, pages: next})); }, hasSupabase, supabase)}>Upload</button>
+                                  <button type="button" className="pm-photo-btn" onClick={() => handleFileUpload(url => { const next = [...(ministryData.pages)]; next[idx] = { ...next[idx], image: url }; setMinistryData(d => ({...d, pages: next})); }, hasSupabase, supabase)}>Subir Foto</button>
                                 </div>
                               </div>
                               <div className="pm-field" style={{ gridColumn: '1 / -1' }}>
@@ -3450,7 +3450,7 @@ export default function PainelAdm() {
                                   <label>Foto do Autor</label>
                                   <div style={{ display: 'flex', gap: '8px' }}>
                                     <input className="pm-input" value={page.author?.image || ''} onChange={e => { const next = [...(ministryData.pages)]; next[idx] = { ...next[idx], author: { ...next[idx].author, image: e.target.value } }; setMinistryData(d => ({...d, pages: next})); }} />
-                                    <button type="button" className="pm-photo-btn" onClick={() => handleFileUpload(url => { const next = [...(ministryData.pages)]; next[idx] = { ...next[idx], author: { ...next[idx].author, image: url } }; setMinistryData(d => ({...d, pages: next})); }, hasSupabase, supabase)}>Up</button>
+                                    <button type="button" className="pm-photo-btn" onClick={() => handleFileUpload(url => { const next = [...(ministryData.pages)]; next[idx] = { ...next[idx], author: { ...next[idx].author, image: url } }; setMinistryData(d => ({...d, pages: next})); }, hasSupabase, supabase)}>Subir Foto</button>
                                   </div>
                                 </div>
                                 <div className="pm-field">
@@ -3547,7 +3547,7 @@ export default function PainelAdm() {
                   {/* Foto da Página */}
                   <div className="pm-photo-wrap">
                     <div className="pm-photo-preview" style={{ width: 120, height: 120, borderRadius: 12 }}>
-                      {pageData.photo ? <img src={transformImageLink(pageData.photo)} alt="preview" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 12 }} /> : <span style={{ fontSize: '2.5rem' }}>🖼️</span>}
+                      {pageData.photo ? <img src={transformImageLink(pageData.photo)} alt="Prévia" style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: 12 }} /> : <span style={{ fontSize: '2.5rem' }}>🖼️</span>}
                     </div>
                     <label className="pm-photo-btn">
                       📷 Selecionar Foto

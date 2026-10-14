@@ -166,7 +166,6 @@ function HomeAnivEditor({ palette, ministryOptions, handleFileUpload, hasSupabas
                   {p.photo ? <img src={transformImageLink(p.photo)} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} /> : '👤'}
                 </div>
                 <label style={{ cursor: 'pointer', padding: '0.35rem 0.75rem', fontSize: '0.78rem', background: palette.accentGlow, color: palette.accentLight, borderRadius: '6px', border: `1px solid ${palette.accent}` }}>
-                  Alterar Foto
                   <button 
                     type="button" 
                     style={{ position: 'absolute', opacity: 0, width: 0, height: 0 }} 

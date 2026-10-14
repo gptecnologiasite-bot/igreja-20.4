@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { transformImageLink } from '../lib/dbUtils';
-import { Heart, Calendar, Clock, Users, Camera, Star, BookOpen, Sparkles, Gift, Flame } from 'lucide-react';
+import { Heart, Calendar, Clock, Users, Camera, Star, BookOpen, Sparkles, Gift, Flame, MapPin } from 'lucide-react';
 import { useMinistryData } from '../hooks/useMinistryData';
 import '../css/Casais.css';
 
@@ -121,7 +121,7 @@ const Casais = () => {
                         <span>{item.time}</span>
                       </div>
                       <div className="detail-item">
-                        <Users size={16} />
+                        <MapPin size={16} />
                         <span>{item.location}</span>
                       </div>
                     </div>

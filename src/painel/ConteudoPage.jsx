@@ -331,7 +331,7 @@ export default function ConteudoPage({ ministryId, setMinistryId, ministryTab, s
                           </div>
                           {ministryData?.appsImage && (
                             <div style={{ marginTop: '0.5rem' }}>
-                              <img src={transformImageLink(ministryData.appsImage)} alt="Preview" style={{ width: 100, height: 100, borderRadius: 8, objectFit: 'cover', border: `1px solid ${palette.border}` }} />
+                              <img src={transformImageLink(ministryData.appsImage)} alt="Prévia" style={{ width: 100, height: 100, borderRadius: 8, objectFit: 'cover', border: `1px solid ${palette.border}` }} />
                             </div>
                           )}
                         </div>
@@ -447,7 +447,7 @@ export default function ConteudoPage({ ministryId, setMinistryId, ministryTab, s
                           </div>
                           {ministryData?.hero?.testimonyImage && (
                             <div style={{ marginTop: '0.5rem' }}>
-                              <img src={transformImageLink(ministryData.hero.testimonyImage)} alt="Preview Testemunho" style={{ width: '100%', height: '80px', objectFit: 'cover', borderRadius: '8px', border: `1px solid ${palette.border}` }} />
+                              <img src={transformImageLink(ministryData.hero.testimonyImage)} alt="Prévia do Testemunho" style={{ width: '100%', height: '80px', objectFit: 'cover', borderRadius: '8px', border: `1px solid ${palette.border}` }} />
                             </div>
                           )}
                         </div>
@@ -870,7 +870,7 @@ export default function ConteudoPage({ ministryId, setMinistryId, ministryTab, s
                           <div style={{ marginTop: '1rem', borderRadius: 10, overflow: 'hidden', border: `1px solid ${palette.border}` }}>
                             <iframe
                               src={ministryData.live.url}
-                              title={ministryData?.live?.title || 'Preview'}
+                              title={ministryData?.live?.title || 'Prévia'}
                               width="100%"
                               height="250"
                               frameBorder="0"
@@ -1947,7 +1947,7 @@ export default function ConteudoPage({ ministryId, setMinistryId, ministryTab, s
                                 const next = [...(ministryData.missionaries || [])];
                                 next[idx] = { ...next[idx], photo: url };
                                 setMinistryData(d => ({ ...d, missionaries: next }));
-                              }, hasSupabase, supabase)}>Up</button>
+                              }, hasSupabase, supabase)}>Subir Foto</button>
                             </div>
                           </div>
                           <div className="pm-field">
@@ -2303,7 +2303,7 @@ export default function ConteudoPage({ ministryId, setMinistryId, ministryTab, s
                               <label>Imagem de Fundo</label>
                               <div style={{ display: 'flex', gap: '8px' }}>
                                 <input className="pm-input" value={page.image || ''} onChange={e => { const next = [...(ministryData.pages)]; next[idx] = { ...next[idx], image: e.target.value }; setMinistryData(d => ({...d, pages: next})); }} />
-                                <button type="button" className="pm-photo-btn" onClick={() => handleFileUpload(url => { const next = [...(ministryData.pages)]; next[idx] = { ...next[idx], image: url }; setMinistryData(d => ({...d, pages: next})); }, hasSupabase, supabase)}>Upload</button>
+                                <button type="button" className="pm-photo-btn" onClick={() => handleFileUpload(url => { const next = [...(ministryData.pages)]; next[idx] = { ...next[idx], image: url }; setMinistryData(d => ({...d, pages: next})); }, hasSupabase, supabase)}>Subir Capa</button>
                               </div>
                             </div>
                           </div>
@@ -2328,7 +2328,7 @@ export default function ConteudoPage({ ministryId, setMinistryId, ministryTab, s
                               <label>Imagem do Artigo</label>
                               <div style={{ display: 'flex', gap: '8px' }}>
                                 <input className="pm-input" value={page.image || ''} onChange={e => { const next = [...(ministryData.pages)]; next[idx] = { ...next[idx], image: e.target.value }; setMinistryData(d => ({...d, pages: next})); }} />
-                                <button type="button" className="pm-photo-btn" onClick={() => handleFileUpload(url => { const next = [...(ministryData.pages)]; next[idx] = { ...next[idx], image: url }; setMinistryData(d => ({...d, pages: next})); }, hasSupabase, supabase)}>Upload</button>
+                                <button type="button" className="pm-photo-btn" onClick={() => handleFileUpload(url => { const next = [...(ministryData.pages)]; next[idx] = { ...next[idx], image: url }; setMinistryData(d => ({...d, pages: next})); }, hasSupabase, supabase)}>Subir Foto</button>
                               </div>
                             </div>
                             <div className="pm-field" style={{ gridColumn: '1 / -1' }}>
@@ -2359,7 +2359,7 @@ export default function ConteudoPage({ ministryId, setMinistryId, ministryTab, s
                                 <label>Foto do Autor</label>
                                 <div style={{ display: 'flex', gap: '8px' }}>
                                   <input className="pm-input" value={page.author?.image || ''} onChange={e => { const next = [...(ministryData.pages)]; next[idx] = { ...next[idx], author: { ...next[idx].author, image: e.target.value } }; setMinistryData(d => ({...d, pages: next})); }} />
-                                  <button type="button" className="pm-photo-btn" onClick={() => handleFileUpload(url => { const next = [...(ministryData.pages)]; next[idx] = { ...next[idx], author: { ...next[idx].author, image: url } }; setMinistryData(d => ({...d, pages: next})); }, hasSupabase, supabase)}>Up</button>
+                                  <button type="button" className="pm-photo-btn" onClick={() => handleFileUpload(url => { const next = [...(ministryData.pages)]; next[idx] = { ...next[idx], author: { ...next[idx].author, image: url } }; setMinistryData(d => ({...d, pages: next})); }, hasSupabase, supabase)}>Subir Foto</button>
                                 </div>
                               </div>
                               <div className="pm-field">

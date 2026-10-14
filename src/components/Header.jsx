@@ -286,7 +286,7 @@ const Header = ({ theme, toggleTheme }) => {
 
   const menuMedia = [
     { name: 'Portal de Mídia', path: '/midia' },
-    { name: 'Revista Admac', path: '/revista' },
+    { name: 'Revista ADMAC', path: '/revista' },
     { name: 'Vídeos & Lives', path: '/midia#video' },
     { name: 'Galeria de Fotos', path: '/midia#galeria' },
   ];
@@ -373,7 +373,7 @@ const Header = ({ theme, toggleTheme }) => {
               <a href={headerData.social.instagram} target="_blank" rel="noopener noreferrer" aria-label="Instagram"><Instagram size={18} /></a>
             )}
             {headerData.social?.youtube && (
-              <a href={headerData.social.youtube} target="_blank" rel="noopener noreferrer" aria-label="Youtube"><Youtube size={18} /></a>
+              <a href={headerData.social.youtube} target="_blank" rel="noopener noreferrer" aria-label="YouTube"><Youtube size={18} /></a>
             )}
             {headerData.social?.facebook && (
               <a href={headerData.social.facebook} target="_blank" rel="noopener noreferrer" aria-label="Facebook"><Facebook size={18} /></a>
