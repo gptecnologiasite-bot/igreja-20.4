@@ -327,6 +327,13 @@ export default function RevistaAdmac() {
   // Página atual com fallback seguro (índice fora do intervalo ou item inválido)
   const current = magazineData[currentPage] || magazineData[0] || {};
 
+  // Página sem texto/itens relevantes: aviso amigável em vez do painel vazio (tela preta)
+  const pageHasContent = (p) => Boolean(
+    (p.title || '').trim() || (p.body || '').trim() || (p.subtitle || '').trim() ||
+    (p.image || '').trim() || (p.author?.name || '').trim() || (p.author?.bio || '').trim() ||
+    (p.items || []).length || (p.events || []).length
+  );
+
   return (
     <div className="revista-container">
       <div className="revista-wrapper">
@@ -373,13 +380,21 @@ export default function RevistaAdmac() {
               style={{ height: '100%' }}
             >
               {/* Renderiza o componente correto baseado no tipo de página */}
-              {current.type === "cover" && <PageCover page={current} />}
-              {current.type === "index" && <PageIndex page={current} onNavigate={goToPage} />}
-              {current.type === "article" && <PageArticle page={current} />}
-              {current.type === "columnist" && <PageColumnist page={current} />}
-              {current.type === "devotional" && <PageDevotional page={current} />}
-              {current.type === "feature" && <PageFeature page={current} />}
-              {!["cover", "index", "article", "columnist", "devotional", "feature"].includes(current.type) && <PageArticle page={current} />}
+              {!pageHasContent(current) ? (
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%', color: 'rgba(255,255,255,0.6)', textAlign: 'center', padding: '2rem' }}>
+                  Página em preparação — publique o conteúdo pelo painel.
+                </div>
+              ) : (
+                <>
+                  {current.type === "cover" && <PageCover page={current} />}
+                  {current.type === "index" && <PageIndex page={current} onNavigate={goToPage} />}
+                  {current.type === "article" && <PageArticle page={current} />}
+                  {current.type === "columnist" && <PageColumnist page={current} />}
+                  {current.type === "devotional" && <PageDevotional page={current} />}
+                  {current.type === "feature" && <PageFeature page={current} />}
+                  {!["cover", "index", "article", "columnist", "devotional", "feature"].includes(current.type) && <PageArticle page={current} />}
+                </>
+              )}
             </MotionDiv>
           </AnimatePresence>
         </div>
