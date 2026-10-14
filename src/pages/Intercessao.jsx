@@ -1,6 +1,6 @@
 import React from 'react';
 import { transformImageLink } from '../lib/dbUtils';
-import { Heart, Calendar, MessageSquare, Clock, Play, Sparkles } from 'lucide-react';
+import { Heart, Calendar, MessageSquare, Clock, Play, Camera, Sparkles } from 'lucide-react';
 import { useMinistryData } from '../hooks/useMinistryData';
 import '../css/Lares.css';
 
@@ -164,6 +164,30 @@ const Intercessao = () => {
           )}
         </div>
       </section>
+
+      {/* Gallery Section */}
+      {(data?.gallery || []).length > 0 && (
+        <section className="gallery-section">
+          <div className="container">
+            <div className="section-header">
+              <Camera size={32} />
+              <h2>Galeria de Fotos</h2>
+            </div>
+            <p className="section-subtitle">Momentos especiais do ministério de intercessão</p>
+
+            <div className="gallery-grid">
+              {(data?.gallery || []).map((photo, index) => (
+                <div key={index} className="gallery-item">
+                  <img src={transformImageLink(photo.url)} alt={photo.caption} />
+                  <div className="gallery-overlay">
+                    <span>{photo.caption}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+      )}
     </div>
   );
 };
